@@ -1,9 +1,10 @@
 
 import pyg4ometry.fluka as _flu
+import pyg4ometry.geant4.LogicalVolume as _LogicalVolume
 
 class FlukaMachine :
 
-    def __init__(self, useLattice = False):
+    def __init__(self, useLattice = False, worldSize = [1000,1000,1000]):
         self.flukaRegistry = _flu.FlukaRegistry()
         self.useLattice = useLattice
 
@@ -15,6 +16,10 @@ class FlukaMachine :
         if type(element) == list :
             # saerch in databases (fluka)
             pass
+
+        if type(element) == _LogicalVolume :
+            pass
+
 
     def exportINP(self):
         pass
