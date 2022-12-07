@@ -7,6 +7,3 @@ class BaseConverter :
         self.samplerSize      = samplerSize
         self.flukaMachine     = _FlukaMachine()
 
-
-
-

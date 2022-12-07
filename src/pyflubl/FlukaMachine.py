@@ -1,7 +1,12 @@
 
 import pyg4ometry.fluka as _fluka
 import pyg4ometry.geant4.LogicalVolume as _LogicalVolume
+import pyg4ometry.geant4.PhysicalVolume as _PhysicalVolume
+import pyg4ometry.geant4.Registry as _Registry
+
 from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant4PhysicalVolume2Fluka
+from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant4PhysicalVolume2Fluka
+from pyg4ometry.convert.geant42Fluka import geant4MaterialDict2Fluka as _geant4MaterialDict2Fluka
 from pyg4ometry.fluka.directive import rotoTranslationFromTra2 as _rotoTranslationFromTra2
 
 class FlukaMachine :
@@ -10,6 +15,7 @@ class FlukaMachine :
 
         # book keeping
         self.flukaNameCount = 0
+        self.g4registry = _Registry() # needed for making PVs
 
         # create fluka registry
         self.flukaRegistry = _fluka.FlukaRegistry()
@@ -57,6 +63,9 @@ class FlukaMachine :
         self.worldRegion.addZone(self.worldZone)
         self.flukaRegistry.addRegion(self.worldRegion)
 
+    def addMaterials(self, g4reg):
+        _geant4MaterialDict2Fluka(g4reg.materialDict, self.flukaRegistry)
+
     def placeElement(self, **kwargs):
         print(kwargs)
 
@@ -69,11 +78,25 @@ class FlukaMachine :
         rot = kwargs['rot']
         lv  = kwargs['lv']
 
-        # convert LV to fluka registry bodies and regions
+        try :
+            pvName = kwargs['name']
+        except KeyError :
+            pvName = lv.name+"_placement"
+
+       # fix LV cutting outer for sampler
+
+        # add sampler
 
         # make a PV with the rotation and position
+        pv = _PhysicalVolume(rot,pos,lv,pvName,None,self.g4registry)
+
+        # add to fluka registry
+        flukaOuterRegion, self.flukaNameCount = _geant4PhysicalVolume2Fluka(pv,flukaRegistry=self.flukaRegistry,flukaNameCount=self.flukaNameCount)
 
         # cut volume out of mother zone
+
+        for daughterZones in flukaOuterRegion.zones:
+            self.worldZone.addSubtraction(daughterZones)
 
     def _placeElement_TBRot_LV(self, pos=[0,0,0], rot=[0,0,0], element = None):
         pass
