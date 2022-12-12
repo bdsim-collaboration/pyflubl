@@ -1,8 +1,10 @@
+import numpy as _np
 
 import pyg4ometry.fluka as _fluka
 import pyg4ometry.geant4.LogicalVolume as _LogicalVolume
 import pyg4ometry.geant4.PhysicalVolume as _PhysicalVolume
 import pyg4ometry.geant4.Registry as _Registry
+import pyg4ometry.geant4.solid.Box as _Box
 
 from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant4PhysicalVolume2Fluka
 from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant4PhysicalVolume2Fluka
@@ -11,11 +13,12 @@ from pyg4ometry.fluka.directive import rotoTranslationFromTra2 as _rotoTranslati
 
 class FlukaMachine :
 
-    def __init__(self, useLattice = False, worldSize = [1000,1000,1000], storageSize=[100,100,100], storageLocation=[0,0,0]):
+    def __init__(self, useLattice = False, worldSize = (10000,10000,10000), storageSize=(100,100,100), storageLocation=(0,0,0)):
 
         # book keeping
         self.flukaNameCount = 0
         self.g4registry = _Registry() # needed for making PVs
+        self.pvNameCount = {}
 
         # create fluka registry
         self.flukaRegistry = _fluka.FlukaRegistry()
@@ -67,7 +70,6 @@ class FlukaMachine :
         _geant4MaterialDict2Fluka(g4reg.materialDict, self.flukaRegistry)
 
     def placeElement(self, **kwargs):
-        print(kwargs)
 
         # check kwargs
         if len(kwargs) < 3 :
@@ -83,18 +85,20 @@ class FlukaMachine :
         except KeyError :
             pvName = lv.name+"_placement"
 
-       # fix LV cutting outer for sampler
+        print('placeElement',pvName,pos,rot)
+
+        # fix LV cutting outer for sampler
 
         # add sampler
 
         # make a PV with the rotation and position
-        pv = _PhysicalVolume(rot,pos,lv,pvName,None,self.g4registry)
+
+        pv = _PhysicalVolume([0,0,0],[0,0,0],lv,pvName,None,self.g4registry,addRegistry=False)
 
         # add to fluka registry
-        flukaOuterRegion, self.flukaNameCount = _geant4PhysicalVolume2Fluka(pv,flukaRegistry=self.flukaRegistry,flukaNameCount=self.flukaNameCount)
+        flukaOuterRegion, self.flukaNameCount = _geant4PhysicalVolume2Fluka(pv,mtra=rot, tra=_np.array(pos),flukaRegistry=self.flukaRegistry,flukaNameCount=self.flukaNameCount)
 
         # cut volume out of mother zone
-
         for daughterZones in flukaOuterRegion.zones:
             self.worldZone.addSubtraction(daughterZones)
 
@@ -102,6 +106,26 @@ class FlukaMachine :
         pass
 
     def _placeElement_MatRot_LV(self, pos=[0,0,0], rot=[[1,0,0],[0,1,0],[0,0,1]], element = None):
+        pass
+
+    def placePlaneSampler(self, pos=[0,0,0], rot=[[1,0,0],[0,1,0],[0,0,1]], samplerName = "sampler", samplerSize = 1000, samplerLength=1e-3,  material="G4_AIR"):
+
+
+        # make box of correct size
+        samplerSolid    = _Box(samplerName+"_solid",samplerSize,samplerSize,samplerLength,self.g4registry)
+        samplerLogical  = _LogicalVolume(samplerSolid,material,samplerName+"_lv",self.g4registry)
+        samplerPhysical = _PhysicalVolume([0,0,0],[0,0,0],samplerLogical,samplerName+"_pv",None)
+
+        flukaOuterRegion, self.flukaNameCount = _geant4PhysicalVolume2Fluka(samplerPhysical,mtra=rot, tra=_np.array(pos),flukaRegistry=self.flukaRegistry,flukaNameCount=self.flukaNameCount)
+
+        # cut volume out of mother zone
+        for daughterZones in flukaOuterRegion.zones:
+            self.worldZone.addSubtraction(daughterZones)
+
+    def placeCylinderSampler(self, pos=[0,0,0], rot=[0,0,0], samplerRadius = 1000, samplerLength=1000, material="G4_Galactic"):
+        pass
+
+    def placeBoxSampler(self, pos=[0,0,0], rot=[0,0,0], material="G4_Galactic"):
         pass
 
     def exportINP(self, flukaINPFileName = "output.inp"):
