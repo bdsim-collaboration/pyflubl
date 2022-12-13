@@ -17,6 +17,8 @@ class Bdsim(_BaseConverter) :
 
         self.g4registry = _g4.geant4.Registry()
 
+        self.samplerRegionNames = []
+
     def _load(self):
 
         # load root and GDML files
@@ -34,14 +36,16 @@ class Bdsim(_BaseConverter) :
         modelTree.GetEntry(0)
         gdmlReg   = self.bdsimGDMLFile.getRegistry()
 
+        samplerMaterial = gdmlReg.findMaterialByName("G4_AIR")[0]
+
         for iele in range(0,model.n):
 
             #  Get position/rotation
             pos = model.midPos[iele]
             rot = model.midRot[iele]
-            # print(pos,rot)
 
-            pos    = [pos.X()*1000, pos.Y()*1000, pos.Z()*1000]
+            # convert from ROOT root to np arrays
+            pos    = [pos.X()*1000, pos.Y()*1000, pos.Z()*1000] # pyg4ometry in mm and BDSIM output in m
             rotMat = _np.matrix([[rot.XX(), rot.XY(), rot.XZ()],
                                  [rot.YX(), rot.YY(), rot.YZ()],
                                  [rot.ZX(), rot.ZY(), rot.ZZ()]])
@@ -59,22 +63,20 @@ class Bdsim(_BaseConverter) :
 
             clipBox = _g4.geant4.solid.Box(lv.name+"_newSolid",1.1*dx,1.1*dy,dz-1, self.g4registry, "mm")
             lv.replaceSolid(clipBox, rotation=[0,0,0], position=[0,0,0], punit="mm")
-            clipBoxes = _g4.misc.NestedBoxes(lv.name+"_clipper", dx, dy, dz-1, self.g4registry, "mm", 5,5,5, lv.depth())
+            clipBoxes = _g4.misc.NestedBoxes(lv.name+"_clipper", dx, dy, dz-1, self.g4registry, "mm", 5,5,0, lv.depth())
             lv.clipGeometry(clipBoxes, (0, 0, 0), (0, 0, 0))
 
             samplerPos = _np.array((_np.array(pos)+_np.dot(rotMat,_np.array([0,0,dz/2]))))[0]
 
-            #print(iele, model.componentType[iele], model.componentName[iele], model.pvName[iele],pv.name, lv.name)
-            print('element ',iele,type(pos),pos,type(rotMat),rotMat,type(samplerPos),samplerPos)
-            print('-------------')
-            # print(type(samplerPos),samplerPos)
-
-            #v = _g4.visualisation.VtkViewer()
-            #v.addLogicalVolume(lv
-            #v.view(interactive=True)
+            print('bdsim.toFluka> element type={} name={} iele={} pos={} rot={} samplerPos={}'.format(model.componentType[iele],model.componentName[iele],
+                                                                                                      iele,pos,rotMat.flatten(),samplerPos))
 
             self.flukaMachine.placeElement(pos=pos,rot=rotMat,lv=lv)
-            self.flukaMachine.placePlaneSampler(pos=samplerPos,rot=rotMat,samplerName="sampler_"+str(iele),material=self.bdsimGDMLFile.getRegistry().materialDict["G4_AIR0x7fca0e4b9020"])
+            psName = self.flukaMachine.placePlaneSampler(pos=samplerPos,
+                                                         rot=rotMat,
+                                                         samplerName="sampler_"+str(iele),
+                                                         material=samplerMaterial)
+            self.samplerRegionNames.append(psName)
 
         return self.flukaMachine
 

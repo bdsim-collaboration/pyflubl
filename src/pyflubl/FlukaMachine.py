@@ -61,11 +61,14 @@ class FlukaMachine :
         self.blackBodyRegion = _fluka.Region("BLKHOLE")
         self.blackBodyRegion.addZone(self.blackBodyZone)
         self.flukaRegistry.addRegion(self.blackBodyRegion)
+        self.flukaRegistry.addMaterialAssignments("BLCKHOLE",
+                                                  "BLKHOLE")
 
         self.worldRegion = _fluka.Region("WORLD")
         self.worldRegion.addZone(self.worldZone)
         self.flukaRegistry.addRegion(self.worldRegion)
-
+        self.flukaRegistry.addMaterialAssignments("AIR",
+                                                  "WORLD")
     def addMaterials(self, g4reg):
         _geant4MaterialDict2Fluka(g4reg.materialDict, self.flukaRegistry)
 
@@ -85,14 +88,9 @@ class FlukaMachine :
         except KeyError :
             pvName = lv.name+"_placement"
 
-        print('placeElement',pvName,pos,rot)
+        print('FlukaMachine.placeElement> name={} pos={} rot={}'.format(pvName,pos,rot.flatten()))
 
-        # fix LV cutting outer for sampler
-
-        # add sampler
-
-        # make a PV with the rotation and position
-
+        # make a PV (rotation and position done in conversion, so done later)
         pv = _PhysicalVolume([0,0,0],[0,0,0],lv,pvName,None,self.g4registry,addRegistry=False)
 
         # add to fluka registry
@@ -102,14 +100,7 @@ class FlukaMachine :
         for daughterZones in flukaOuterRegion.zones:
             self.worldZone.addSubtraction(daughterZones)
 
-    def _placeElement_TBRot_LV(self, pos=[0,0,0], rot=[0,0,0], element = None):
-        pass
-
-    def _placeElement_MatRot_LV(self, pos=[0,0,0], rot=[[1,0,0],[0,1,0],[0,0,1]], element = None):
-        pass
-
     def placePlaneSampler(self, pos=[0,0,0], rot=[[1,0,0],[0,1,0],[0,0,1]], samplerName = "sampler", samplerSize = 1000, samplerLength=1e-3,  material="G4_AIR"):
-
 
         # make box of correct size
         samplerSolid    = _Box(samplerName+"_solid",samplerSize,samplerSize,samplerLength,self.g4registry)
@@ -121,6 +112,8 @@ class FlukaMachine :
         # cut volume out of mother zone
         for daughterZones in flukaOuterRegion.zones:
             self.worldZone.addSubtraction(daughterZones)
+
+        return flukaOuterRegion.name
 
     def placeCylinderSampler(self, pos=[0,0,0], rot=[0,0,0], samplerRadius = 1000, samplerLength=1000, material="G4_Galactic"):
         pass
