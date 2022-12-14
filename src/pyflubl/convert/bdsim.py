@@ -43,12 +43,24 @@ class Bdsim(_BaseConverter) :
             #  Get position/rotation
             pos = model.midPos[iele]
             rot = model.midRot[iele]
+            rotEnd = model.endRot[iele]
+
+            if iele != model.n-1 :
+                rotNext = model.endRot[iele+1]
+            else :
+                rotNext = rot
 
             # convert from ROOT root to np arrays
             pos    = [pos.X()*1000, pos.Y()*1000, pos.Z()*1000] # pyg4ometry in mm and BDSIM output in m
             rotMat = _np.matrix([[rot.XX(), rot.XY(), rot.XZ()],
                                  [rot.YX(), rot.YY(), rot.YZ()],
                                  [rot.ZX(), rot.ZY(), rot.ZZ()]])
+            rotEndMat = _np.matrix([[rotEnd.XX(), rotEnd.XY(), rotEnd.XZ()],
+                                    [rotEnd.YX(), rotEnd.YY(), rotEnd.YZ()],
+                                    [rotEnd.ZX(), rotEnd.ZY(), rotEnd.ZZ()]])
+            rotNextMat = _np.matrix([[rotNext.XX(), rotNext.XY(), rotNext.XZ()],
+                                     [rotNext.YX(), rotNext.YY(), rotNext.YZ()],
+                                     [rotNext.ZX(), rotNext.ZY(), rotNext.ZZ()]])
 
             # Get PV/LV from GDML file
             pvName = model.pvNameWPointer[iele]
@@ -61,7 +73,7 @@ class Bdsim(_BaseConverter) :
             dy = ext[1][1]-ext[0][1]
             dz = ext[1][2]-ext[0][2]
 
-            clipBox = _g4.geant4.solid.Box(lv.name+"_newSolid",1.1*dx,1.1*dy,dz-1, self.g4registry, "mm")
+            clipBox = _g4.geant4.solid.Box(lv.name+"_newSolid"+str(iele),1.1*dx,1.1*dy,dz-1, self.g4registry, "mm")
             lv.replaceSolid(clipBox, rotation=[0,0,0], position=[0,0,0], punit="mm")
             clipBoxes = _g4.misc.NestedBoxes(lv.name+"_clipper", dx, dy, dz-1, self.g4registry, "mm", 5,5,0, lv.depth())
             lv.clipGeometry(clipBoxes, (0, 0, 0), (0, 0, 0))
@@ -73,7 +85,7 @@ class Bdsim(_BaseConverter) :
 
             self.flukaMachine.placeElement(pos=pos,rot=rotMat,lv=lv)
             psName = self.flukaMachine.placePlaneSampler(pos=samplerPos,
-                                                         rot=rotMat,
+                                                         rot=rotEndMat,
                                                          samplerName="sampler_"+str(iele),
                                                          material=samplerMaterial)
             self.samplerRegionNames.append(psName)
