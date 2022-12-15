@@ -84,12 +84,27 @@ class Bdsim(_BaseConverter) :
                                                                                                       iele,pos,rotMat.flatten(),samplerPos))
 
             self.flukaMachine.placeElement(pos=pos,rot=rotMat,lv=lv)
-            psName = self.flukaMachine.placePlaneSampler(pos=samplerPos,
-                                                         rot=rotEndMat,
-                                                         samplerName="sampler_"+str(iele),
-                                                         material=samplerMaterial)
-            self.samplerRegionNames.append(psName)
 
+            #psName = self.flukaMachine.placePlaneSampler(pos=samplerPos,
+            #                                             rot=rotEndMat,
+            #                                             samplerName="sampler_"+str(iele),
+            #                                             material=samplerMaterial)
+            #self.samplerRegionNames.append(psName)
+
+            #psName = self.flukaMachine.placeCylinderSampler(pos=pos,
+            #                                                rot=rotEndMat,
+            #                                                samplerName="samplerCylinder_"+str(iele),
+            #                                                samplerLength=dz,
+            #                                                samplerRadius=max(dx,dy)*1.01,
+            #                                                material=samplerMaterial)
+            #self.samplerRegionNames.append(psName)
+
+            psName = self.flukaMachine.placeSphereSampler(pos=pos,
+                                                          rot=rotEndMat,
+                                                          samplerName="samplerSphere_"+str(iele),
+                                                          samplerRadius=1000,
+                                                          material=samplerMaterial)
+            self.samplerRegionNames.append(psName)
         return self.flukaMachine
 
 

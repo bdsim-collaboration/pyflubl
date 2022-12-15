@@ -5,6 +5,10 @@ import pyg4ometry.geant4.LogicalVolume as _LogicalVolume
 import pyg4ometry.geant4.PhysicalVolume as _PhysicalVolume
 import pyg4ometry.geant4.Registry as _Registry
 import pyg4ometry.geant4.solid.Box as _Box
+import pyg4ometry.geant4.solid.Tubs as _Tubs
+import pyg4ometry.geant4.solid.Sphere as _Sphere
+import pyg4ometry.geant4.solid.Subtraction as _Subtraction
+
 
 from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant4PhysicalVolume2Fluka
 from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant4PhysicalVolume2Fluka
@@ -115,10 +119,38 @@ class FlukaMachine :
 
         return flukaOuterRegion.name
 
-    def placeCylinderSampler(self, pos=[0,0,0], rot=[0,0,0], samplerRadius = 1000, samplerLength=1000, material="G4_Galactic"):
-        pass
+    def placeCylinderSampler(self, pos=[0,0,0], rot=[0,0,0], samplerName="sampler", samplerRadius = 1000, samplerLength=1000, samplerThickness=1e-3, material="G4_Galactic"):
 
-    def placeBoxSampler(self, pos=[0,0,0], rot=[0,0,0], material="G4_Galactic"):
+        # make box of correct size
+        samplerOuterSolid    = _Tubs(samplerName+"_OuterSolid",0,samplerRadius, samplerLength,0,2*_np.pi,self.g4registry)
+        samplerInnerSolid    = _Tubs(samplerName+"_InnerSolid",0,samplerRadius-samplerThickness, samplerLength-samplerThickness,0,2*_np.pi,self.g4registry)
+        samplerSolid         = _Subtraction(samplerName+"_solid",samplerOuterSolid,samplerInnerSolid, [[0,0,0],[0,0,0]], self.g4registry, addRegistry=False)
+        samplerLogical  = _LogicalVolume(samplerSolid,material,samplerName+"_lv",self.g4registry)
+        samplerPhysical = _PhysicalVolume([0,0,0],[0,0,0],samplerLogical,samplerName+"_pv",None)
+
+        flukaOuterRegion, self.flukaNameCount = _geant4PhysicalVolume2Fluka(samplerPhysical,mtra=rot, tra=_np.array(pos),flukaRegistry=self.flukaRegistry,flukaNameCount=self.flukaNameCount)
+
+        # cut volume out of mother zone
+        for daughterZones in flukaOuterRegion.zones:
+            self.worldZone.addSubtraction(daughterZones)
+
+        return flukaOuterRegion.name
+
+    def placeSphereSampler(self, pos=[0,0,0], rot=[0,0,0], samplerName="sampler", samplerRadius=1000, samplerThickness=1e-3, material="G4_Galactic"):
+        # make box of correct size
+        samplerSolid    = _Sphere(samplerName+"_solid",samplerRadius, samplerRadius+samplerThickness,0,2*_np.pi,0,_np.pi, self.g4registry, addRegistry=False)
+        samplerLogical  = _LogicalVolume(samplerSolid,material,samplerName+"_lv",self.g4registry)
+        samplerPhysical = _PhysicalVolume([0,0,0],[0,0,0],samplerLogical,samplerName+"_pv",None)
+
+        flukaOuterRegion, self.flukaNameCount = _geant4PhysicalVolume2Fluka(samplerPhysical,mtra=rot, tra=_np.array(pos),flukaRegistry=self.flukaRegistry,flukaNameCount=self.flukaNameCount)
+
+        # cut volume out of mother zone
+        for daughterZones in flukaOuterRegion.zones:
+            self.worldZone.addSubtraction(daughterZones)
+
+        return flukaOuterRegion.name
+
+    def placeCuboidSampler(self, pos=[0,0,0], rot=[0,0,0], dx=1000, dy=1000, dz=1000, material="G4_Galactic"):
         pass
 
     def exportINP(self, flukaINPFileName = "output.inp"):
