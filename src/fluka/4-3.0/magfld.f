@@ -27,7 +27,6 @@
       INCLUDE 'cmemfl.inc'
       INCLUDE 'csmcry.inc'
 
-      WRITE(*,*) "MAGFLD INPUT:", Y, Z, NREG
 *     
 *  +-------------------------------------------------------------------*
 *  |  Earth geomagnetic field:
@@ -44,7 +43,7 @@
       BTZ   = WMGFLD
       B     = BIFUNI
 
-      WRITE(*,*) "MAGFLD OUTPUT:", BTX, BTY, BYZ, B
+      WRITE(*,*) "MAGFLD", X, Y, Z, NREG, BTX, BTY, BYZ, B
       
       RETURN
 *=== End of subroutine Magfld =========================================*
