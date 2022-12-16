@@ -9,7 +9,6 @@ import pyg4ometry.geant4.solid.Tubs as _Tubs
 import pyg4ometry.geant4.solid.Sphere as _Sphere
 import pyg4ometry.geant4.solid.Subtraction as _Subtraction
 
-
 from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant4PhysicalVolume2Fluka
 from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant4PhysicalVolume2Fluka
 from pyg4ometry.convert.geant42Fluka import geant4MaterialDict2Fluka as _geant4MaterialDict2Fluka
@@ -19,10 +18,21 @@ class FlukaMachine :
 
     def __init__(self, useLattice = False, worldSize = (10000,10000,10000), storageSize=(100,100,100), storageLocation=(0,0,0)):
 
-        # book keeping
+        # temporary book keeping
         self.flukaNameCount = 0
         self.g4registry = _Registry() # needed for making PVs
         self.pvNameCount = {}
+
+        # persistent book keeping
+        self.nameRegion = {}
+
+        self.regionNumberRegionName = {}
+        self.regionNameRegionNumber = {}
+
+        self.volumeRegionName = {}
+        self.regionNameVolume = {}
+
+        self.samplerInfo = {}
 
         # create fluka registry
         self.flukaRegistry = _fluka.FlukaRegistry()
@@ -117,6 +127,8 @@ class FlukaMachine :
         for daughterZones in flukaOuterRegion.zones:
             self.worldZone.addSubtraction(daughterZones)
 
+        self.samplerInfo[samplerName] = {"name":samplerName, "type":"plane","regionName":flukaOuterRegion.name}
+
         return flukaOuterRegion.name
 
     def placeCylinderSampler(self, pos=[0,0,0], rot=[0,0,0], samplerName="sampler", samplerRadius = 1000, samplerLength=1000, samplerThickness=1e-3, material="G4_Galactic"):
@@ -134,6 +146,8 @@ class FlukaMachine :
         for daughterZones in flukaOuterRegion.zones:
             self.worldZone.addSubtraction(daughterZones)
 
+        self.samplerInfo[samplerName] = {"name":samplerName, "type":"cylinder","regionName":flukaOuterRegion.name}
+
         return flukaOuterRegion.name
 
     def placeSphereSampler(self, pos=[0,0,0], rot=[0,0,0], samplerName="sampler", samplerRadius=1000, samplerThickness=1e-3, material="G4_Galactic"):
@@ -148,12 +162,30 @@ class FlukaMachine :
         for daughterZones in flukaOuterRegion.zones:
             self.worldZone.addSubtraction(daughterZones)
 
+        self.samplerInfo[samplerName] = {"name":samplerName, "type":"sphere","regionName":flukaOuterRegion.name}
+
         return flukaOuterRegion.name
 
     def placeCuboidSampler(self, pos=[0,0,0], rot=[0,0,0], dx=1000, dy=1000, dz=1000, material="G4_Galactic"):
         pass
 
+    def _makeBookkeepingInfo(self):
+
+        # region number to name
+        for i, r in enumerate(self.flukaRegistry.regionDict) :
+
+            self.regionNumberRegionName[i+1] = self.flukaRegistry.regionDict[r].name
+            self.regionNameRegionNumber[self.flukaRegistry.regionDict[r].name] = i+1
+
+            self.volumeRegionName[self.flukaRegistry.regionDict[r].comment] = self.flukaRegistry.regionDict[r].name
+            self.regionNameVolume[self.flukaRegistry.regionDict[r].name] = self.flukaRegistry.regionDict[r].comment
+
+
     def exportINP(self, flukaINPFileName = "output.inp"):
+
+
+        self._makeBookkeepingInfo()
+
         w = _fluka.Writer()
         w.addDetector(self.flukaRegistry)
         w.write(flukaINPFileName)
