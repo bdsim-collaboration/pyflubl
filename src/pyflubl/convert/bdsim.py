@@ -73,10 +73,10 @@ class Bdsim(_BaseConverter) :
             dy = ext[1][1]-ext[0][1]
             dz = ext[1][2]-ext[0][2]
 
-            clipBox = _g4.geant4.solid.Box(lv.name+"_newSolid"+str(iele),1.1*dx,1.1*dy,dz-1, self.g4registry, "mm")
-            lv.replaceSolid(clipBox, rotation=[0,0,0], position=[0,0,0], punit="mm")
-            clipBoxes = _g4.misc.NestedBoxes(lv.name+"_clipper", dx, dy, dz-1, self.g4registry, "mm", 5,5,0, lv.depth())
-            lv.clipGeometry(clipBoxes, (0, 0, 0), (0, 0, 0))
+            #clipBox = _g4.geant4.solid.Box(lv.name+"_newSolid"+str(iele),1.1*dx,1.1*dy,dz-1, self.g4registry, "mm")
+            #lv.replaceSolid(clipBox, rotation=[0,0,0], position=[0,0,0], punit="mm")
+            #clipBoxes = _g4.misc.NestedBoxes(lv.name+"_clipper", dx, dy, dz-1, self.g4registry, "mm", 5,5,0, lv.depth())
+            #lv.clipGeometry(clipBoxes, (0, 0, 0), (0, 0, 0))
 
             samplerPos = _np.array((_np.array(pos)+_np.dot(rotMat,_np.array([0,0,dz/2]))))[0]
 
@@ -99,12 +99,13 @@ class Bdsim(_BaseConverter) :
             #                                                material=samplerMaterial)
             #self.samplerRegionNames.append(psName)
 
-            psName = self.flukaMachine.placeSphereSampler(pos=pos,
-                                                          rot=rotEndMat,
-                                                          samplerName="samplerSphere_"+str(iele),
-                                                          samplerRadius=1000,
-                                                          material=samplerMaterial)
-            self.samplerRegionNames.append(psName)
+            #psName = self.flukaMachine.placeSphereSampler(pos=pos,
+            #                                              rot=rotEndMat,
+            #                                              samplerName="samplerSphere_"+str(iele),
+            #                                              samplerRadius=1000,
+            #                                              material=samplerMaterial)
+            #self.samplerRegionNames.append(psName)
+
         return self.flukaMachine
 
 

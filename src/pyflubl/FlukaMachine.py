@@ -1,4 +1,5 @@
 import numpy as _np
+import json as _json
 
 import pyg4ometry.fluka as _fluka
 import pyg4ometry.geant4.LogicalVolume as _LogicalVolume
@@ -33,6 +34,8 @@ class FlukaMachine :
         self.regionNameVolume = {}
 
         self.samplerInfo = {}
+
+        self.finished = False
 
         # create fluka registry
         self.flukaRegistry = _fluka.FlukaRegistry()
@@ -171,6 +174,7 @@ class FlukaMachine :
 
     def _makeBookkeepingInfo(self):
 
+        self.finished = True
         # region number to name
         for i, r in enumerate(self.flukaRegistry.regionDict) :
 
@@ -180,11 +184,23 @@ class FlukaMachine :
             self.volumeRegionName[self.flukaRegistry.regionDict[r].comment] = self.flukaRegistry.regionDict[r].name
             self.regionNameVolume[self.flukaRegistry.regionDict[r].name] = self.flukaRegistry.regionDict[r].comment
 
+    def exportBookkeepingInfo(self, fileName="output.json"):
+
+        if not self.finished :
+            self._makeBookkeepingInfo()
+
+        jsonDumpDict = {}
+        jsonDumpDict["regionNameRegionNumber"] = self.regionNameRegionNumber
+        jsonDumpDict["regionNumberRegionName"] = self.regionNumberRegionName
+        jsonDumpDict["samplerInfo"]            = self.samplerInfo
+
+        with open(fileName, "w") as f:
+            _json.dump(jsonDumpDict,f)
 
     def exportINP(self, flukaINPFileName = "output.inp"):
 
-
-        self._makeBookkeepingInfo()
+        if not self.finished :
+            self._makeBookkeepingInfo()
 
         w = _fluka.Writer()
         w.addDetector(self.flukaRegistry)

@@ -12,7 +12,12 @@ tar xf $flukaTar
 rm -rf $flukaPath-$osType
 cp -r $flukaPath $flukaPath-$osType
 
-cd $flukaPath-$osType/src
-make
+make -c $flukaPath-$osType/src
+
 cd $scriptPath/$flukaPath/bin
-fff ../../../mgdraw.f
+fff ../../mgdraw.f
+fff ../../magfld.f
+fff ../../source.f
+lfluka -o fluka -m fluka ../../mgdraw.o ../../magfld.o ../../source.o
+
+rm -rf  $scriptPath/*.o
