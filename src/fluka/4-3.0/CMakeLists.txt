@@ -8,6 +8,8 @@ set(FLUKA_LIBRARY_DIR "/Users/sboogert/Dropbox/Physics/coderepos/pyflubl/src/flu
 # enable_language(fortran)
 set(CMAKE_FORTRAN_COMPILER "/opt/local/bin/gfortran")
 
+# add_compile_options(-O -Wall -fcheck=all -g -fbacktrace)
+
 # point cmake to my own custom installation directory that's not a system dir
 # this is where BDSIMConfig.cmake exists
 set(CMAKE_PREFIX_PATH /Users/sboogert/Dropbox/Physics/coderepos/bdsim/bdsim/.install_intel_g4.11.00.p03/lib/cmake/bdsim/)
@@ -26,5 +28,5 @@ target_include_directories(bdsimFlukaCxx PUBLIC ${BDSIM_INCLUDE_DIR})
 target_include_directories(flukaBdsim PUBLIC ${FLUKA_INCLUDE_DIR})
 target_link_libraries(bdsimFlukaCxx ${BDSIM_LIBRARIES})
 target_link_libraries(flukaBdsim bdsimFlukaCxx)
-target_link_libraries(flukaBdsim ${FLUKA_LIBRARY_DIR}/libfluka.a stdc++ supc++)
+target_link_libraries(flukaBdsim ${FLUKA_LIBRARY_DIR}/libfluka.a stdc++ supc++ m)
 
