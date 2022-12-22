@@ -4,13 +4,17 @@ import pybdsim as _bds
 from .baseConverter import BaseConverter as _BaseConverter
 
 class Bdsim(_BaseConverter) :
-    def __init__(self, bdsimROOTFileName = None, bdsimGDMLFileName = None, addSamplers = True, samplerThickness = 1e-6, samplerSize=1000):
+    def __init__(self, bdsimROOTFileName = None, bdsimGDMLFileName = None,
+                 addSamplers = True, samplerThickness = 1e-6, samplerSize=1000,
+                 bdsimGMADFileName = ""):
         # base class init
         super().__init__(samplerThickness,samplerSize)
 
         # derived class init
         self.bdsimROOTFileName = bdsimROOTFileName
         self.bdsimGDMLFileName = bdsimGDMLFileName
+        self.bdsimGMADFileName = bdsimGMADFileName
+
         self._load()
         self.addSamplers = addSamplers
         self.samplerThickness = samplerThickness
@@ -37,6 +41,15 @@ class Bdsim(_BaseConverter) :
         gdmlReg   = self.bdsimGDMLFile.getRegistry()
 
         samplerMaterial = gdmlReg.findMaterialByName("G4_AIR")[0]
+
+        # other information required for flukaBdsim
+        self.flukaMachine.conversionData = {}
+        self.flukaMachine.conversionData['bdsimROOTFileName'] = self.bdsimROOTFileName
+        self.flukaMachine.conversionData['bdsimGDMLFileName'] = self.bdsimGDMLFileName
+        self.flukaMachine.conversionData['bdsimGMADFileName'] = self.bdsimGMADFileName
+        self.flukaMachine.conversionData['addSamplers']       = self.addSamplers
+        self.flukaMachine.conversionData['samplerThickness']  = self.samplerThickness
+        self.flukaMachine.conversionData['samplerSize']       = self.samplerSize
 
         for iele in range(0,model.n):
 

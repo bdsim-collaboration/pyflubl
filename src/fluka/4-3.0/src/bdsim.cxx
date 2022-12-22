@@ -1,4 +1,7 @@
 #include "BDSIMClass.hh"
+#include <fstream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 /*   Title:  Floating-point exception handling example
     Author:  David N. Williams
@@ -306,6 +309,10 @@ int bdsim_();
 int bdsim_() {
     std::cout << "bdsim-fluka>" << std::endl;
 
+    std::ifstream f("../flukaBdsim.json");
+    json data = json::parse(f);
+    std::cout << data["conversionData"] << std::endl;
+
     char bdsimExe[50] = "bdsim";
     char gmadInput[50] = "--file=../input.gmad";
     char batch[50] = "--batch";
@@ -315,9 +322,10 @@ int bdsim_() {
     argv[1] = gmadInput;
     argv[2] = batch;
 
+    /* Disable floating point exceptions in fortran */
     fedisableexcept(FE_ALL_EXCEPT);
 
-
+    /* Initialise BDSIM */
     BDSIM* bds = new BDSIM(2,argv);
     if (!bds->Initialised())
     {std::cout << "Intialisation failed" << std::endl; return 1;}

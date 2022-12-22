@@ -193,6 +193,7 @@ class FlukaMachine :
         jsonDumpDict["regionNameRegionNumber"] = self.regionNameRegionNumber
         jsonDumpDict["regionNumberRegionName"] = self.regionNumberRegionName
         jsonDumpDict["samplerInfo"]            = self.samplerInfo
+        jsonDumpDict['conversionData']         = self.conversionData
 
         with open(fileName, "w") as f:
             _json.dump(jsonDumpDict,f)
