@@ -313,9 +313,10 @@ int bdsim_() {
     json data = json::parse(f);
     std::cout << data["conversionData"] << std::endl;
 
-    char bdsimExe[50] = "bdsim";
-    char gmadInput[50] = "--file=../input.gmad";
-    char batch[50] = "--batch";
+    char bdsimExe[200] = "bdsim";
+    char gmadInput[200];
+    strcpy(gmadInput, (std::string("--file=../")+std::string(data["conversionData"]["bdsimGMADFileName"])).c_str());
+    char batch[200] = "--batch";
 
     char *argv[3];
     argv[0] = bdsimExe;
