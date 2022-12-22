@@ -2,6 +2,7 @@ import numpy as _np
 import pyg4ometry as _g4
 import pybdsim as _bds
 from .baseConverter import BaseConverter as _BaseConverter
+import os as _os
 
 class Bdsim(_BaseConverter) :
     def __init__(self, bdsimROOTFileName = None, bdsimGDMLFileName = None,
@@ -11,9 +12,9 @@ class Bdsim(_BaseConverter) :
         super().__init__(samplerThickness,samplerSize)
 
         # derived class init
-        self.bdsimROOTFileName = bdsimROOTFileName
-        self.bdsimGDMLFileName = bdsimGDMLFileName
-        self.bdsimGMADFileName = bdsimGMADFileName
+        self.bdsimROOTFileName = _os.path.basename(bdsimROOTFileName)
+        self.bdsimGDMLFileName = _os.path.basename(bdsimGDMLFileName)
+        self.bdsimGMADFileName = _os.path.basename(bdsimGMADFileName)
 
         self._load()
         self.addSamplers = addSamplers
