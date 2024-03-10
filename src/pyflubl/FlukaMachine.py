@@ -89,6 +89,21 @@ class FlukaMachine :
     def addMaterials(self, g4reg):
         _geant4MaterialDict2Fluka(g4reg.materialDict, self.flukaRegistry)
 
+    def addRunCards(self):
+        self.flukaRegistry.addTitle("flukaBdsim")
+        self.flukaRegistry.addDefaults("EM-CASCA")
+        self.flukaRegistry.addBeam(1)
+        self.flukaRegistry.addUsricall()
+        self.flukaRegistry.addRandomiz()
+        self.flukaRegistry.addStart(10)
+        self.flukaRegistry.addUsrocall()
+
+    def addUsrbnx(self):
+        pass
+
+    def addUsrbnn(self):
+        pass
+
     def placeElement(self, **kwargs):
 
         # check kwargs
