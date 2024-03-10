@@ -345,7 +345,7 @@ class Machine(object) :
             e = self.elements[s]
             if e.category == "drift" :
                 print("making drift")
-                self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=20, bp_inner_radius=1.5, transform=t)
+                self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=50, bp_inner_radius=40, transform=t)
             elif e.category == "sampler_plane" :
                 print("making sampler plane")
                 self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000, transform=t)
@@ -399,10 +399,15 @@ class Machine(object) :
         self.flukaregistry.materialShortName[g4material.name] = materialNameShort
         self.flukaregistry.iMaterials += 1
 
-        # make box of correct size
-        bpoutersolid    = _pyg4.geant4.solid.Tubs(name+"_solid",0,bp_outer_radius+self.lengthsafety,length,0, _np.pi*2, self.g4registry)
-        bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,g4material,name+"_lv",self.g4registry)
-        bpouterphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bpouterlogical,name+"_pv",None)
+        # make tubs of correct size
+        bpoutersolid    = _pyg4.geant4.solid.Tubs(name+"_outer_solid",0,bp_outer_radius+self.lengthsafety,length,0, _np.pi*2, self.g4registry)
+        bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,g4material,name+"_outer_lv",self.g4registry)
+        bpouterphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bpouterlogical,name+"_outer_pv",None)
+
+        # make actual beampipe
+        bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",bp_inner_radius, bp_outer_radius, length, 0, _np.pi*2, [0,0,-1],[0,0,1],self.g4registry)
+        bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",self.g4registry)
+        bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,self.g4registry)
 
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(bpouterphysical,
                                                                             mtra=rot,
