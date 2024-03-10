@@ -15,6 +15,8 @@ from pyg4ometry.transformation import matrix2tbxyz as _matrix2tbxyz
 
 pyflublcategories = [
     'drift',
+    'rbend',
+    'sbend',
     'quadrupole',
     'sampler_plane'
     ]
@@ -301,15 +303,15 @@ class Machine(object) :
         pass
 
     def AddDrift(self,name, length):
-        e = Element(name=name, length = length, category="drift")
+        e = Element(name=name, length=length, category="drift")
         self.Append(e)
 
-    def AddSBend(self, name, length, angle = None, **kwargs):
-        e = Element(name=name, length = length, category="rbend")
+    def AddRBend(self, name, length, angle=None, **kwargs):
+        e = Element(name=name, length=length, category="rbend", angle=angle)
         self.Append(e)
 
-    def AddSBend(self, name, length, angle = None, **kwargs):
-        e = Element(name=name, length = length, category="sbend")
+    def AddSBend(self, name, length, angle=None, **kwargs):
+        e = Element(name=name, length = length, category="sbend", angle=angle)
         self.Append(e)
 
     def AddQuadrupole(self):
@@ -341,7 +343,6 @@ class Machine(object) :
         # loop over elements in sequence
         for s,t in zip(self.sequence,self.transformmidint) :
             e = self.elements[s]
-            print(s,e.category)
             if e.category == "drift" :
                 print("making drift")
                 self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=20, bp_inner_radius=1.5, transform=t)
@@ -389,7 +390,6 @@ class Machine(object) :
         # translation and rotation
         rot = transform[0:3,0:3]
         dis = transform[0:3,3]*1000
-        print(dis)
 
         # get material (TODO fix this complex code)
         if type(g4material) is str :
@@ -423,8 +423,19 @@ class Machine(object) :
     def MakeFlukaBendOuter(self, bendXSize, bendYSize, length, angle, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         pass
 
+    def MakeFlukaSBend(self, length, angle,
+                       bendxsize, bendysize, bpouterradius, bpinnterradius,
+                       bpmaterial = "G4_AIR",
+                       transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
+        pass
+
+
+    def MakeFlukaQuad(self):
+        pass
+
     def MakeFlukaGeometryPlacement(self, geometry, transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         pass
+
     def MakeFlukaSplit(self, length, angles = [], bp_outer_radii = [], bp_inner_radii = []):
         pass
 
@@ -434,8 +445,6 @@ class Machine(object) :
         # translation and rotation
         rot = transform[0:3,0:3]
         dis = transform[0:3,3]*1000
-        print(dis)
-
 
         # get material (TODO fix this complex code)
         if type(g4material) is str :
