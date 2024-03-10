@@ -315,11 +315,11 @@ class Machine(object) :
         self.Append(e)
 
     def AddRBend(self, name, length, angle=None, **kwargs):
-        e = Element(name=name, length=length, category="rbend", angle=angle)
+        e = Element(name=name, category="rbend", length=length, angle=angle, **kwargs)
         self.Append(e)
 
     def AddSBend(self, name, length, angle=None, **kwargs):
-        e = Element(name=name, length = length, category="sbend", angle=angle)
+        e = Element(name=name, category="sbend", length = length, angle=angle, **kwargs)
         self.Append(e)
 
     def AddQuadrupole(self):
@@ -381,7 +381,11 @@ class Machine(object) :
             e = self.elements[s]
             if e.category == "drift" :
                 print("making drift")
-                self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=50, bp_inner_radius=40, transform=t)
+                self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=25, bp_inner_radius=20, transform=t)
+            elif e.category == "rbend" :
+                print("making rbend")
+                self.MakeFlukaRBend(name=e.name,length=e.length*1000, angle=e['angle'],
+                                    bendxsize=e['bendxsize']*1000, bendysize=e['bendysize']*1000, transform=t)
             elif e.category == "sampler_plane" :
                 print("making sampler plane")
                 self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000, transform=t)
@@ -443,12 +447,13 @@ class Machine(object) :
         dis = transform[0:3,3]*1000
 
         # get material (TODO fix this complex code)
-        if type(g4material) is str :
-            g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
-        materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-        _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
-        self.flukaregistry.materialShortName[g4material.name] = materialNameShort
-        self.flukaregistry.iMaterials += 1
+        if g4material not in self.flukaregistry.materialShortName :
+            if type(g4material) is str :
+                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
+            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
+            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
+            self.flukaregistry.iMaterials += 1
 
         # make tubs of correct size
         bpoutersolid    = _pyg4.geant4.solid.Tubs(name+"_outer_solid",0,bp_outer_radius+self.lengthsafety,length,0, _np.pi*2, self.g4registry)
@@ -479,6 +484,39 @@ class Machine(object) :
     def MakeFlukaBendOuter(self, bendXSize, bendYSize, length, angle, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         pass
 
+    def MakeFlukaRBend(self, name, length, angle,
+                       bendxsize, bendysize,
+                       transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
+        # translation and rotation
+        rot = transform[0:3,0:3]
+        dis = transform[0:3,3]*1000
+
+        g4material = "G4_AIR"
+
+        # get material (TODO fix this complex code)
+        if g4material not in self.flukaregistry.materialShortName :
+            if type(g4material) is str :
+                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
+            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
+            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
+            self.flukaregistry.iMaterials += 1
+
+        # make tubs of correct size
+        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",bendxsize,bendysize, length, self.g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
+
+        flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
+                                                                            mtra=rot,
+                                                                            tra=dis,
+                                                                            flukaRegistry=self.flukaregistry,
+                                                                            flukaNameCount=self.flukanamecount)
+
+        # cut volume out of mother zone
+        for daughterzones in flukaouterregion.zones:
+            self.worldzone.addSubtraction(daughterzones)
+
     def MakeFlukaSBend(self, length, angle,
                        bendxsize, bendysize, bpouterradius, bpinnterradius,
                        bpmaterial = "G4_AIR",
@@ -503,12 +541,13 @@ class Machine(object) :
         dis = transform[0:3,3]*1000
 
         # get material (TODO fix this complex code)
-        if type(g4material) is str :
-            g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
-        materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-        _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
-        self.flukaregistry.materialShortName[g4material.name] = materialNameShort
-        self.flukaregistry.iMaterials += 1
+        if g4material not in self.flukaregistry.materialShortName :
+            if type(g4material) is str :
+                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
+            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
+            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
+            self.flukaregistry.iMaterials += 1
 
         # make box of correct size
         samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplersize,samplersize,samplerlength,self.g4registry)
