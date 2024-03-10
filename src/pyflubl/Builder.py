@@ -5,6 +5,7 @@ except ImportError: # Python 3.10 onwards.
 import numbers as _numbers
 
 import numpy as _np
+import json as _json
 
 import pyg4ometry as _pyg4
 from pyg4ometry.fluka.directive import rotoTranslationFromTra2 as _rotoTranslationFromTra2
@@ -224,6 +225,13 @@ class Machine(object) :
         self.g4registry = _pyg4.geant4.Registry()
         self.flukaregistry = _pyg4.fluka.FlukaRegistry()
         self.flukanamecount = 0
+
+        # persistent book keeping
+        self.nameRegion = {}
+        self.regionnumber_regionname = {}
+        self.regionname_regionnumber = {}
+        self.volume_regionname = {}
+        self.regionname_volume = {}
         self.samplerinfo = {}
 
         self.verbose = True
@@ -325,16 +333,44 @@ class Machine(object) :
         e = Element(name=name, length = length, category="sampler_plane", samplersize=samplersize)
         self.Append(e)
 
+    def _MakeBookkeepingInfo(self):
+
+        self.finished = True
+        # region number to name
+        for i, r in enumerate(self.flukaregistry.regionDict) :
+
+            self.regionnumber_regionname[i+1] = self.flukaregistry.regionDict[r].name
+            self.regionname_regionnumber[self.flukaregistry.regionDict[r].name] = i+1
+
+            self.volume_regionname[self.flukaregistry.regionDict[r].comment] = self.flukaregistry.regionDict[r].name
+            self.regionname_volume[self.flukaregistry.regionDict[r].name] = self.flukaregistry.regionDict[r].comment
+
+
+    def _WriteBookkeepingInfo(self, fileName="output.json"):
+
+        if not self.finished :
+            self._makeBookkeepingInfo()
+
+        jsonDumpDict = {}
+        jsonDumpDict["regionname_regionnumber"] = self.regionname_regionnumber
+        jsonDumpDict["regionnumber_regionname"] = self.regionnumber_regionname
+        jsonDumpDict["samplerInfo"]            = self.samplerinfo
+
+        with open(fileName, "w") as f:
+            _json.dump(jsonDumpDict,f)
+
     def Write(self, filename):
 
         freg = self.MakeFlukaModel()
 
         flukaINPFileName = filename+".inp"
+        bookkeepignFileName = filename+".json"
 
         w = _pyg4.fluka.Writer()
         w.addDetector(self.flukaregistry)
         w.write(flukaINPFileName)
 
+        self._WriteBookkeepingInfo(bookkeepignFileName)
     def MakeFlukaModel(self):
 
         # make world region and surrounding black body
@@ -349,6 +385,10 @@ class Machine(object) :
             elif e.category == "sampler_plane" :
                 print("making sampler plane")
                 self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000, transform=t)
+
+        # make book keeping info
+        self._MakeBookkeepingInfo()
+
 
     def MakeFlukaInitialGeometry(self, worldsize = [500, 500, 500], worldmaterial = "AIR"):
         blackbody = _pyg4.fluka.RPP("BLKBODY",
