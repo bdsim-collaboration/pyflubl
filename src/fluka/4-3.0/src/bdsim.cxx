@@ -37,6 +37,6 @@ int bdsim_() {
     if (!bds->Initialised())
     {std::cout << "bdsim-fluka> Intialisation failed" << std::endl; return 1;}
 
-    std::cout << "Custom stuff here" << std::endl;
+    std::cout << "bdsim-fluka> Custom execution" << std::endl;
     return 0;
 }
