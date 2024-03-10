@@ -210,12 +210,13 @@ class Machine(object) :
     def __init__(self):
         self.elements = {}
         self.sequence = []
-        self.lenint    = []
+        self.lenint    = [] # array of length upto a sequence element
+        self.transformendint = [] # end point transform
+        self.transformmidint = [] # mid point transform
+        self.length = 0
         self.maxx = 0.0
         self.maxy = 0.0
         self.maxz = 0.0
-        self.inttransform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
-        self.length = 0
 
         self.lengthsafety = 1e-3
         self.g4registry = _pyg4.geant4.Registry()
@@ -277,6 +278,15 @@ class Machine(object) :
             self.length += item.length
             self.lenint.append(self.length)
 
+            transformmid = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,item.length/2],[0,0,0,1]])
+            transformend = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,item.length],[0,0,0,1]])
+            if len(self.transformmidint) == 0 :
+                self.transformmidint.append(transformmid)
+                self.transformendint.append(transformend)
+            else :
+                self.transformmidint.append(_np.dot(transformmid,self.transformendint[-1]))
+                self.transformendint.append(_np.dot(transformend,self.transformendint[-1]))
+
     def AddElement(self, item):
 
         if item is not Element :
@@ -293,17 +303,25 @@ class Machine(object) :
     def AddDrift(self,name, length):
         e = Element(name=name, length = length, category="drift")
         self.Append(e)
-    def AddSamplerPlane(self, name, length, samplersize):
-        e = Element(name=name, length = length, category="sampler_plane", samplersize=samplersize)
+
+    def AddSBend(self, name, length, angle = None, **kwargs):
+        e = Element(name=name, length = length, category="rbend")
         self.Append(e)
+
+    def AddSBend(self, name, length, angle = None, **kwargs):
+        e = Element(name=name, length = length, category="sbend")
+        self.Append(e)
+
+    def AddQuadrupole(self):
+        pass
 
     def AddScoringHistogram(self):
         pass
     def AddScoringMesh(self):
         pass
-
-    def AddQuadrupole(self):
-        pass
+    def AddSamplerPlane(self, name, length, samplersize):
+        e = Element(name=name, length = length, category="sampler_plane", samplersize=samplersize)
+        self.Append(e)
 
     def Write(self, filename):
 
@@ -321,15 +339,15 @@ class Machine(object) :
         self.MakeFlukaInitialGeometry()
 
         # loop over elements in sequence
-        for s,t in zip(self.sequence,self.inttransform) :
+        for s,t in zip(self.sequence,self.transformmidint) :
             e = self.elements[s]
             print(s,e.category)
             if e.category == "drift" :
                 print("making drift")
-                self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=20, bp_inner_radius=1.5)
+                self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=20, bp_inner_radius=1.5, transform=t)
             elif e.category == "sampler_plane" :
                 print("making sampler plane")
-                self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000)
+                self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000, transform=t)
 
     def MakeFlukaInitialGeometry(self, worldsize = [500, 500, 500], worldmaterial = "AIR"):
         blackbody = _pyg4.fluka.RPP("BLKBODY",
@@ -370,7 +388,8 @@ class Machine(object) :
     def MakeFlukaBeamPipe(self, name, length, bp_outer_radius, bp_inner_radius, g4material = "G4_AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         # translation and rotation
         rot = transform[0:3,0:3]
-        dis = transform[3,0:3]
+        dis = transform[0:3,3]*1000
+        print(dis)
 
         # get material (TODO fix this complex code)
         if type(g4material) is str :
@@ -414,7 +433,9 @@ class Machine(object) :
 
         # translation and rotation
         rot = transform[0:3,0:3]
-        dis = transform[3,0:3]
+        dis = transform[0:3,3]*1000
+        print(dis)
+
 
         # get material (TODO fix this complex code)
         if type(g4material) is str :
