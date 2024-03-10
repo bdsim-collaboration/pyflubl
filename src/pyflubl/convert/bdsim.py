@@ -41,7 +41,18 @@ class Bdsim(_BaseConverter) :
         modelTree.GetEntry(0)
         gdmlReg   = self.bdsimGDMLFile.getRegistry()
 
+        # beam
+        beamTree  = self.bdsimROOTFile.GetBeamTree()
+        beam      = self.bdsimROOTFile.GetBeam().beam
+
+        # options
+        optionTree  = self.bdsimROOTFile.GetOptionsTree()
+        option      = self.bdsimROOTFile.GetOptions().options
+
+        # need a FLUKA sampler material
         samplerMaterial = gdmlReg.findMaterialByName("G4_AIR")[0]
+
+
 
         # other information required for flukaBdsim
         self.flukaMachine.conversionData = {}
@@ -80,6 +91,7 @@ class Bdsim(_BaseConverter) :
             pvName = model.pvNameWPointer[iele]
             pv = gdmlReg.physicalVolumeDict[pvName[0]]
             lv = pv.logicalVolume
+            av = lv.assemblyVolume()
 
             # Adapt lv to fit a sampler
             ext = lv.extent()
@@ -97,7 +109,7 @@ class Bdsim(_BaseConverter) :
             print('bdsim.toFluka> element type={} name={} iele={} pos={} rot={} samplerPos={}'.format(model.componentType[iele],model.componentName[iele],
                                                                                                       iele,pos,rotMat.flatten(),samplerPos))
 
-            self.flukaMachine.placeElement(pos=pos,rot=rotMat,lv=lv)
+            self.flukaMachine.placeElement(pos=pos,rot=rotMat,lv=av)
 
             #psName = self.flukaMachine.placePlaneSampler(pos=samplerPos,
             #                                             rot=rotEndMat,
@@ -119,6 +131,9 @@ class Bdsim(_BaseConverter) :
             #                                              samplerRadius=1000,
             #                                              material=samplerMaterial)
             #self.samplerRegionNames.append(psName)
+
+        # add run cards
+        self.flukaMachine.addRunCards()
 
         return self.flukaMachine
 
