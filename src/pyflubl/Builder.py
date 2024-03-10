@@ -389,7 +389,6 @@ class Machine(object) :
         # make book keeping info
         self._MakeBookkeepingInfo()
 
-
     def MakeFlukaInitialGeometry(self, worldsize = [500, 500, 500], worldmaterial = "AIR"):
         blackbody = _pyg4.fluka.RPP("BLKBODY",
                                -2*worldsize[0],2*worldsize[0],
@@ -426,6 +425,18 @@ class Machine(object) :
         self.flukaregistry.addRegion(self.worldregion)
         self.flukaregistry.addMaterialAssignments(worldmaterial,
                                                   "WORLD")
+
+    def MakeFlukaGenericElementGeometry(self,
+                                        name,
+                                        length,
+                                        geometry_bp,
+                                        geometry_magnet,
+                                        transform = _np.array([[1,0,0,0],
+                                                               [0,1,0,0],
+                                                               [0,0,1,0],
+                                                               [0,0,0,1]])):
+        pass
+
     def MakeFlukaBeamPipe(self, name, length, bp_outer_radius, bp_inner_radius, g4material = "G4_AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         # translation and rotation
         rot = transform[0:3,0:3]
