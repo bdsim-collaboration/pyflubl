@@ -1,5 +1,9 @@
 import numpy as _np
 import pyg4ometry as _pyg4
+
+def test_T001_CubicalOuter_CylinderBP() :
+    r = Build("test", 1000, 1000, 1000, "G4_AIR", 25, 20, "G4_Fe", "G4_Galactic")
+
 def Build(name,
           outer_x, outer_y, outer_z, outer_material,
           bp_outer_radius, bp_inner_radius, bp_material,
@@ -18,7 +22,7 @@ def Build(name,
     bplogical = _pyg4.geant4.LogicalVolume(bpsolid, bp_material, name + "_bp_lv", reg)
     bpphysical = _pyg4.geant4.PhysicalVolume([0, 0, 0], [0, 0, 0], bplogical, name + "_bp_pv", bpouterlogical, reg)
 
-    # make vaccum solid
+    # make vacuum solid
     vacsolid = _pyg4.geant4.solid.Tubs(name+"_vac_solid", 0, bp_inner_radius-length_safety, outer_z, 0, _np.pi *2, reg)
     vaclogical = _pyg4.geant4.LogicalVolume(vacsolid, "G4_Galactic", name + "_vac_lv", reg)
     vacphysical = _pyg4.geant4.PhysicalVolume([0, 0, 0], [0, 0, 0], vaclogical, name + "_vac_pv", bplogical, reg)
