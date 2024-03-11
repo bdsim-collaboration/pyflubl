@@ -23,6 +23,36 @@ pyflublcategories = [
     ]
 
 
+def _CalculateElementTransformation(e) :
+    if e.category == "drift" :
+        rotation = _np.array([[1,0,0],
+                              [0,1,0],
+                              [0,0,1]])
+        delta = _np.array([0,0,e.length])
+        return [rotation, delta]
+    elif e.category == "rbend" :
+        a = e['angle']
+        # transformmid = _np.array([[ _np.cos(a), _np.sin(a), 0,          0],
+        #                           [-_np.sin(a), _np.cos(a), 0,          0],
+        #                           [          0,          0, 1, e.length/2],
+        #                           [          0,          0, 0,          1]])
+        # transformend = _np.array([[ _np.cos(a), _np.sin(a), 0,          0],
+        #                           [-_np.sin(a), _np.cos(a), 0,          0],
+        #                           [          0,          0, 1,   e.length],
+        #                           [          0,          0, 0,          1]])
+        rotation = _np.array([[ _np.cos(a), 0, _np.sin(a)],
+                              [          0, 1,          0],
+                              [-_np.sin(a), 0, _np.cos(a)]])
+        delta = _np.array([0,0,e.length])
+        return [rotation, delta]
+
+    elif e.category == "sampler_plane" :
+        rotation = _np.array([[1,0,0],
+                              [0,1,0],
+                              [0,0,1]])
+        delta = _np.array([0,0,e.length])
+        return [rotation, delta]
+
 class ElementBase(_MutableMapping):
     """
     A class that represents an element / item in an accelerator beamline.
@@ -214,8 +244,9 @@ class Machine(object) :
         self.elements = {}
         self.sequence = []
         self.lenint    = [] # array of length upto a sequence element
-        self.transformendint = [] # end point transform
-        self.transformmidint = [] # mid point transform
+        self.rotationint = [] # rotation compounded
+        self.endint = [] # end point tranformed
+        self.midint = [] # mid point transformed
         self.length = 0
         self.maxx = 0.0
         self.maxy = 0.0
@@ -288,15 +319,16 @@ class Machine(object) :
             self.length += item.length
             self.lenint.append(self.length)
 
-            transformmid = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,item.length/2],[0,0,0,1]])
-            transformend = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,item.length],[0,0,0,1]])
-            if len(self.transformmidint) == 0 :
-                self.transformmidint.append(transformmid)
-                self.transformendint.append(transformend)
-            else :
-                self.transformmidint.append(_np.dot(transformmid,self.transformendint[-1]))
-                self.transformendint.append(_np.dot(transformend,self.transformendint[-1]))
+            [rotation, delta] = _CalculateElementTransformation(item)
 
+            if len(self.rotationint) == 0 :
+                self.rotationint.append(rotation)
+                self.midint.append(delta/2)
+                self.endint.append(delta)
+            else :
+                self.rotationint.append(_np.dot(rotation,self.rotationint[-1]))
+                self.midint.append(self.endint[-1]+_np.dot(self.rotationint[-1],delta/2))
+                self.endint.append(self.endint[-1]+_np.dot(self.rotationint[-1],delta))
     def AddElement(self, item):
 
         if item is not Element :
@@ -377,18 +409,18 @@ class Machine(object) :
         self.MakeFlukaInitialGeometry()
 
         # loop over elements in sequence
-        for s,t in zip(self.sequence,self.transformmidint) :
+        for s,r,t in zip(self.sequence,self.rotationint, self.midint) :
             e = self.elements[s]
             if e.category == "drift" :
                 print("making drift")
-                self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=25, bp_inner_radius=20, transform=t)
+                self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=25, bp_inner_radius=20, rotation=r, translation=t*1000)
             elif e.category == "rbend" :
                 print("making rbend")
                 self.MakeFlukaRBend(name=e.name,length=e.length*1000, angle=e['angle'],
-                                    bendxsize=e['bendxsize']*1000, bendysize=e['bendysize']*1000, transform=t)
+                                    bendxsize=e['bendxsize']*1000, bendysize=e['bendysize']*1000, rotation=r, translation=t*1000)
             elif e.category == "sampler_plane" :
                 print("making sampler plane")
-                self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000, transform=t)
+                self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000, rotation=r, translation=t*1000)
 
         # make book keeping info
         self._MakeBookkeepingInfo()
@@ -441,10 +473,9 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
-    def MakeFlukaBeamPipe(self, name, length, bp_outer_radius, bp_inner_radius, g4material = "G4_AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
-        # translation and rotation
-        rot = transform[0:3,0:3]
-        dis = transform[0:3,3]*1000
+    def MakeFlukaBeamPipe(self, name, length, bp_outer_radius, bp_inner_radius, g4material = "G4_AIR",
+                          rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
+                          translation = _np.array([0,0,0])):
 
         # get material (TODO fix this complex code)
         if g4material not in self.flukaregistry.materialShortName :
@@ -466,8 +497,8 @@ class Machine(object) :
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,self.g4registry)
 
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(bpouterphysical,
-                                                                            mtra=rot,
-                                                                            tra=dis,
+                                                                            mtra=rotation,
+                                                                            tra=translation,
                                                                             flukaRegistry=self.flukaregistry,
                                                                             flukaNameCount=self.flukanamecount)
 
@@ -486,11 +517,8 @@ class Machine(object) :
 
     def MakeFlukaRBend(self, name, length, angle,
                        bendxsize, bendysize,
-                       transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
-        # translation and rotation
-        rot = transform[0:3,0:3]
-        dis = transform[0:3,3]*1000
-
+                       rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
+                       translation = _np.array([0,0,0])) :
         g4material = "G4_AIR"
 
         # get material (TODO fix this complex code)
@@ -508,8 +536,8 @@ class Machine(object) :
         outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
 
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
-                                                                            mtra=rot,
-                                                                            tra=dis,
+                                                                            mtra=rotation,
+                                                                            tra=translation,
                                                                             flukaRegistry=self.flukaregistry,
                                                                             flukaNameCount=self.flukanamecount)
 
@@ -533,12 +561,10 @@ class Machine(object) :
     def MakeFlukaSplit(self, length, angles = [], bp_outer_radii = [], bp_inner_radii = []):
         pass
 
-    def MakeFlukaSampler(self, name = "sampler", samplersize = 1e3, samplerlength=1, transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]),
+    def MakeFlukaSampler(self, name = "sampler", samplersize = 1e3, samplerlength=1,
+                         rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                         translation = _np.array([0,0,0]),
                          g4material="G4_AIR", fmaterial = None):
-
-        # translation and rotation
-        rot = transform[0:3,0:3]
-        dis = transform[0:3,3]*1000
 
         # get material (TODO fix this complex code)
         if g4material not in self.flukaregistry.materialShortName :
@@ -555,8 +581,8 @@ class Machine(object) :
         samplerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],samplerlogical,name+"_pv",None)
 
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(samplerphysical,
-                                                                            mtra=rot,
-                                                                            tra=dis,
+                                                                            mtra=rotation,
+                                                                            tra=translation,
                                                                             flukaRegistry=self.flukaregistry,
                                                                             flukaNameCount=self.flukanamecount)
 
