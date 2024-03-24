@@ -6,7 +6,7 @@ import pyg4ometry.gdml as _gd
 import pyg4ometry.visualisation as _vi
 import matplotlib.pyplot as _plt
 
-def test_T200_Extrusion(writeNISTMaterials=True) :
+def test_T100_Extrusion(vis = False, writeNISTMaterials=True) :
 
     # g4 registry
     reg = _g4.Registry()
@@ -91,17 +91,19 @@ def test_T200_Extrusion(writeNISTMaterials=True) :
     # set world volume
     reg.setWorld(worldLogical.name)
 
-    v = _vi.VtkViewer()
-    v.addLogicalVolume(reg.getWorldVolume())
-    v.view(interactive=True)
+    if vis :
+        v = _vi.VtkViewerColouredMaterialNew()
+        v.addLogicalVolume(reg.getWorldVolume())
+        v.buildPipelinesAppend()
+        v.view(interactive=True)
 
     freg = _pyg4.convert.geant4Reg2FlukaReg(reg)
-    flukafilename = "T200_Extrusion.inp"
+    flukafilename = "T100_Extrusion.inp"
     w = _pyg4.fluka.Writer()
     w.addDetector(freg)
     w.write(flukafilename)
 
-    return _np.array(yokeCoordindates)
+    return [yokeCoordindates, coilCoordinates, beampipeInnerCoordinates, beampipeOuterCoordinates]
 
 
 
