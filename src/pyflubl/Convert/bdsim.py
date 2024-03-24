@@ -1,8 +1,31 @@
 import numpy as _np
-import pyg4ometry as _g4
+import pyg4ometry as _pyg4
 import pybdsim as _bds
 from .baseConverter import BaseConverter as _BaseConverter
 import os as _os
+
+
+def BDSIMRoot2Fluka() :
+    pass
+
+def GDML2Fluka(gdmlfilename, flukafilename) :
+    r = _pyg4.gdml.Reader(gdmlfilename)
+    reg = r.getRegistry()
+    freg = _pyg4.convert.geant4Reg2FlukaReg(reg)
+    #freg = _pyg4.convert.geant42FlukaBake.geant4Reg2FlukaReg(reg)
+
+    # fluka running
+    freg.addDefaults(default="PRECISIO")
+    freg.addBeam(energy=10)
+    freg.addBeamPos()
+    freg.addUsrBin(name="bin1")
+    freg.addUsrBin(name="bin2")
+    freg.addRandomiz()
+    freg.addStart(maxPrimHistories=100)
+
+    w = _pyg4.fluka.Writer()
+    w.addDetector(freg)
+    w.write(flukafilename)
 
 class Bdsim(_BaseConverter) :
     def __init__(self, bdsimROOTFileName = None, bdsimGDMLFileName = None,

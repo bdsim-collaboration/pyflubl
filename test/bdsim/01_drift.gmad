@@ -1,0 +1,9 @@
+el: drift, l=0.5*m, outerDiameter=40*cm;
+l1: line = (el);
+
+use, l1;
+
+beam, particle="e-",
+      energy=1*GeV;
+
+
