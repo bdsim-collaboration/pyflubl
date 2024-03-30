@@ -48,7 +48,6 @@ def _CalculateElementTransformation(e):
     elif e.category == "sbend":
         a = e['angle']
         l = e.length
-        dx = l/a*(1-_np.cos(a)) # notebook 1 p150
         dz = 2*l/a*_np.sin(a/2)
         midrotation = _np.array([[ _np.cos(a/2), 0, _np.sin(a/2)],
                                  [          0, 1,          0],
@@ -56,7 +55,7 @@ def _CalculateElementTransformation(e):
         endrotation = _np.array([[ _np.cos(a), 0, _np.sin(a)],
                                  [          0, 1,          0],
                                  [-_np.sin(a), 0, _np.cos(a)]])
-        delta = _np.array([-dx,0,dz])
+        delta = _np.array([0,0,dz])
         return [midrotation, endrotation, delta]
     elif e.category == "sampler_plane":
         rotation = _np.array([[1,0,0],
@@ -346,7 +345,7 @@ class Machine(object) :
                 self.midrotationint.append(midrotation @ self.endrotationint[-1])
                 self.endrotationint.append(endrotation @ self.endrotationint[-1])
                 self.midint.append(self.endint[-1] + self.midrotationint[-1] @ delta/2)
-                self.endint.append(self.endint[-1] + self.endrotationint[-1] @ delta)
+                self.endint.append(self.endint[-1] + self.midrotationint[-1] @ delta)
 
     def AddElement(self, item):
 
@@ -452,6 +451,9 @@ class Machine(object) :
             elif e.category == "rbend" :
                 print("making rbend")
                 self.MakeFlukaRBend(name=e.name,element=e, rotation=r, translation=t*1000)
+            elif e.category == "sbend" :
+                print("making sbend")
+                self.MakeFlukaSBend(name=e.name,element=e, rotation=r, translation=t*1000)
             elif e.category == "sampler_plane" :
                 print("making sampler plane")
                 self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000, rotation=r, translation=t*1000)
@@ -581,33 +583,33 @@ class Machine(object) :
             print("SBend must have an angle, setting 0")
             angle = 0.0
 
-        # g4material = "G4_AIR"
-        #
-        # # get material (TODO fix this complex code)
-        # if g4material not in self.flukaregistry.materialShortName :
-        #     if type(g4material) is str :
-        #         g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
-        #     materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-        #     _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
-        #     self.flukaregistry.materialShortName[g4material.name] = materialNameShort
-        #     self.flukaregistry.iMaterials += 1
-        #
-        # # make tubs of correct size
-        # outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",bendxsize,bendysize, length, self.g4registry)
-        # outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
-        # outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
-        #
-        # flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
-        #                                                                     mtra=rotation,
-        #                                                                     tra=translation,
-        #                                                                     flukaRegistry=self.flukaregistry,
-        #                                                                     flukaNameCount=self.flukanamecount)
-        #
-        # # cut volume out of mother zone
-        # for daughterzones in flukaouterregion.zones:
-        #     self.worldzone.addSubtraction(daughterzones)
+        g4material = "G4_AIR"
 
-    def MakeFlukaSBend(self, element,
+        # get material (TODO fix this complex code)
+        if g4material not in self.flukaregistry.materialShortName :
+            if type(g4material) is str :
+                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
+            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
+            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
+            self.flukaregistry.iMaterials += 1
+
+        # make tubs of correct size
+        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",500,500, length, self.g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
+
+        flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
+                                                                            mtra=rotation,
+                                                                            tra=translation,
+                                                                            flukaRegistry=self.flukaregistry,
+                                                                            flukaNameCount=self.flukanamecount)
+
+        # cut volume out of mother zone
+        for daughterzones in flukaouterregion.zones:
+            self.worldzone.addSubtraction(daughterzones)
+
+    def MakeFlukaSBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                        translation = _np.array([0,0,0])):
 
@@ -619,6 +621,31 @@ class Machine(object) :
             print("SBend must have an angle, setting 0")
             angle = 0.0
 
+        g4material = "G4_AIR"
+
+        # get material (TODO fix this complex code)
+        if g4material not in self.flukaregistry.materialShortName :
+            if type(g4material) is str :
+                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
+            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
+            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
+            self.flukaregistry.iMaterials += 1
+
+        # make tubs of correct size
+        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",500,500, length, self.g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
+
+        flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
+                                                                            mtra=rotation,
+                                                                            tra=translation,
+                                                                            flukaRegistry=self.flukaregistry,
+                                                                            flukaNameCount=self.flukanamecount)
+
+        # cut volume out of mother zone
+        for daughterzones in flukaouterregion.zones:
+            self.worldzone.addSubtraction(daughterzones)
 
     def MakeFlukaQuad(self):
         pass
