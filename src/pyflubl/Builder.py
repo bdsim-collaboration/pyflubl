@@ -23,35 +23,50 @@ pyflublcategories = [
     ]
 
 
-def _CalculateElementTransformation(e) :
+def _CalculateElementTransformation(e):
     if e.category == "drift" :
         rotation = _np.array([[1,0,0],
                               [0,1,0],
                               [0,0,1]])
+        midrotation = rotation
+        endrotation = rotation
         delta = _np.array([0,0,e.length])
-        return [rotation, delta]
-    elif e.category == "rbend" :
+        middelta = delta/2
+        enddelta = delta
+        return [midrotation, endrotation, delta]
+    elif e.category == "rbend":
         a = e['angle']
-        # transformmid = _np.array([[ _np.cos(a), _np.sin(a), 0,          0],
-        #                           [-_np.sin(a), _np.cos(a), 0,          0],
-        #                           [          0,          0, 1, e.length/2],
-        #                           [          0,          0, 0,          1]])
-        # transformend = _np.array([[ _np.cos(a), _np.sin(a), 0,          0],
-        #                           [-_np.sin(a), _np.cos(a), 0,          0],
-        #                           [          0,          0, 1,   e.length],
-        #                           [          0,          0, 0,          1]])
-        rotation = _np.array([[ _np.cos(a), 0, _np.sin(a)],
-                              [          0, 1,          0],
-                              [-_np.sin(a), 0, _np.cos(a)]])
-        delta = _np.array([0,0,e.length])
-        return [rotation, delta]
-
-    elif e.category == "sampler_plane" :
+        l = e.length
+        midrotation = _np.array([[ _np.cos(a/2), 0, _np.sin(a/2)],
+                                 [          0, 1,          0],
+                                 [-_np.sin(a/2), 0, _np.cos(a/2)]])
+        endrotation = _np.array([[ _np.cos(a), 0, _np.sin(a)],
+                                 [          0, 1,          0],
+                                 [-_np.sin(a), 0, _np.cos(a)]])
+        delta = _np.array([0,0,l])
+        return [midrotation, endrotation, delta]
+    elif e.category == "sbend":
+        a = e['angle']
+        l = e.length
+        dx = l/a*(1-_np.cos(a)) # notebook 1 p150
+        dz = 2*l/a*_np.sin(a/2)
+        midrotation = _np.array([[ _np.cos(a/2), 0, _np.sin(a/2)],
+                                 [          0, 1,          0],
+                                 [-_np.sin(a/2), 0, _np.cos(a/2)]])
+        endrotation = _np.array([[ _np.cos(a), 0, _np.sin(a)],
+                                 [          0, 1,          0],
+                                 [-_np.sin(a), 0, _np.cos(a)]])
+        delta = _np.array([-dx,0,dz])
+        return [midrotation, endrotation, delta]
+    elif e.category == "sampler_plane":
         rotation = _np.array([[1,0,0],
                               [0,1,0],
                               [0,0,1]])
+        midrotation = rotation
+        endrotation = rotation
         delta = _np.array([0,0,e.length])
-        return [rotation, delta]
+
+        return [midrotation, endrotation, delta]
 
 class ElementBase(_MutableMapping):
     """
@@ -93,8 +108,8 @@ class ElementBase(_MutableMapping):
             if value.startswith('"') and value.endswith('"'):
                 # Prevent the buildup of quotes for multiple setitem calls
                 value = value.strip('"')
-            self._store[key] = '"{}"'.format(value)
-
+            #self._store[key] = '"{}"'.format(value)
+            self._store[key]  = value
         if key not in {"name", "category"}: # keys which are not # 'extra'.
             self._keysextra.add(key)
 
@@ -244,7 +259,8 @@ class Machine(object) :
         self.elements = {}
         self.sequence = []
         self.lenint    = [] # array of length upto a sequence element
-        self.rotationint = [] # rotation compounded
+        self.midrotationint = [] # rotation compounded
+        self.endrotationint = [] # rotation compounded
         self.endint = [] # end point tranformed
         self.midint = [] # mid point transformed
         self.length = 0
@@ -319,16 +335,19 @@ class Machine(object) :
             self.length += item.length
             self.lenint.append(self.length)
 
-            [rotation, delta] = _CalculateElementTransformation(item)
+            [midrotation, endrotation, delta] = _CalculateElementTransformation(item)
 
-            if len(self.rotationint) == 0 :
-                self.rotationint.append(rotation)
+            if len(self.midrotationint) == 0 :
+                self.midrotationint.append(midrotation)
+                self.endrotationint.append(endrotation)
                 self.midint.append(delta/2)
                 self.endint.append(delta)
             else :
-                self.rotationint.append(_np.dot(rotation,self.rotationint[-1]))
-                self.midint.append(self.endint[-1]+_np.dot(self.rotationint[-1],delta/2))
-                self.endint.append(self.endint[-1]+_np.dot(self.rotationint[-1],delta))
+                self.midrotationint.append(midrotation @ self.endrotationint[-1])
+                self.endrotationint.append(endrotation @ self.endrotationint[-1])
+                self.midint.append(self.endint[-1] + self.midrotationint[-1] @ delta/2)
+                self.endint.append(self.endint[-1] + self.endrotationint[-1] @ delta)
+
     def AddElement(self, item):
 
         if item is not Element :
@@ -342,16 +361,32 @@ class Machine(object) :
     def AddJoin(self):
         pass
 
-    def AddDrift(self,name, length):
-        e = Element(name=name, length=length, category="drift")
+    def AddDrift(self,name, length, **kwargs):
+        # beampipe
+        # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
+        # vacuumMaterial, beampipeThickness, beampipeMaterial
+        e = Element(name=name, category="drift", length=length, **kwargs)
         self.Append(e)
 
-    def AddRBend(self, name, length, angle=None, **kwargs):
-        e = Element(name=name, category="rbend", length=length, angle=angle, **kwargs)
+    def AddRBend(self, name, length,  **kwargs):
+        # beampipe
+        # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
+        # vacuumMaterial, beampipeThickness, beampipeMaterial
+
+        # sbend
+        # angle, B, e1, e2, material, yokeOnInside, hStyle, k1, tilt
+
+        e = Element(name=name, category="rbend", length=length, **kwargs)
         self.Append(e)
 
-    def AddSBend(self, name, length, angle=None, **kwargs):
-        e = Element(name=name, category="sbend", length = length, angle=angle, **kwargs)
+    def AddSBend(self, name, length, **kwargs):
+        # beampipe
+        # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
+        # vacuumMaterial, beampipeThickness, beampipeMaterial
+
+        # sbend
+        # angle, B, e1, e2, material, yokeOnInside, hStyle, k1, tilt
+        e = Element(name=name, category="sbend", length = length, **kwargs)
         self.Append(e)
 
     def AddQuadrupole(self):
@@ -409,15 +444,14 @@ class Machine(object) :
         self.MakeFlukaInitialGeometry()
 
         # loop over elements in sequence
-        for s,r,t in zip(self.sequence,self.rotationint, self.midint) :
+        for s,r,t in zip(self.sequence,self.midrotationint, self.midint) :
             e = self.elements[s]
             if e.category == "drift" :
                 print("making drift")
-                self.MakeFlukaBeamPipe(name=e.name, length=e.length*1000, bp_outer_radius=25, bp_inner_radius=20, rotation=r, translation=t*1000)
+                self.MakeFlukaBeamPipe(name=e.name, element=e, rotation=r, translation=t*1000)
             elif e.category == "rbend" :
                 print("making rbend")
-                self.MakeFlukaRBend(name=e.name,length=e.length*1000, angle=e['angle'],
-                                    bendxsize=e['bendxsize']*1000, bendysize=e['bendysize']*1000, rotation=r, translation=t*1000)
+                self.MakeFlukaRBend(name=e.name,element=e, rotation=r, translation=t*1000)
             elif e.category == "sampler_plane" :
                 print("making sampler plane")
                 self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000, rotation=r, translation=t*1000)
@@ -473,9 +507,25 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
-    def MakeFlukaBeamPipe(self, name, length, bp_outer_radius, bp_inner_radius, g4material = "G4_AIR",
+    def MakeFlukaBeamPipe(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                           translation = _np.array([0,0,0])):
+
+        length = element.length*1000
+        try :
+            g4material = element['beampipeMaterial']
+        except :
+            pass
+
+        try :
+            beampipeRadius = element['beampipeRadius']
+        except :
+            beampipeRadius = 30
+
+        try :
+            beampipeThickness = element['beampipeThickness']
+        except :
+            beampipeThickness = 5
 
         # get material (TODO fix this complex code)
         if g4material not in self.flukaregistry.materialShortName :
@@ -487,12 +537,16 @@ class Machine(object) :
             self.flukaregistry.iMaterials += 1
 
         # make tubs of correct size
-        bpoutersolid    = _pyg4.geant4.solid.Tubs(name+"_outer_solid",0,bp_outer_radius+self.lengthsafety,length,0, _np.pi*2, self.g4registry)
+        bpoutersolid    = _pyg4.geant4.solid.Tubs(name+"_outer_solid",
+                                                  0,beampipeRadius+beampipeThickness+self.lengthsafety,length,
+                                                  0, _np.pi*2, self.g4registry)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,g4material,name+"_outer_lv",self.g4registry)
         bpouterphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bpouterlogical,name+"_outer_pv",None)
 
         # make actual beampipe
-        bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",bp_inner_radius, bp_outer_radius, length, 0, _np.pi*2, [0,0,-1],[0,0,1],self.g4registry)
+        bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",
+                                             beampipeRadius, beampipeRadius+beampipeThickness, length,
+                                             0, _np.pi*2, [0,0,-1],[0,0,1],self.g4registry)
         bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",self.g4registry)
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,self.g4registry)
 
@@ -515,41 +569,55 @@ class Machine(object) :
     def MakeFlukaBendOuter(self, bendXSize, bendYSize, length, angle, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         pass
 
-    def MakeFlukaRBend(self, name, length, angle,
-                       bendxsize, bendysize,
+    def MakeFlukaRBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                        translation = _np.array([0,0,0])) :
-        g4material = "G4_AIR"
 
-        # get material (TODO fix this complex code)
-        if g4material not in self.flukaregistry.materialShortName :
-            if type(g4material) is str :
-                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
-            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
-            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
-            self.flukaregistry.iMaterials += 1
+        length = element.length*1000
 
-        # make tubs of correct size
-        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",bendxsize,bendysize, length, self.g4registry)
-        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
+        try :
+            angle = element['angle']
+        except KeyError :
+            print("SBend must have an angle, setting 0")
+            angle = 0.0
 
-        flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
-                                                                            mtra=rotation,
-                                                                            tra=translation,
-                                                                            flukaRegistry=self.flukaregistry,
-                                                                            flukaNameCount=self.flukanamecount)
+        # g4material = "G4_AIR"
+        #
+        # # get material (TODO fix this complex code)
+        # if g4material not in self.flukaregistry.materialShortName :
+        #     if type(g4material) is str :
+        #         g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
+        #     materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
+        #     _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+        #     self.flukaregistry.materialShortName[g4material.name] = materialNameShort
+        #     self.flukaregistry.iMaterials += 1
+        #
+        # # make tubs of correct size
+        # outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",bendxsize,bendysize, length, self.g4registry)
+        # outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
+        # outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
+        #
+        # flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
+        #                                                                     mtra=rotation,
+        #                                                                     tra=translation,
+        #                                                                     flukaRegistry=self.flukaregistry,
+        #                                                                     flukaNameCount=self.flukanamecount)
+        #
+        # # cut volume out of mother zone
+        # for daughterzones in flukaouterregion.zones:
+        #     self.worldzone.addSubtraction(daughterzones)
 
-        # cut volume out of mother zone
-        for daughterzones in flukaouterregion.zones:
-            self.worldzone.addSubtraction(daughterzones)
+    def MakeFlukaSBend(self, element,
+                       rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
+                       translation = _np.array([0,0,0])):
 
-    def MakeFlukaSBend(self, length, angle,
-                       bendxsize, bendysize, bpouterradius, bpinnterradius,
-                       bpmaterial = "G4_AIR",
-                       transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
-        pass
+        length = element.length*1000
+
+        try :
+            angle = element['angle']
+        except KeyError :
+            print("SBend must have an angle, setting 0")
+            angle = 0.0
 
 
     def MakeFlukaQuad(self):
