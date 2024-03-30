@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import numpy as _np
 
-def test_T100_ring() :
+def test_T110_Ring() :
     m = _pfbl.Builder.Machine()
 
     n = 20
@@ -12,6 +12,6 @@ def test_T100_ring() :
         m.AddRBend(name="rb_"+str(i), length=0.5, angle=bendangle, bendxsize=0.25, bendysize=0.25)
         m.AddSamplerPlane(name="s1_"+str(i), length=1e-6, samplersize=1)
 
-    m.Write("T100_ring")
+    m.Write("T110_Ring")
 
     return m

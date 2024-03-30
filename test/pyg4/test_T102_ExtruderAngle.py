@@ -9,7 +9,7 @@ import pyg4ometry.convert as _con
 import matplotlib.pyplot as _plt
 from test_T100_Extrusion import test_T100_Extrusion  as _test_T100_Extrusion
 
-def test_T101_Extruder(vis=False, interactive=False, fluka=True, writeNISTMaterials=True) :
+def test_T102_ExtruderAngle(vis=False, interactive=False, fluka=True, writeNISTMaterials=True) :
 
     # g4 registry
     reg = _g4.Registry()
@@ -34,10 +34,9 @@ def test_T101_Extruder(vis=False, interactive=False, fluka=True, writeNISTMateri
         coilMaterial  = _g4.MaterialPredefined("G4_Cu", reg)
         beampipeMaterial  = _g4.MaterialPredefined("G4_Be", reg)
 
-
     worldSolid = _g4.solid.Box("worldSolid", wx, wy, wz, reg, "mm")
 
-    es = _flu.Extruder("Magnet", length=400, registry=reg)
+    es = _flu.Extruder("Magnet", length=400, angle = 0.3, registry=reg)
 
     r1 = es.addRegion("outer")
     es.setRegionMaterial("outer", worldMaterial)
@@ -72,7 +71,7 @@ def test_T101_Extruder(vis=False, interactive=False, fluka=True, writeNISTMateri
     for p in coilCoordinates :
         r6.append([p[0]+125, p[1]-50])
 
-    es1 = _flu.Extruder("BeamPipe", length=400, registry=reg)
+    es1 = _flu.Extruder("BeamPipe", length=400, angle = 0.3, registry=reg)
     es1_r1 = es1.addRegion("beamPipeOuter")
     es1.setRegionMaterial("beamPipeOuter", beampipeMaterial)
     for p in beampipeOuterCoordinates :
@@ -108,6 +107,6 @@ def test_T101_Extruder(vis=False, interactive=False, fluka=True, writeNISTMateri
 
         w = _flu.Writer()
         w.addDetector(freg)
-        w.write("T101_Extruder.inp")
+        w.write("T102_ExtruderAngle.inp")
 
     return es
