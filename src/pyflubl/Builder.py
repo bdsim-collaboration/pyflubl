@@ -394,10 +394,12 @@ class Machine(object) :
 
     def AddScoringHistogram(self):
         pass
+
     def AddScoringMesh(self):
         pass
-    def AddSamplerPlane(self, name, length, samplersize):
-        e = Element(name=name, length = length, category="sampler_plane", samplersize=samplersize)
+
+    def AddSamplerPlane(self, name, length, **kwargs):
+        e = Element(name=name, category="sampler_plane", length = length)
         self.Append(e)
 
     def _MakeBookkeepingInfo(self):
@@ -451,13 +453,13 @@ class Machine(object) :
                 self.MakeFlukaBeamPipe(name=e.name, element=e, rotation=r, translation=t*1000)
             elif e.category == "rbend" :
                 print("making rbend")
-                self.MakeFlukaRBend(name=e.name,element=e, rotation=r, translation=t*1000)
+                self.MakeFlukaRBend(name=e.name, element=e, rotation=r, translation=t*1000)
             elif e.category == "sbend" :
                 print("making sbend")
-                self.MakeFlukaSBend(name=e.name,element=e, rotation=r, translation=t*1000)
+                self.MakeFlukaSBend(name=e.name, element=e, rotation=r, translation=t*1000)
             elif e.category == "sampler_plane" :
                 print("making sampler plane")
-                self.MakeFlukaSampler(name=e.name, samplerlength=e.length*1000, samplersize=e['samplersize']*1000, rotation=r, translation=t*1000)
+                self.MakeFlukaSampler(name=e.name, element=e, rotation=r, translation=t*1000)
 
         # make book keeping info
         self._MakeBookkeepingInfo()
@@ -673,23 +675,34 @@ class Machine(object) :
     def MakeFlukaSplit(self, length, angles = [], bp_outer_radii = [], bp_inner_radii = []):
         pass
 
-    def MakeFlukaSampler(self, name = "sampler", samplersize = 1e3, samplerlength=1,
+    def MakeFlukaSampler(self, name, element,
                          rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
-                         translation = _np.array([0,0,0]),
-                         g4material="G4_AIR", fmaterial = None):
+                         translation = _np.array([0,0,0])):
+
+        try :
+            samplerDiameter = element['samplerDiameter']
+        except KeyError:
+            samplerDiameter = 1000
+
+        samplerLength = element.length*1000
+
+        try :
+            samplerMaterial = element['samplerMaterial']
+        except KeyError:
+            samplerMaterial = "G4_AIR"
 
         # get material (TODO fix this complex code)
-        if g4material not in self.flukaregistry.materialShortName :
-            if type(g4material) is str :
-                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
+        if samplerMaterial not in self.flukaregistry.materialShortName :
+            if type(samplerMaterial) is str :
+                samplerMAterial = _pyg4.geant4.nist_material_2geant4Material(samplerMaterial)
             materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+            _geant4Material2Fluka(samplerMaterial,self.flukaregistry,materialNameShort=materialNameShort)
             self.flukaregistry.materialShortName[g4material.name] = materialNameShort
             self.flukaregistry.iMaterials += 1
 
         # make box of correct size
-        samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplersize,samplersize,samplerlength,self.g4registry)
-        samplerlogical  = _pyg4.geant4.LogicalVolume(samplersolid,g4material,name+"_lv",self.g4registry)
+        samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplerDiameter,samplerDiameter,samplerLength,self.g4registry)
+        samplerlogical  = _pyg4.geant4.LogicalVolume(samplersolid,samplerMaterial,name+"_lv",self.g4registry)
         samplerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],samplerlogical,name+"_pv",None)
 
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(samplerphysical,
