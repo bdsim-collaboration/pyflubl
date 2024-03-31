@@ -6,13 +6,14 @@ import numbers as _numbers
 
 import numpy as _np
 import json as _json
+import copy as _copy
 
 import pyg4ometry as _pyg4
 from pyg4ometry.fluka.directive import rotoTranslationFromTra2 as _rotoTranslationFromTra2
 from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant4PhysicalVolume2Fluka
 from pyg4ometry.convert.geant42Fluka import geant4Material2Fluka as _geant4Material2Fluka
 from pyg4ometry.transformation import matrix2tbxyz as _matrix2tbxyz
-
+from pyg4ometry.transformation import tbxyz2matrix as _tbxyz2matrix
 
 pyflublcategories = [
     'drift',
@@ -37,24 +38,24 @@ def _CalculateElementTransformation(e):
     elif e.category == "rbend":
         a = e['angle']
         l = e.length
-        midrotation = _np.array([[ _np.cos(a/2), 0, _np.sin(a/2)],
+        midrotation = _np.array([[ _np.cos(a/2), 0, -_np.sin(a/2)],
                                  [          0, 1,          0],
-                                 [-_np.sin(a/2), 0, _np.cos(a/2)]])
-        endrotation = _np.array([[ _np.cos(a), 0, _np.sin(a)],
+                                 [_np.sin(a/2), 0, _np.cos(a/2)]])
+        endrotation = _np.array([[ _np.cos(a), 0, -_np.sin(a)],
                                  [          0, 1,          0],
-                                 [-_np.sin(a), 0, _np.cos(a)]])
+                                 [_np.sin(a), 0, _np.cos(a)]])
         delta = _np.array([0,0,l])
         return [midrotation, endrotation, delta]
     elif e.category == "sbend":
         a = e['angle']
         l = e.length
         dz = 2*l/a*_np.sin(a/2)
-        midrotation = _np.array([[ _np.cos(a/2), 0, _np.sin(a/2)],
+        midrotation = _np.array([[ _np.cos(a/2), 0, -_np.sin(a/2)],
                                  [          0, 1,          0],
-                                 [-_np.sin(a/2), 0, _np.cos(a/2)]])
-        endrotation = _np.array([[ _np.cos(a), 0, _np.sin(a)],
+                                 [_np.sin(a/2), 0, _np.cos(a/2)]])
+        endrotation = _np.array([[ _np.cos(a), 0, -_np.sin(a)],
                                  [          0, 1,          0],
-                                 [-_np.sin(a), 0, _np.cos(a)]])
+                                 [_np.sin(a), 0, _np.cos(a)]])
         delta = _np.array([0,0,dz])
         return [midrotation, endrotation, delta]
     elif e.category == "sampler_plane":
@@ -511,7 +512,8 @@ class Machine(object) :
 
     def MakeFlukaBeamPipe(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
-                          translation = _np.array([0,0,0])):
+                          translation = _np.array([0,0,0]),
+                          outer=None):
 
         length = element.length*1000
         try :
@@ -558,9 +560,16 @@ class Machine(object) :
                                                                             flukaRegistry=self.flukaregistry,
                                                                             flukaNameCount=self.flukanamecount)
 
+        outer = _copy.deepcopy(outer)
+
         # cut volume out of mother zone
         for daughterzones in flukaouterregion.zones:
-            self.worldzone.addSubtraction(daughterzones)
+            if outer:
+                outer.addSubtraction(daughterzones)
+            else:
+                self.worldzone.addSubtraction(daughterzones)
+
+
 
     def MakeFlukaRectangularStraightOuter(self, straight_x_size, straight_y_size, length, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         pass
@@ -609,6 +618,10 @@ class Machine(object) :
         for daughterzones in flukaouterregion.zones:
             self.worldzone.addSubtraction(daughterzones)
 
+        # make beam pipe
+        #element.length = 0.90*element.length
+        #self.MakeFlukaBeamPipe(name+"_bp", element, rotation=rotation, translation=translation, outer=flukaouterregion)
+
     def MakeFlukaSBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                        translation = _np.array([0,0,0])):
@@ -623,6 +636,8 @@ class Machine(object) :
 
         g4material = "G4_AIR"
 
+        dz = 2*length/angle*_np.sin(angle/2)
+
         # get material (TODO fix this complex code)
         if g4material not in self.flukaregistry.materialShortName :
             if type(g4material) is str :
@@ -633,10 +648,12 @@ class Machine(object) :
             self.flukaregistry.iMaterials += 1
 
         # make tubs of correct size
-        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",500,500, length, self.g4registry)
+        outersolid    = self._MakeGeant4GenericTrap(name,dz, 100, 100, -angle/2, angle/2)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
 
+
+        rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
                                                                             mtra=rotation,
                                                                             tra=translation,
@@ -688,3 +705,37 @@ class Machine(object) :
         self.samplerinfo[name] = {"name":name, "type":"plane","regionName":flukaouterregion.name}
 
         return flukaouterregion.name
+
+    def _MakeGeant4GenericTrap(self, name,
+                               length = 500, xhalfwidth = 50, yhalfwidth = 50,
+                               e1=0, e2=0):
+
+        p1x = -length/2 + yhalfwidth * _np.tan(e1)
+        p1y = yhalfwidth
+        p2x = -length/2 - yhalfwidth * _np.tan(e1)
+        p2y = -yhalfwidth
+        p3x =  length/2 - yhalfwidth * _np.tan(e2)
+        p3y = -yhalfwidth
+        p4x =  length/2 + yhalfwidth * _np.tan(e2)
+        p4y =  yhalfwidth
+        p5x = p1x
+        p5y = p1y
+        p6x = p2x
+        p6y = p2y
+        p7x = p3x
+        p7y = p3y
+        p8x = p4x
+        p8y = p4y
+        z = 2*xhalfwidth
+        trapsolid    = _pyg4.geant4.solid.GenericTrap(name+"_solid",
+                                                      p1x,p1y,
+                                                      p2x,p2y,
+                                                      p3x,p3y,
+                                                      p4x,p4y,
+                                                      p5x,p5y,
+                                                      p6x,p6y,
+                                                      p7x,p7y,
+                                                      p8x,p8y,
+                                                      z,self.g4registry)
+
+        return trapsolid
