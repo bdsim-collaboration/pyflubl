@@ -739,7 +739,7 @@ class Machine(object) :
         p7y = p3y
         p8x = p4x
         p8y = p4y
-        z = 2*xhalfwidth
+        z = xhalfwidth
         trapsolid    = _pyg4.geant4.solid.GenericTrap(name+"_solid",
                                                       p1x,p1y,
                                                       p2x,p2y,
