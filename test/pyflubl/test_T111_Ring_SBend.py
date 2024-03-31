@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import numpy as _np
 
-def test_T110_Ring() :
+def test_T111_Ring_SBend() :
     m = _pfbl.Builder.Machine()
 
     n = 20
@@ -12,8 +12,8 @@ def test_T110_Ring() :
                    beampipeMaterial="G4_STAINLESS-STEEL",
                    beampipeRadius=30, beampipeThickness=5)
         m.AddSBend(name="rb_"+str(i), length=0.5, angle=bendangle)
-        m.AddSamplerPlane(name="s1_"+str(i), length=1e-6, samplersize=1)
+        m.AddSamplerPlane(name="s1_"+str(i), length=1e-6)
 
-    m.Write("T110_Ring")
+    m.Write("T111_Ring_SBend")
 
     return m
