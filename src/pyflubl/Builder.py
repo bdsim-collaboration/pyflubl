@@ -255,7 +255,7 @@ class Line(list) :
             s += str(item) #uses elements __repr__ function
         return s
 class Machine(object) :
-    def __init__(self):
+    def __init__(self, bakeTransforms = False):
         self.elements = {}
         self.sequence = []
         self.lenint    = [] # array of length upto a sequence element
@@ -283,6 +283,7 @@ class Machine(object) :
 
         self.verbose = True
 
+        self.bakeTransforms = bakeTransforms
     def __iter__(self):
         self._iterindex = -1
         return self
@@ -521,7 +522,7 @@ class Machine(object) :
         try :
             g4material = element['beampipeMaterial']
         except :
-            pass
+            g4material = "Temp"
 
         try :
             beampipeRadius = element['beampipeRadius']
@@ -532,6 +533,16 @@ class Machine(object) :
             beampipeThickness = element['beampipeThickness']
         except :
             beampipeThickness = 5
+
+        try :
+            e1 = element['e1']
+        except :
+            e1 = 0.0
+
+        try :
+            e2 = element['e2']
+        except :
+            e2 = 0.0
 
         # get material (TODO fix this complex code)
         if g4material not in self.flukaregistry.materialShortName :
@@ -560,7 +571,8 @@ class Machine(object) :
                                                                             mtra=rotation,
                                                                             tra=translation,
                                                                             flukaRegistry=self.flukaregistry,
-                                                                            flukaNameCount=self.flukanamecount)
+                                                                            flukaNameCount=self.flukanamecount,
+                                                                            bakeTransforms=self.bakeTransforms)
 
         outer = _copy.deepcopy(outer)
 
@@ -571,7 +583,81 @@ class Machine(object) :
             else:
                 self.worldzone.addSubtraction(daughterzones)
 
+    def MakeFlukaBeamPipe1(self, name, element,
+                          rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
+                          translation = _np.array([0,0,0])):
 
+        length = element.length*1000
+        try :
+            g4material = element['beampipeMaterial']
+        except :
+            g4material = "Temp"
+
+        try :
+            beampipeRadius = element['beampipeRadius']
+        except :
+            beampipeRadius = 30
+
+        try :
+            beampipeThickness = element['beampipeThickness']
+        except :
+            beampipeThickness = 5
+
+        try :
+            e1 = element['e1']
+        except :
+            e1 = 0.0
+
+        try :
+            e2 = element['e2']
+        except :
+            e2 = 0.0
+
+        # get material (TODO fix this complex code)
+        if g4material not in self.flukaregistry.materialShortName :
+            if type(g4material) is str :
+                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
+            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
+            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
+            self.flukaregistry.iMaterials += 1
+
+        # make tubs of outer size
+        bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2)
+        bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,g4material,name+"_outer_lv",self.g4registry)
+        bpouterphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bpouterlogical,name+"_outer_pv",None)
+
+        # make actual beampipe
+        bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",
+                                             beampipeRadius, beampipeRadius+beampipeThickness, length,
+                                             0, _np.pi*2,
+                                             _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
+                                             _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
+                                             self.g4registry)
+        bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",self.g4registry)
+        bpphysical  = _pyg4.geant4.PhysicalVolume([0,_np.pi/2,-_np.pi/2],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,self.g4registry)
+
+        vacsolid = _pyg4.geant4.solid.CutTubs(name+"_vac_solid",
+                                             0, beampipeRadius, length,
+                                             0, _np.pi*2,
+                                             _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
+                                             _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
+                                             self.g4registry)
+        vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,g4material,name+"_cav_lv",self.g4registry)
+        vacphysical  = _pyg4.geant4.PhysicalVolume([0,_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_cav_pv",bpouterlogical,self.g4registry)
+
+        rotation = rotation @_tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, _np.pi / 2, 0])
+        flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(bpouterphysical,
+                                                                            mtra=rotation,
+                                                                            tra=translation,
+                                                                            flukaRegistry=self.flukaregistry,
+                                                                            flukaNameCount=self.flukanamecount,
+                                                                            bakeTransforms=self.bakeTransforms)
+
+
+        # cut volume out of mother zone
+        for daughterzones in flukaouterregion.zones:
+                self.worldzone.addSubtraction(daughterzones)
 
     def MakeFlukaRectangularStraightOuter(self, straight_x_size, straight_y_size, length, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         pass
@@ -614,7 +700,8 @@ class Machine(object) :
                                                                             mtra=rotation,
                                                                             tra=translation,
                                                                             flukaRegistry=self.flukaregistry,
-                                                                            flukaNameCount=self.flukanamecount)
+                                                                            flukaNameCount=self.flukanamecount,
+                                                                            bakeTransforms=self.bakeTransforms)
 
         # cut volume out of mother zone
         for daughterzones in flukaouterregion.zones:
@@ -660,7 +747,8 @@ class Machine(object) :
                                                                             mtra=rotation,
                                                                             tra=translation,
                                                                             flukaRegistry=self.flukaregistry,
-                                                                            flukaNameCount=self.flukanamecount)
+                                                                            flukaNameCount=self.flukanamecount,
+                                                                            bakeTransforms=self.bakeTransforms)
 
         # cut volume out of mother zone
         for daughterzones in flukaouterregion.zones:
@@ -694,10 +782,10 @@ class Machine(object) :
         # get material (TODO fix this complex code)
         if samplerMaterial not in self.flukaregistry.materialShortName :
             if type(samplerMaterial) is str :
-                samplerMAterial = _pyg4.geant4.nist_material_2geant4Material(samplerMaterial)
+                samplerMaterial = _pyg4.geant4.nist_material_2geant4Material(samplerMaterial)
             materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
             _geant4Material2Fluka(samplerMaterial,self.flukaregistry,materialNameShort=materialNameShort)
-            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
+            self.flukaregistry.materialShortName[samplerMaterial.name] = materialNameShort
             self.flukaregistry.iMaterials += 1
 
         # make box of correct size
@@ -709,7 +797,8 @@ class Machine(object) :
                                                                             mtra=rotation,
                                                                             tra=translation,
                                                                             flukaRegistry=self.flukaregistry,
-                                                                            flukaNameCount=self.flukanamecount)
+                                                                            flukaNameCount=self.flukanamecount,
+                                                                            bakeTransforms=self.bakeTransforms)
 
         # cut volume out of mother zone
         for daughterzones in flukaouterregion.zones:

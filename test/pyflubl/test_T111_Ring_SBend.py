@@ -2,7 +2,7 @@ import pyflubl as _pfbl
 import numpy as _np
 
 def test_T111_Ring_SBend() :
-    m = _pfbl.Builder.Machine()
+    m = _pfbl.Builder.Machine(bakeTransforms=False)
 
     n = 20
     bendangle = 2.*_np.pi/n
