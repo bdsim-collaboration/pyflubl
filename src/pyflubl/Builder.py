@@ -450,16 +450,12 @@ class Machine(object) :
         for s,r,t in zip(self.sequence,self.midrotationint, self.midint) :
             e = self.elements[s]
             if e.category == "drift" :
-                print("making drift")
-                self.MakeFlukaBeamPipe(name=e.name, element=e, rotation=r, translation=t*1000)
+                self.MakeFlukaBeamPipe1(name=e.name, element=e, rotation=r, translation=t*1000)
             elif e.category == "rbend" :
-                print("making rbend")
                 self.MakeFlukaRBend(name=e.name, element=e, rotation=r, translation=t*1000)
             elif e.category == "sbend" :
-                print("making sbend")
                 self.MakeFlukaSBend(name=e.name, element=e, rotation=r, translation=t*1000)
             elif e.category == "sampler_plane" :
-                print("making sampler plane")
                 self.MakeFlukaSampler(name=e.name, element=e, rotation=r, translation=t*1000)
 
         # make book keeping info
