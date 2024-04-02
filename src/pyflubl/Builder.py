@@ -461,7 +461,7 @@ class Machine(object) :
         # make book keeping info
         self._MakeBookkeepingInfo()
 
-    def MakeFlukaInitialGeometry(self, worldsize = [500, 500, 500], worldmaterial = "AIR"):
+    def MakeFlukaInitialGeometry(self, worldsize = [5000, 5000, 5000], worldmaterial = "AIR"):
         blackbody = _pyg4.fluka.RPP("BLKBODY",
                                -2*worldsize[0],2*worldsize[0],
                                -2*worldsize[1],2*worldsize[1],
