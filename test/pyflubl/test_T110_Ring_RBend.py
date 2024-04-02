@@ -2,11 +2,10 @@ import pyflubl as _pfbl
 import numpy as _np
 
 def test_T110_Ring_RBend() :
-    m = _pfbl.Builder.Machine()
+    m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     n = 20
     bendangle = 2.*_np.pi/n
-    print(bendangle)
     for i in range(0,n,1):
         m.AddDrift(name="d1-"+str(i), length=0.5,
                    beampipeMaterial="G4_STAINLESS-STEEL",
