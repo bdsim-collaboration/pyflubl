@@ -7,6 +7,8 @@ import numbers as _numbers
 import numpy as _np
 import json as _json
 import copy as _copy
+import pprint as _pprint
+from collections import OrderedDict as _OrderedDict
 
 import pyg4ometry as _pyg4
 from pyg4ometry.fluka.directive import rotoTranslationFromTra2 as _rotoTranslationFromTra2
@@ -273,13 +275,15 @@ class Machine(object) :
         self.flukaregistry = _pyg4.fluka.FlukaRegistry()
         self.flukanamecount = 0
 
+        # element to book-keeping-dict information
+        self.elementBookkeeping = _OrderedDict()
+
         # persistent book keeping
         self.nameRegion = {}
         self.regionnumber_regionname = {}
         self.regionname_regionnumber = {}
         self.volume_regionname = {}
         self.regionname_volume = {}
-        self.samplerinfo = {}
 
         self.verbose = True
 
@@ -416,18 +420,25 @@ class Machine(object) :
             self.regionname_volume[self.flukaregistry.regionDict[r].name] = self.flukaregistry.regionDict[r].comment
 
 
-    def _WriteBookkeepingInfo(self, fileName="output.json"):
+    def _WriteBookkeepingInfo(self, fileName="output.json", pretty=True):
 
         if not self.finished :
             self._makeBookkeepingInfo()
 
-        jsonDumpDict = {}
+        jsonDumpDict = _OrderedDict()
+        jsonDumpDict["elements"] = self.elementBookkeeping
         jsonDumpDict["regionname_regionnumber"] = self.regionname_regionnumber
         jsonDumpDict["regionnumber_regionname"] = self.regionnumber_regionname
-        jsonDumpDict["samplerInfo"]            = self.samplerinfo
 
-        with open(fileName, "w") as f:
-            _json.dump(jsonDumpDict,f)
+        if not pretty :
+            with open(fileName, "w") as f:
+                _json.dump(jsonDumpDict,f)
+        else :
+            # write json to file with human-friendly formatting
+            pretty_json_str = _pprint.pformat(jsonDumpDict, compact=True).replace("'", '"')
+
+            with open(fileName, 'w') as f:
+                f.write(pretty_json_str)
 
     def Write(self, filename):
 
@@ -441,6 +452,18 @@ class Machine(object) :
         w.write(flukaINPFileName)
 
         self._WriteBookkeepingInfo(bookkeepignFileName)
+
+    def CheckModel(self):
+        print('CheckModel')
+        print('Number of elements',len(self.elements))
+        print('Number of mid rotations',len(self.midrotationint))
+        print('Number of end rotations',len(self.endrotationint))
+
+        for iElement in range(0,len(self.elements)) :
+            elementName = list(self.elements.keys())[iElement]
+            element = self.elements[elementName]
+            print(element.category)
+
     def MakeFlukaModel(self):
 
         # make world region and surrounding black body
@@ -579,6 +602,14 @@ class Machine(object) :
             else:
                 self.worldzone.addSubtraction(daughterzones)
 
+        # make book keeping information
+        self.elementBookkeeping[name] = {}
+        self.elementBookkeeping[name]['category'] = 'drift'
+        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv", name+"_bp_pv", name+"_vac_pv"]
+        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
     def MakeFlukaBeamPipe1(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                           translation = _np.array([0,0,0])):
@@ -640,7 +671,7 @@ class Machine(object) :
                                              _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
                                              self.g4registry)
         vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,g4material,name+"_cav_lv",self.g4registry)
-        vacphysical  = _pyg4.geant4.PhysicalVolume([0,_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_cav_pv",bpouterlogical,self.g4registry)
+        vacphysical  = _pyg4.geant4.PhysicalVolume([0,_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_vac_pv",bpouterlogical,self.g4registry)
 
         rotation = rotation @_tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, _np.pi / 2, 0])
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(bpouterphysical,
@@ -654,6 +685,14 @@ class Machine(object) :
         # cut volume out of mother zone
         for daughterzones in flukaouterregion.zones:
                 self.worldzone.addSubtraction(daughterzones)
+
+        # make book keeping information
+        self.elementBookkeeping[name] = {}
+        self.elementBookkeeping[name]['category'] = 'drift'
+        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv", name+"_bp_pv", name+"_vac_pv"]
+        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
 
     def MakeFlukaRectangularStraightOuter(self, straight_x_size, straight_y_size, length, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         pass
@@ -707,6 +746,14 @@ class Machine(object) :
         #element.length = 0.90*element.length
         #self.MakeFlukaBeamPipe(name+"_bp", element, rotation=rotation, translation=translation, outer=flukaouterregion)
 
+        # make book keeping information
+        self.elementBookkeeping[name] = {}
+        self.elementBookkeeping[name]['category'] = 'rbend'
+        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv"]
+        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
     def MakeFlukaSBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                        translation = _np.array([0,0,0])):
@@ -749,6 +796,14 @@ class Machine(object) :
         # cut volume out of mother zone
         for daughterzones in flukaouterregion.zones:
             self.worldzone.addSubtraction(daughterzones)
+
+        # make book keeping information
+        self.elementBookkeeping[name] = {}
+        self.elementBookkeeping[name]['category'] = 'sbend'
+        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv"]
+        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
 
     def MakeFlukaQuad(self):
         pass
@@ -800,7 +855,13 @@ class Machine(object) :
         for daughterzones in flukaouterregion.zones:
             self.worldzone.addSubtraction(daughterzones)
 
-        self.samplerinfo[name] = {"name":name, "type":"plane","regionName":flukaouterregion.name}
+        # make book keeping information
+        self.elementBookkeeping[name] = {}
+        self.elementBookkeeping[name]['category'] = 'sampler'
+        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_pv"]
+        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
 
         return flukaouterregion.name
 
