@@ -4,7 +4,7 @@ import numpy as _np
 def test_T111_Ring_SBend() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
-    n = 20
+    n = 10
     # n = 5 dick at pi
     bendangle = 2.*_np.pi/float(n)
     for i in range(0,n,1):
