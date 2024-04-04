@@ -646,7 +646,12 @@ class Machine(object) :
         # make tubs of outer size
         bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,"G4_AIR",name+"_outer_lv",self.g4registry)
-        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation) @ _tbxyz2matrix([0, _np.pi/2, 0])),translation,bpouterlogical,name+"_outer_pv",self.worldLogical, self.g4registry)
+        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
+                                                      translation,
+                                                      bpouterlogical,
+                                                      name+"_outer_pv",
+                                                      self.worldLogical,
+                                                      self.g4registry)
 
         # make actual beampipe
         bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",
@@ -719,8 +724,11 @@ class Machine(object) :
         # make tubs of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",500,500, length, self.g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(rotation @  _tbxyz2matrix([0,0, -_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0]))
-                                                    ,translation,outerlogical,name+"_outer_pv",self.worldLogical,self.g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(rotation),
+                                                    translation,
+                                                    outerlogical,name+"_outer_pv",
+                                                    self.worldLogical,
+                                                    self.g4registry)
 
         # convert materials
         materialNameSet = outerlogical.makeMaterialNameSet()
@@ -769,8 +777,11 @@ class Machine(object) :
         # make tubs of correct size
         outersolid    = self._MakeGeant4GenericTrap(name,dz, 100, 100, -angle/2, angle/2)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(rotation @  _tbxyz2matrix([0,0, -_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])),
-                                                    translation,outerlogical,name+"_outer_pv",self.worldLogical, self.g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
+                                                    translation,
+                                                    outerlogical,name+"_outer_pv",
+                                                    self.worldLogical,
+                                                    self.g4registry)
 
         # convert materials
         materialNameSet = outerlogical.makeMaterialNameSet()
@@ -824,7 +835,12 @@ class Machine(object) :
         # make box of correct size
         samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplerDiameter,samplerDiameter,samplerLength,self.g4registry)
         samplerlogical  = _pyg4.geant4.LogicalVolume(samplersolid,samplerMaterial,name+"_lv",self.g4registry)
-        samplerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],samplerlogical,name+"_pv",None)
+        samplerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
+                                                      translation,
+                                                      samplerlogical,
+                                                      name+"_pv",
+                                                      self.worldLogical,
+                                                      self.g4registry)
 
         # convert materials
         materialNameSet = samplerlogical.makeMaterialNameSet()
@@ -900,4 +916,5 @@ class Machine(object) :
         v = _pyg4.visualisation.VtkViewerNew()
         v.addLogicalVolume(self.worldLogical)
         v.buildPipelinesAppend()
+        v.addAxes(2500)
         v.view()
