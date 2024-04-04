@@ -288,6 +288,7 @@ class Machine(object) :
         self.verbose = True
 
         self.bakeTransforms = bakeTransforms
+
     def __iter__(self):
         self._iterindex = -1
         return self
@@ -462,12 +463,13 @@ class Machine(object) :
         for iElement in range(0,len(self.elements)) :
             elementName = list(self.elements.keys())[iElement]
             element = self.elements[elementName]
-            print(element.category)
+            # print(element.category)
 
     def MakeFlukaModel(self):
 
         # make world region and surrounding black body
         self.MakeFlukaInitialGeometry()
+        self.MakeGeant4InitialGeometry()
 
         # loop over elements in sequence
         for s,r,t in zip(self.sequence,self.midrotationint, self.midint) :
@@ -483,6 +485,10 @@ class Machine(object) :
 
         # make book keeping info
         self._MakeBookkeepingInfo()
+
+    def MakeGeant4InitialGeometry(self, worldsize = [5000, 5000, 5000], worldMaterial = "G4_AIR"):
+        worldSolid = _pyg4.geant4.solid.Box("world",worldsize[0], worldsize[1], worldsize[2], self.g4registry)
+        self.worldLogical = _pyg4.geant4.LogicalVolume(worldSolid, worldMaterial, "worldLogical", self.g4registry)
 
     def MakeFlukaInitialGeometry(self, worldsize = [5000, 5000, 5000], worldmaterial = "AIR"):
         blackbody = _pyg4.fluka.RPP("BLKBODY",
@@ -640,7 +646,7 @@ class Machine(object) :
         # make tubs of outer size
         bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,"G4_AIR",name+"_outer_lv",self.g4registry)
-        bpouterphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bpouterlogical,name+"_outer_pv",None)
+        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation) @ _tbxyz2matrix([0, _np.pi/2, 0])),translation,bpouterlogical,name+"_outer_pv",self.worldLogical, self.g4registry)
 
         # make actual beampipe
         bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",
@@ -665,7 +671,7 @@ class Machine(object) :
         materialNameSet = bpouterlogical.makeMaterialNameSet()
         self._MakeFlukaMaterials(list(materialNameSet))
 
-        # conver geometry
+        # convert geometry
         rotation = rotation @_tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, _np.pi / 2, 0])
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(bpouterphysical,
                                                                             mtra=rotation,
@@ -713,7 +719,8 @@ class Machine(object) :
         # make tubs of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",500,500, length, self.g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(rotation @  _tbxyz2matrix([0,0, -_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0]))
+                                                    ,translation,outerlogical,name+"_outer_pv",self.worldLogical,self.g4registry)
 
         # convert materials
         materialNameSet = outerlogical.makeMaterialNameSet()
@@ -762,7 +769,8 @@ class Machine(object) :
         # make tubs of correct size
         outersolid    = self._MakeGeant4GenericTrap(name,dz, 100, 100, -angle/2, angle/2)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(rotation @  _tbxyz2matrix([0,0, -_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])),
+                                                    translation,outerlogical,name+"_outer_pv",self.worldLogical, self.g4registry)
 
         # convert materials
         materialNameSet = outerlogical.makeMaterialNameSet()
@@ -813,20 +821,16 @@ class Machine(object) :
         except KeyError:
             samplerMaterial = "G4_AIR"
 
-        # get material (TODO fix this complex code)
-        if samplerMaterial not in self.flukaregistry.materialShortName :
-            if type(samplerMaterial) is str :
-                samplerMaterial = _pyg4.geant4.nist_material_2geant4Material(samplerMaterial)
-            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-            _geant4Material2Fluka(samplerMaterial,self.flukaregistry,materialNameShort=materialNameShort)
-            self.flukaregistry.materialShortName[samplerMaterial.name] = materialNameShort
-            self.flukaregistry.iMaterials += 1
-
         # make box of correct size
         samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplerDiameter,samplerDiameter,samplerLength,self.g4registry)
         samplerlogical  = _pyg4.geant4.LogicalVolume(samplersolid,samplerMaterial,name+"_lv",self.g4registry)
         samplerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],samplerlogical,name+"_pv",None)
 
+        # convert materials
+        materialNameSet = samplerlogical.makeMaterialNameSet()
+        self._MakeFlukaMaterials(list(materialNameSet))
+
+        # convert geometry
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(samplerphysical,
                                                                             mtra=rotation,
                                                                             tra=translation,
@@ -891,3 +895,9 @@ class Machine(object) :
                 _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
                 self.flukaregistry.materialShortName[g4material.name] = materialNameShort
                 self.flukaregistry.iMaterials += 1
+
+    def ViewGeant4(self):
+        v = _pyg4.visualisation.VtkViewerNew()
+        v.addLogicalVolume(self.worldLogical)
+        v.buildPipelinesAppend()
+        v.view()
