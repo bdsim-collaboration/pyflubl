@@ -563,15 +563,6 @@ class Machine(object) :
         except :
             e2 = 0.0
 
-        # get material (TODO fix this complex code)
-        if g4material not in self.flukaregistry.materialShortName :
-            if type(g4material) is str :
-                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
-            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
-            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
-            self.flukaregistry.iMaterials += 1
-
         # make tubs of correct size
         bpoutersolid    = _pyg4.geant4.solid.Tubs(name+"_outer_solid",
                                                   0,beampipeRadius+beampipeThickness+self.lengthsafety,length,
@@ -586,6 +577,11 @@ class Machine(object) :
         bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",self.g4registry)
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,self.g4registry)
 
+        # convert materials
+        materialNameSet = bpouterlogical.makeMaterialNameSet()
+        self._MakeFlukaMaterials(list(materialNameSet))
+
+        # convert geometry
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(bpouterphysical,
                                                                             mtra=rotation,
                                                                             tra=translation,
@@ -640,18 +636,10 @@ class Machine(object) :
         except :
             e2 = 0.0
 
-        # get material (TODO fix this complex code)
-        if g4material not in self.flukaregistry.materialShortName :
-            if type(g4material) is str :
-                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
-            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
-            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
-            self.flukaregistry.iMaterials += 1
 
         # make tubs of outer size
         bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2)
-        bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,g4material,name+"_outer_lv",self.g4registry)
+        bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,"G4_AIR",name+"_outer_lv",self.g4registry)
         bpouterphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bpouterlogical,name+"_outer_pv",None)
 
         # make actual beampipe
@@ -670,9 +658,14 @@ class Machine(object) :
                                              _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
                                              _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
                                              self.g4registry)
-        vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,g4material,name+"_cav_lv",self.g4registry)
+        vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,"G4_Galactic",name+"_cav_lv",self.g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_vac_pv",bpouterlogical,self.g4registry)
 
+        # convert materials
+        materialNameSet = bpouterlogical.makeMaterialNameSet()
+        self._MakeFlukaMaterials(list(materialNameSet))
+
+        # conver geometry
         rotation = rotation @_tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, _np.pi / 2, 0])
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(bpouterphysical,
                                                                             mtra=rotation,
@@ -717,20 +710,16 @@ class Machine(object) :
 
         g4material = "G4_AIR"
 
-        # get material (TODO fix this complex code)
-        if g4material not in self.flukaregistry.materialShortName :
-            if type(g4material) is str :
-                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
-            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
-            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
-            self.flukaregistry.iMaterials += 1
-
         # make tubs of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",500,500, length, self.g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
 
+        # convert materials
+        materialNameSet = outerlogical.makeMaterialNameSet()
+        self._MakeFlukaMaterials(list(materialNameSet))
+
+        # convert geometry
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
                                                                             mtra=rotation,
                                                                             tra=translation,
@@ -770,20 +759,14 @@ class Machine(object) :
 
         dz = 2*length/angle*_np.sin(angle/2)
 
-        # get material (TODO fix this complex code)
-        if g4material not in self.flukaregistry.materialShortName :
-            if type(g4material) is str :
-                g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
-            materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-            _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
-            self.flukaregistry.materialShortName[g4material.name] = materialNameShort
-            self.flukaregistry.iMaterials += 1
-
         # make tubs of correct size
         outersolid    = self._MakeGeant4GenericTrap(name,dz, 100, 100, -angle/2, angle/2)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",self.g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],outerlogical,name+"_outer_pv",None)
 
+        # convert materials
+        materialNameSet = outerlogical.makeMaterialNameSet()
+        self._MakeFlukaMaterials(list(materialNameSet))
 
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
         flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
@@ -898,3 +881,13 @@ class Machine(object) :
                                                       z,self.g4registry)
 
         return trapsolid
+
+    def _MakeFlukaMaterials(self, materials = []):
+        for g4material in materials :
+            if g4material not in self.flukaregistry.materialShortName :
+                if type(g4material) is str :
+                    g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
+                materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
+                _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+                self.flukaregistry.materialShortName[g4material.name] = materialNameShort
+                self.flukaregistry.iMaterials += 1
