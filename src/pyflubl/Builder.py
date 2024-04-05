@@ -546,35 +546,13 @@ class Machine(object) :
                           flukaConvert = True):
 
         length = element.length*1000
-        try :
-            g4material = element['beampipeMaterial']
-        except :
-            g4material = "Temp"
+        g4material = self._GetDictVariable(element,"beampipeMaterial","Temp")
+        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
+        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
+        e1 = self._GetDictVariable(element,"e1",0)
+        e2 = self._GetDictVariable(element,"e2",0)
 
-        try :
-            beampipeRadius = element['beampipeRadius']
-        except :
-            beampipeRadius = 30
-
-        try :
-            beampipeThickness = element['beampipeThickness']
-        except :
-            beampipeThickness = 5
-
-        try :
-            e1 = element['e1']
-        except :
-            e1 = 0.0
-
-        try :
-            e2 = element['e2']
-        except :
-            e2 = 0.0
-
-        if geant4RegistryAdd :
-            g4registry = self.g4registry
-        else :
-            g4registry = _pyg4.geant4.Registry()
+        g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make tubs of correct size
         bpoutersolid    = _pyg4.geant4.solid.Tubs(name+"_outer_solid",
@@ -627,35 +605,12 @@ class Machine(object) :
                           flukaConvert = True):
 
         length = element.length*1000
-        try :
-            g4material = element['beampipeMaterial']
-        except :
-            g4material = "Temp"
-
-        try :
-            beampipeRadius = element['beampipeRadius']
-        except :
-            beampipeRadius = 30
-
-        try :
-            beampipeThickness = element['beampipeThickness']
-        except :
-            beampipeThickness = 5
-
-        try :
-            e1 = element['e1']
-        except :
-            e1 = 0.0
-
-        try :
-            e2 = element['e2']
-        except :
-            e2 = 0.0
-
-        if geant4RegistryAdd :
-            g4registry = self.g4registry
-        else :
-            g4registry = _pyg4.geant4.Registry()
+        g4material = self._GetDictVariable(element,"beampipeMaterial","Temp")
+        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
+        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
+        e1 = self._GetDictVariable(element,"e1",0)
+        e2 = self._GetDictVariable(element,"e2",0)
+        g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make tubs of outer size
         bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2, g4registry)
@@ -730,20 +685,13 @@ class Machine(object) :
                        geant4RegistryAdd = False,
                        flukaConvert = True) :
 
-        length = element.length*1000
-
-        try :
-            angle = element['angle']
-        except KeyError :
-            print("SBend must have an angle, setting 0")
-            angle = 0.0
-
         g4material = "G4_AIR"
 
-        if geant4RegistryAdd :
-            g4registry = self.g4registry
-        else :
-            g4registry = _pyg4.geant4.Registry()
+        length = element.length*1000
+
+        angle = self._GetDictVariable(element,"angle",0)
+        g4registry = self._GetRegistry(geant4RegistryAdd)
+
 
         # make tubs of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",500,500, length, g4registry)
@@ -789,20 +737,10 @@ class Machine(object) :
                        geant4RegistryAdd = False,
                        flukaConvert = True):
 
-        length = element.length*1000
-
-        try :
-            angle = element['angle']
-        except KeyError :
-            print("SBend must have an angle, setting 0")
-            angle = 0.0
-
         g4material = "G4_AIR"
-
-        if geant4RegistryAdd :
-            g4registry = self.g4registry
-        else :
-            g4registry = _pyg4.geant4.Registry()
+        length = element.length*1000
+        angle = self._GetDictVariable(element,"angle",0)
+        g4registry = self._GetRegistry(geant4RegistryAdd)
 
         dz = 2*length/angle*_np.sin(angle/2)
 
@@ -862,16 +800,9 @@ class Machine(object) :
             samplerDiameter = 1000
 
         samplerLength = element.length*1000
+        samplerMaterial = self._GetDictVariable(element,"samplerMaterial","G4_AIR")
+        g4registry = self._GetRegistry(geant4RegistryAdd)
 
-        try :
-            samplerMaterial = element['samplerMaterial']
-        except KeyError:
-            samplerMaterial = "G4_AIR"
-
-        if geant4RegistryAdd :
-            g4registry = self.g4registry
-        else :
-            g4registry = _pyg4.geant4.Registry()
 
         # make box of correct size
         samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplerDiameter,samplerDiameter,samplerLength,g4registry)
@@ -957,6 +888,22 @@ class Machine(object) :
                 _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
                 self.flukaregistry.materialShortName[g4material.name] = materialNameShort
                 self.flukaregistry.iMaterials += 1
+
+    def _GetDictVariable(self, element, key, default):
+        try :
+            variable = element[key]
+        except :
+            variable = default
+
+        return variable
+
+    def _GetRegistry(self,geant4RegistryAdd = False) :
+        if geant4RegistryAdd:
+            g4registry = self.g4registry
+        else:
+            g4registry = _pyg4.geant4.Registry()
+
+        return g4registry
 
     def ViewGeant4(self):
         v = _pyg4.visualisation.VtkViewerNew()
