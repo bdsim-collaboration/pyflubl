@@ -16,6 +16,7 @@ from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant
 from pyg4ometry.convert.geant42Fluka import geant4Material2Fluka as _geant4Material2Fluka
 from pyg4ometry.transformation import matrix2tbxyz as _matrix2tbxyz
 from pyg4ometry.transformation import tbxyz2matrix as _tbxyz2matrix
+from pyg4ometry.transformation import tbxyz2axisangle as _tbxyz2axisangle
 
 pyflublcategories = [
     'drift',
@@ -474,17 +475,33 @@ class Machine(object) :
         # loop over elements in sequence
         for s,r,t in zip(self.sequence,self.midrotationint, self.midint) :
             e = self.elements[s]
-            if e.category == "drift" :
-                self.MakeFlukaBeamPipe1(name=e.name, element=e, rotation=r, translation=t*1000)
-            elif e.category == "rbend" :
-                self.MakeFlukaRBend(name=e.name, element=e, rotation=r, translation=t*1000)
-            elif e.category == "sbend" :
-                self.MakeFlukaSBend(name=e.name, element=e, rotation=r, translation=t*1000)
-            elif e.category == "sampler_plane" :
-                self.MakeFlukaSampler(name=e.name, element=e, rotation=r, translation=t*1000)
+            self.ElementFactory(e,r,t)
 
         # make book keeping info
         self._MakeBookkeepingInfo()
+
+    def ElementFactory(self, e, r, t,
+                       g4add = True,
+                       fc = True):
+        if e.category == "drift":
+            return self.MakeFlukaBeamPipe1(name=e.name, element=e,
+                                           rotation=r, translation=t * 1000,
+                                           geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "rbend":
+            return self.MakeFlukaRBend(name=e.name, element=e,
+                                       rotation=r, translation=t * 1000,
+                                        geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "sbend":
+            return self.MakeFlukaSBend(name=e.name, element=e,
+                                       rotation=r, translation=t * 1000,
+                                        geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "sampler_plane":
+            return self.MakeFlukaSampler(name=e.name, element=e,
+                                         rotation=r, translation=t * 1000,
+                                         geant4RegistryAdd=g4add, flukaConvert=fc)
+        else :
+            print("ElementFactory not implemented")
+            return None
 
     def MakeGeant4InitialGeometry(self, worldsize = [5000, 5000, 5000], worldMaterial = "G4_AIR"):
         worldSolid = _pyg4.geant4.solid.Box("world",worldsize[0], worldsize[1], worldsize[2], self.g4registry)
@@ -581,14 +598,13 @@ class Machine(object) :
                                                                                 flukaNameCount=self.flukanamecount,
                                                                                 bakeTransforms=self.bakeTransforms)
 
-        outer = _copy.deepcopy(outer)
-
-        # cut volume out of mother zone
-        for daughterzones in flukaouterregion.zones:
-            if outer:
-                outer.addSubtraction(daughterzones)
-            else:
-                self.worldzone.addSubtraction(daughterzones)
+            outer = _copy.deepcopy(outer)
+            # cut volume out of mother zone
+            for daughterzones in flukaouterregion.zones:
+                if outer:
+                    outer.addSubtraction(daughterzones)
+                else:
+                    self.worldzone.addSubtraction(daughterzones)
 
         # make book keeping information
         self.elementBookkeeping[name] = {}
@@ -597,6 +613,10 @@ class Machine(object) :
         self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
+
+        # make transformed mesh for overlaps
+        outerMesh = self._MakePlacedMeshFromPV(bpouterphysical)
+        return {"placedmesh":outerMesh}
 
     def MakeFlukaBeamPipe1(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
@@ -637,7 +657,7 @@ class Machine(object) :
                                              0, _np.pi*2,
                                              _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
                                              _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
-                                             self.g4registry)
+                                             g4registry)
         vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,"G4_Galactic",name+"_cav_lv",g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_vac_pv",bpouterlogical,g4registry)
 
@@ -656,9 +676,9 @@ class Machine(object) :
                                                                                 bakeTransforms=self.bakeTransforms)
 
 
-        # cut volume out of mother zone
-        for daughterzones in flukaouterregion.zones:
-                self.worldzone.addSubtraction(daughterzones)
+            # cut volume out of mother zone
+            for daughterzones in flukaouterregion.zones:
+                    self.worldzone.addSubtraction(daughterzones)
 
         # make book keeping information
         self.elementBookkeeping[name] = {}
@@ -669,6 +689,8 @@ class Machine(object) :
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 
         # make transformed mesh for overlaps
+        outerMesh = self._MakePlacedMeshFromPV(bpouterphysical)
+        return {"placedmesh":outerMesh}
 
     def MakeFlukaRectangularStraightOuter(self, straight_x_size, straight_y_size, length, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         pass
@@ -715,9 +737,9 @@ class Machine(object) :
                                                                                 flukaNameCount=self.flukanamecount,
                                                                                 bakeTransforms=self.bakeTransforms)
 
-        # cut volume out of mother zone
-        for daughterzones in flukaouterregion.zones:
-            self.worldzone.addSubtraction(daughterzones)
+            # cut volume out of mother zone
+            for daughterzones in flukaouterregion.zones:
+                self.worldzone.addSubtraction(daughterzones)
 
         # make beam pipe
         #element.length = 0.90*element.length
@@ -730,6 +752,10 @@ class Machine(object) :
         self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
+
+        # make transformed mesh for overlaps
+        outerMesh = self._MakePlacedMeshFromPV(outerphysical)
+        return {"placedmesh":outerMesh}
 
     def MakeFlukaSBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
@@ -766,9 +792,9 @@ class Machine(object) :
                                                                                 flukaNameCount=self.flukanamecount,
                                                                                 bakeTransforms=self.bakeTransforms)
 
-        # cut volume out of mother zone
-        for daughterzones in flukaouterregion.zones:
-            self.worldzone.addSubtraction(daughterzones)
+            # cut volume out of mother zone
+            for daughterzones in flukaouterregion.zones:
+                self.worldzone.addSubtraction(daughterzones)
 
         # make book keeping information
         self.elementBookkeeping[name] = {}
@@ -777,6 +803,11 @@ class Machine(object) :
         self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
+
+        # make transformed mesh for overlaps
+        outerMesh = self._MakePlacedMeshFromPV(outerphysical)
+        return {"placedmesh":outerMesh}
+
 
     def MakeFlukaQuad(self):
         pass
@@ -827,9 +858,9 @@ class Machine(object) :
                                                                                 flukaNameCount=self.flukanamecount,
                                                                                 bakeTransforms=self.bakeTransforms)
 
-        # cut volume out of mother zone
-        for daughterzones in flukaouterregion.zones:
-            self.worldzone.addSubtraction(daughterzones)
+            # cut volume out of mother zone
+            for daughterzones in flukaouterregion.zones:
+                self.worldzone.addSubtraction(daughterzones)
 
         # make book keeping information
         self.elementBookkeeping[name] = {}
@@ -839,7 +870,9 @@ class Machine(object) :
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 
-        return flukaouterregion.name
+        # make transformed mesh for overlaps
+        outerMesh = self._MakePlacedMeshFromPV(samplerphysical)
+        return {"placedmesh":outerMesh}
 
     def _MakeGeant4GenericTrap(self, name,
                                length = 500, xhalfwidth = 50, yhalfwidth = 50,
@@ -905,9 +938,35 @@ class Machine(object) :
 
         return g4registry
 
-    def ViewGeant4(self):
-        v = _pyg4.visualisation.VtkViewerNew()
-        v.addLogicalVolume(self.worldLogical)
-        v.buildPipelinesAppend()
-        v.addAxes(2500)
-        v.view()
+    def _MakePlacedMeshFromPV(self, physVol):
+        rotation = physVol.rotation.eval()
+        translation = physVol.position.eval()
+        mesh = physVol.logicalVolume.mesh.localmesh.clone()
+
+        aa = _tbxyz2axisangle(rotation)
+        mesh.rotate(aa[0], aa[1] / _np.pi * 180.0)
+        mesh.translate([translation[0], translation[1], translation[2]])
+
+        return mesh
+    def ViewGeant4(self, separateMeshes = False):
+        if not separateMeshes :
+            v = _pyg4.visualisation.VtkViewerNew()
+            v.addLogicalVolume(self.worldLogical)
+            v.buildPipelinesAppend()
+            v.addAxes(2500)
+            v.view()
+        else :
+            v = _pyg4.visualisation.VtkViewerNew()
+            v.addAxes(2500)
+
+            for s, r, t in zip(self.sequence, self.midrotationint, self.midint):
+                e = self.elements[s]
+                m = self.ElementFactory(e, r, t, False, False)["placedmesh"]
+                v.addMesh(e.name,m)
+                v.addInstance(e.name,_np.array([[1,0,0],[0,1,0],[0,0,1]]), _np.array([0,0,0]),e.name)
+                v.addVisOptions(e.name, _pyg4.visualisation.VisualisationOptions(representation="surface"))
+            v.buildPipelinesAppend()
+            v.view()
+            return v
+
+
