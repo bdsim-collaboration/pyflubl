@@ -846,16 +846,10 @@ class Machine(object) :
                          geant4RegistryAdd = False,
                          flukaConvert = True):
 
-        # parse input key words
-        try :
-            samplerDiameter = element['samplerDiameter']
-        except KeyError:
-            samplerDiameter = 1000
 
         samplerLength = element.length*1000
         samplerMaterial = self._GetDictVariable(element,"samplerMaterial","G4_AIR")
         g4registry = self._GetRegistry(geant4RegistryAdd)
-
 
         # make box of correct size
         samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplerDiameter,samplerDiameter,samplerLength,g4registry)
