@@ -731,7 +731,7 @@ class Machine(object) :
 
 
         # make tubs of correct size
-        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",500,500, length, g4registry)
+        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",200*1.41,200*1.41, length, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz( _np.linalg.inv(rotation)),
                                                     translation,
