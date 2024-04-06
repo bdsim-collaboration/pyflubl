@@ -834,7 +834,10 @@ class Machine(object) :
     def MakeFlukaQuad(self):
         pass
 
-    def MakeFlukaGeometryPlacement(self, geometry, transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
+    def MakeFlukaGeometryPlacement(self,
+                                   name,
+                                   geometry,
+                                   transform = _np.array([[1,0,0],[0,1,0],[0,0,1]])):
         pass
 
     def MakeFlukaSplit(self, length, angles = [], bp_outer_radii = [], bp_inner_radii = []):
