@@ -574,6 +574,7 @@ class Machine(object) :
                           flukaConvert = True):
 
         length = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         g4material = self._GetDictVariable(element,"beampipeMaterial","Temp")
         beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
         beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
@@ -643,6 +644,7 @@ class Machine(object) :
                           flukaConvert = True):
 
         length = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         g4material = self._GetDictVariable(element,"beampipeMaterial","Temp")
         beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
         beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
@@ -731,7 +733,7 @@ class Machine(object) :
         g4material = "G4_AIR"
 
         length = element.length*1000
-
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
@@ -790,6 +792,7 @@ class Machine(object) :
 
         g4material = "G4_AIR"
         length = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
@@ -844,6 +847,7 @@ class Machine(object) :
                             flukaConvert = True):
 
         quadlength = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make box of correct size
@@ -904,6 +908,7 @@ class Machine(object) :
 
 
         samplerLength = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         samplerMaterial = self._GetDictVariable(element,"samplerMaterial","G4_AIR")
         samplerDiameter = self._GetDictVariable(element,"samplerDiameter",2000)
         g4registry = self._GetRegistry(geant4RegistryAdd)
@@ -1079,6 +1084,16 @@ class Machine(object) :
         if view :
             v.buildPipelinesAppend()
             v.view()
+
+    def _MakeOffsetAndTiltTransforms(self, element, rotation, translation):
+        offsetX = self._GetDictVariable(element,"offsetX",0)
+        offsetY = self._GetDictVariable(element,"offsetY",0)
+        tilt    = self._GetDictVariable(element,"tilt",0)
+
+        translation = translation + _np.array([offsetX, offsetY, 0])
+        rotation =  rotation @ _tbxyz2matrix([0,0,tilt])
+
+        return rotation, translation
 
     def ViewGeant4(self, separateMeshes = False):
         if not separateMeshes :
