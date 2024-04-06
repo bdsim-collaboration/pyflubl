@@ -4,7 +4,7 @@ import numpy as _np
 def test_T110_Ring_RBend() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
-    n = 4
+    n = 10
     bendangle = 2.*_np.pi/n
 
 
