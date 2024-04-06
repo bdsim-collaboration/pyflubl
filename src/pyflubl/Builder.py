@@ -852,6 +852,7 @@ class Machine(object) :
 
         samplerLength = element.length*1000
         samplerMaterial = self._GetDictVariable(element,"samplerMaterial","G4_AIR")
+        samplerDiameter = self._GetDictVariable(element,"samplerDiameter",2000)
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make box of correct size
