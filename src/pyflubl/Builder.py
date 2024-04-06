@@ -476,7 +476,7 @@ class Machine(object) :
         self.MakeGeant4InitialGeometry()
 
         # fix faces of elements
-        self._FixElementFaces(view=True)
+        self._FixElementFaces(view=False)
 
         # loop over elements in sequence
         for s,r,t in zip(self.sequence,self.midrotationint, self.midint) :
