@@ -9,6 +9,7 @@ import json as _json
 import copy as _copy
 import pprint as _pprint
 from collections import OrderedDict as _OrderedDict
+import random as _random
 
 import pyg4ometry as _pyg4
 from pyg4ometry.fluka.directive import rotoTranslationFromTra2 as _rotoTranslationFromTra2
@@ -472,6 +473,9 @@ class Machine(object) :
         self.MakeFlukaInitialGeometry()
         self.MakeGeant4InitialGeometry()
 
+        # fix faces of elements
+        self._FixElementFaces(view=True)
+
         # loop over elements in sequence
         for s,r,t in zip(self.sequence,self.midrotationint, self.midint) :
             e = self.elements[s]
@@ -479,6 +483,7 @@ class Machine(object) :
 
         # make book keeping info
         self._MakeBookkeepingInfo()
+
 
     def ElementFactory(self, e, r, t,
                        g4add = True,
@@ -574,16 +579,20 @@ class Machine(object) :
         # make tubs of correct size
         bpoutersolid    = _pyg4.geant4.solid.Tubs(name+"_outer_solid",
                                                   0,beampipeRadius+beampipeThickness+self.lengthsafety,length,
-                                                  0, _np.pi*2, self.g4registry)
-        bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,g4material,name+"_outer_lv",self.g4registry)
-        bpouterphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bpouterlogical,name+"_outer_pv",None)
+                                                  0, _np.pi*2, g4registry)
+        bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,g4material,name+"_outer_lv",g4registry)
+        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
+                                                                    translation,
+                                                                    bpouterlogical,
+                                                                    name+"_outer_pv",
+                                                                    self.worldLogical,g4registry)
 
         # make actual beampipe
         bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",
                                              beampipeRadius, beampipeRadius+beampipeThickness, length,
-                                             0, _np.pi*2, [0,0,-1],[0,0,1],self.g4registry)
-        bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",self.g4registry)
-        bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,self.g4registry)
+                                             0, _np.pi*2, [0,0,-1],[0,0,1],g4registry)
+        bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
+        bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
 
         # convert materials
         materialNameSet = bpouterlogical.makeMaterialNameSet()
@@ -610,7 +619,10 @@ class Machine(object) :
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'drift'
         self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv", name+"_bp_pv", name+"_vac_pv"]
-        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        try :
+            self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        except KeyError :
+            pass
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 
@@ -684,7 +696,10 @@ class Machine(object) :
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'drift'
         self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv", name+"_bp_pv", name+"_vac_pv"]
-        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        try :
+            self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        except KeyError :
+            pass
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 
@@ -704,7 +719,7 @@ class Machine(object) :
     def MakeFlukaRBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                        translation = _np.array([0,0,0]),
-                       geant4RegistryAdd = False,
+                       geant4RegistryAdd = True,
                        flukaConvert = True) :
 
         g4material = "G4_AIR"
@@ -749,7 +764,11 @@ class Machine(object) :
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'rbend'
         self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv"]
-        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        try :
+            self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        except KeyError :
+            pass
+
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 
@@ -800,7 +819,10 @@ class Machine(object) :
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'sbend'
         self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv"]
-        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        try :
+            self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        except KeyError :
+            pass
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 
@@ -866,7 +888,10 @@ class Machine(object) :
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'sampler'
         self.elementBookkeeping[name]['physicalVolumes'] = [name+"_pv"]
-        self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        try :
+            self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        except KeyError :
+            pass
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 
@@ -941,13 +966,61 @@ class Machine(object) :
     def _MakePlacedMeshFromPV(self, physVol):
         rotation = physVol.rotation.eval()
         translation = physVol.position.eval()
-        mesh = physVol.logicalVolume.mesh.localmesh.clone()
+        mesh = physVol.logicalVolume.solid.mesh()
 
         aa = _tbxyz2axisangle(rotation)
         mesh.rotate(aa[0], aa[1] / _np.pi * 180.0)
         mesh.translate([translation[0], translation[1], translation[2]])
 
         return mesh
+
+    def _FixElementFaces(self, view = True):
+
+        if view :
+            v = _pyg4.visualisation.VtkViewerNew()
+            v.addAxes(2500)
+
+        for iElement in range(0,len(self.elements)) :
+            elementName = list(self.elements.keys())[iElement]
+            e = self.elements[elementName]
+            r = list(self.midrotationint)[iElement]
+            t = list(self.midint)[iElement]
+
+            m = self.ElementFactory(e, r, t, False, False)["placedmesh"]
+
+            if view :
+                v.addMesh(elementName, m)
+                v.addInstance(elementName,
+                              _np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+                              _np.array([0,0,0]),
+                              elementName)
+                v.addVisOptions(elementName,
+                                _pyg4.visualisation.VisualisationOptions(representation="wireframe", colour=[1, 1, 1]))
+
+            for jElement in range(iElement+1,len(self.elements)) :
+                jElementName = list(self.elements.keys())[jElement]
+                je = self.elements[jElementName]
+                jr = list(self.midrotationint)[jElement]
+                jt = list(self.midint)[jElement]
+                jm = self.ElementFactory(je, jr, jt, False, False)["placedmesh"]
+
+                # check for intersection
+                jinter = jm.intersect(m)
+
+                if view:
+                    v.addMesh(elementName+jElementName,jinter)
+                    v.addInstance(elementName+jElementName,
+                                  _np.array([[1,0,0],[0,1,0],[0,0,1]]),
+                                  _np.array([0,0,0]),
+                                  elementName+jElementName)
+                    v.addVisOptions(elementName+jElementName,
+                                    _pyg4.visualisation.VisualisationOptions(representation="surface",
+                                                                             colour=[_random.random(),_random.random(),_random.random()]))
+
+        if view :
+            v.buildPipelinesAppend()
+            v.view()
+
     def ViewGeant4(self, separateMeshes = False):
         if not separateMeshes :
             v = _pyg4.visualisation.VtkViewerNew()
