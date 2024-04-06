@@ -29,7 +29,8 @@ pyflublcategories = [
 
 
 def _CalculateElementTransformation(e):
-    if e.category == "drift" :
+    if e.category == "drift" or  \
+       e.category == "quadrupole" :
         rotation = _np.array([[1,0,0],
                               [0,1,0],
                               [0,0,1]])
@@ -397,8 +398,9 @@ class Machine(object) :
         e = Element(name=name, category="sbend", length = length, **kwargs)
         self.Append(e)
 
-    def AddQuadrupole(self):
-        pass
+    def AddQuadrupole(self, name, length, **kwargs):
+        e = Element(name=name, category="quadrupole", length = length, **kwargs)
+        self.Append(e)
 
     def AddScoringHistogram(self):
         pass
@@ -500,6 +502,10 @@ class Machine(object) :
             return self.MakeFlukaSBend(name=e.name, element=e,
                                        rotation=r, translation=t * 1000,
                                         geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "quadrupole":
+            return self.MakeFlukaQuadrupole(name=e.name, element=e,
+                                            rotation=r, translation=t * 1000,
+                                            geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "sampler_plane":
             return self.MakeFlukaSampler(name=e.name, element=e,
                                          rotation=r, translation=t * 1000,
@@ -831,8 +837,55 @@ class Machine(object) :
         return {"placedmesh":outerMesh}
 
 
-    def MakeFlukaQuad(self):
-        pass
+    def MakeFlukaQuadrupole(self, name, element,
+                            rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                            translation = _np.array([0,0,0]),
+                            geant4RegistryAdd = False,
+                            flukaConvert = True):
+
+        quadlength = element.length*1000
+        g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # make box of correct size
+        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",500,500,quadlength,g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,"G4_AIR",name+"_lv",g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
+                                                      translation,
+                                                      outerlogical,
+                                                      name+"_pv",
+                                                      self.worldLogical,
+                                                      g4registry)
+
+        # convert materials
+        materialNameSet = outerlogical.makeMaterialNameSet()
+        self._MakeFlukaMaterials(list(materialNameSet))
+
+        if flukaConvert :
+            flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
+                                                                                mtra=rotation,
+                                                                                tra=translation,
+                                                                                flukaRegistry=self.flukaregistry,
+                                                                                flukaNameCount=self.flukanamecount,
+                                                                                bakeTransforms=self.bakeTransforms)
+
+            # cut volume out of mother zone
+            for daughterzones in flukaouterregion.zones:
+                self.worldzone.addSubtraction(daughterzones)
+
+        # make book keeping information
+        self.elementBookkeeping[name] = {}
+        self.elementBookkeeping[name]['category'] = 'sampler'
+        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_pv"]
+        try :
+            self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
+        except KeyError :
+            pass
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
+        # make transformed mesh for overlaps
+        outerMesh = self._MakePlacedMeshFromPV(outerphysical)
+        return {"placedmesh":outerMesh}
 
     def MakeFlukaGeometryPlacement(self,
                                    name,
