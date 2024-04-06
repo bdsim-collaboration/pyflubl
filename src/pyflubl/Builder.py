@@ -647,7 +647,7 @@ class Machine(object) :
         # make tubs of outer size
         bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2, g4registry)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,"G4_AIR",name+"_outer_lv",g4registry)
-        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
+        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
                                                       translation,
                                                       bpouterlogical,
                                                       name+"_outer_pv",
@@ -662,7 +662,7 @@ class Machine(object) :
                                              _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
                                              g4registry)
         bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
-        bpphysical  = _pyg4.geant4.PhysicalVolume([0,_np.pi/2,-_np.pi/2],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
+        bpphysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
 
         vacsolid = _pyg4.geant4.solid.CutTubs(name+"_vac_solid",
                                              0, beampipeRadius, length,
@@ -671,7 +671,7 @@ class Machine(object) :
                                              _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
                                              g4registry)
         vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,"G4_Galactic",name+"_cav_lv",g4registry)
-        vacphysical  = _pyg4.geant4.PhysicalVolume([0,_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_vac_pv",bpouterlogical,g4registry)
+        vacphysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_vac_pv",bpouterlogical,g4registry)
 
         # convert materials
         materialNameSet = bpouterlogical.makeMaterialNameSet()
@@ -1006,6 +1006,14 @@ class Machine(object) :
 
                 # check for intersection
                 jinter = jm.intersect(m)
+
+                if jinter.volume() > 0.1 :
+                    if e.category == "rbend" and je.category == "drift":
+                        je['e1'] = e['angle']/2
+                    elif e.category == "drift" and je.category == "rbend"  and iElement != 0 :
+                        e['e2'] = je['angle']/2
+                    elif e.category == "drift" and je.category == "rbend"  and iElement == 0 :
+                        e['e1'] = je['angle']/2
 
                 if view:
                     v.addMesh(elementName+jElementName,jinter)
