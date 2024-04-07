@@ -738,7 +738,7 @@ class Machine(object) :
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
 
-        # make tubs of correct size
+        # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",200*1.41,200*1.41, length, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz( _np.linalg.inv(rotation)),
@@ -747,6 +747,14 @@ class Machine(object) :
                                                     self.worldLogical,
                                                     g4registry)
 
+        # make beampipe
+        beampipelogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                        [0,0,0],
+                                                        beampipelogical,
+                                                        name+"bp_pv",
+                                                        outerlogical,
+                                                        g4registry)
         # convert materials
         materialNameSet = outerlogical.makeMaterialNameSet()
         self._MakeFlukaMaterials(list(materialNameSet))
@@ -798,7 +806,7 @@ class Machine(object) :
 
         dz = 2*length/angle*_np.sin(angle/2)
 
-        # make tubs of correct size
+        # make trap of correct size
         outersolid    = self._MakeGeant4GenericTrap(name,dz, 100, 100, -angle/2, angle/2, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
@@ -806,6 +814,20 @@ class Machine(object) :
                                                     outerlogical,name+"_outer_pv",
                                                     self.worldLogical,
                                                     g4registry)
+
+        # make beampipe
+        elementCopy = _copy.deepcopy(element)
+        elementCopy.length= dz/1000.0
+        elementCopy['e1'] = angle/2
+        elementCopy['e2'] = angle/2
+        beampipelogical = self._MakeGeant4BeamPipe(name+"bp",elementCopy,g4registry)
+        beampipephysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],
+                                                        [0,0,0],
+                                                        beampipelogical,
+                                                        name+"bp_pv",
+                                                        outerlogical,
+                                                        g4registry)
+
 
         # convert materials
         materialNameSet = outerlogical.makeMaterialNameSet()
@@ -859,6 +881,15 @@ class Machine(object) :
                                                       name+"_pv",
                                                       self.worldLogical,
                                                       g4registry)
+
+        # make beampipe
+        beampipelogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                        [0,0,0],
+                                                        beampipelogical,
+                                                        name+"bp_pv",
+                                                        outerlogical,
+                                                        g4registry)
 
         # convert materials
         materialNameSet = outerlogical.makeMaterialNameSet()
@@ -993,6 +1024,39 @@ class Machine(object) :
 
         return trapsolid
 
+    def _MakeGeant4BeamPipe(self, name, element, g4registry = None):
+
+        if not g4registry:
+            g4registry = self.g4registry
+
+        length = element.length*1000
+        g4material = self._GetDictVariable(element,"beampipeMaterial","G4_STAINLESS-STEEL")
+        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
+        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
+        e1 = self._GetDictVariable(element,"e1",0)
+        e2 = self._GetDictVariable(element,"e2",0)
+
+
+        # make actual beampipe
+        bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",
+                                             0, beampipeRadius+beampipeThickness, length,
+                                             0, _np.pi*2,
+                                             _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
+                                             _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
+                                             g4registry)
+        bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
+
+        vacsolid = _pyg4.geant4.solid.CutTubs(name+"_vac_solid",
+                                             0, beampipeRadius, length,
+                                             0, _np.pi*2,
+                                             _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
+                                             _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
+                                             g4registry)
+        vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,"G4_Galactic",name+"_cav_lv",g4registry)
+        vacphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],vaclogical,name+"_vac_pv",bplogical,g4registry)
+
+        return bplogical
+
     def _MakeFlukaMaterials(self, materials = []):
         for g4material in materials :
             if g4material not in self.flukaregistry.materialShortName :
@@ -1094,6 +1158,9 @@ class Machine(object) :
         rotation =  rotation @ _tbxyz2matrix([0,0,tilt])
 
         return rotation, translation
+
+    def _LoadGDMLGeometry(self, element):
+        geometryFile = self._GetDictVariable(element, "geometryFile", "None")
 
     def ViewGeant4(self, separateMeshes = False):
         if not separateMeshes :
