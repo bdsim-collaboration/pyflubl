@@ -655,7 +655,8 @@ class Machine(object) :
         # make tubs of outer size
         bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2, g4registry)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,"G4_AIR",name+"_outer_lv",g4registry)
-        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
+        #bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
+        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,-_np.pi/2,0]))),
                                                       translation,
                                                       bpouterlogical,
                                                       name+"_outer_pv",
@@ -686,7 +687,7 @@ class Machine(object) :
         self._MakeFlukaMaterials(list(materialNameSet))
 
         # convert geometry
-        rotation = rotation @ _tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, _np.pi / 2, 0])
+        rotation = rotation @ _tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, -_np.pi / 2, 0])
         if flukaConvert :
             flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(bpouterphysical,
                                                                                 mtra=rotation,
