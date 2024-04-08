@@ -262,6 +262,7 @@ class Line(list) :
 class Machine(object) :
     def __init__(self, bakeTransforms = False):
         self.elements = {}
+        self.prototypes = {}
         self.sequence = []
         self.lenint    = [] # array of length upto a sequence element
         self.midrotationint = [] # rotation compounded
@@ -402,6 +403,23 @@ class Machine(object) :
         e = Element(name=name, category="quadrupole", length = length, **kwargs)
         self.Append(e)
 
+    def AddLatticeInstance(self, name, prototypeName):
+        e = Element(name=name,
+                    category="lattice_instance",
+                    length=self.prototypes[prototypeName].length,
+                    prototypeName=prototypeName)
+        self.Append(e)
+
+    def AddLatticePrototype(self, name, length, **kwargs):
+        e = Element(name=name,
+                    category="lattice_prototype",
+                    length = length,
+                    **kwargs)
+        # save in prototype dict
+        # transformation to be populated when built
+        self.prototypes[name] = {"element":e, "rotation":None, "translation":None}
+
+
     def AddScoringHistogram(self):
         pass
 
@@ -478,6 +496,10 @@ class Machine(object) :
         # fix faces of elements
         self._FixElementFaces(view=False)
 
+        # make lattice prototypes
+        for prototype in self.prototypes :
+            pass
+
         # loop over elements in sequence
         for s,r,t in zip(self.sequence,self.midrotationint, self.midint) :
             e = self.elements[s]
@@ -510,6 +532,10 @@ class Machine(object) :
             return self.MakeFlukaSampler(name=e.name, element=e,
                                          rotation=r, translation=t * 1000,
                                          geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "lattice_instance":
+            return self.MakeFlukaLatticeInstance(name=e.name, element=e,
+                                                 rotation=r, translation=t * 1000,
+                                                 geant4RegistryAdd=g4add, flukaConvert=fc)
         else :
             print("ElementFactory not implemented")
             return None
@@ -927,6 +953,18 @@ class Machine(object) :
                                    name,
                                    geometry,
                                    transform = _np.array([[1,0,0],[0,1,0],[0,0,1]])):
+        pass
+
+    def MakeFlukaLatticePrototype(self, name, element,
+                                  rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                                  translation = _np.array([0,0,0]),
+                                  geant4RegistryAdd = False, flukaConvert = True):
+        pass
+
+    def MakeFlukaLatticeInstance(self, name, element,
+                                 rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                                 translation = _np.array([0,0,0]),
+                                 geant4RegistryAdd = False, flukaConvert = True):
         pass
 
     def MakeFlukaSplit(self, length, angles = [], bp_outer_radii = [], bp_inner_radii = []):
