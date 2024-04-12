@@ -9,4 +9,6 @@ old
 *.inp
 *.gdml
 *.json
+run_*
+*.pickle
 
