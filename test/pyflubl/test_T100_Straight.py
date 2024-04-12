@@ -2,7 +2,7 @@ import pyflubl as _pfbl
 import numpy as _np
 
 def test_T100_Straight() :
-    m = _pfbl.Builder.Machine()
+    m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     n = 5
 
