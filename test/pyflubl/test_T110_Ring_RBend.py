@@ -4,6 +4,11 @@ import numpy as _np
 def test_T110_Ring_RBend() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
+
+    b = _pfbl.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
+    b.AddBeamPosition(0,0,0,0,0)
+    b.AddBeamAxes(0,0,0,0,0,0)
+
     n = 5
     bendangle = 2.*_np.pi/n
 

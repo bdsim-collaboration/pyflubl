@@ -279,6 +279,9 @@ class Machine(object) :
         self.flukaregistry = _pyg4.fluka.FlukaRegistry()
         self.flukanamecount = 0
 
+        # beam/scorers etc
+        self.beam = None
+
         # element to book-keeping-dict information
         self.elementBookkeeping = _OrderedDict()
 
@@ -430,6 +433,10 @@ class Machine(object) :
         e = Element(name=name, category="sampler_plane", length = length)
         self.Append(e)
 
+
+    def AddBeam(self, beam):
+        self.beam = beam
+
     def _MakeBookkeepingInfo(self):
 
         self.finished = True
@@ -468,11 +475,18 @@ class Machine(object) :
         freg = self.MakeFlukaModel()
 
         flukaINPFileName = filename+".inp"
+        geant4GDMLFileName = filename+".gdml"
         bookkeepignFileName = filename+".json"
 
-        w = _pyg4.fluka.Writer()
-        w.addDetector(self.flukaregistry)
-        w.write(flukaINPFileName)
+        self.beam.AddRegistry(freg)
+
+        fw = _pyg4.fluka.Writer()
+        fw.addDetector(self.flukaregistry)
+        fw.write(flukaINPFileName)
+
+        gw = _pyg4.gdml.Writer()
+        gw.addDetector(self.g4registry)
+        gw.write(geant4GDMLFileName)
 
         self._WriteBookkeepingInfo(bookkeepignFileName)
 
@@ -508,6 +522,7 @@ class Machine(object) :
         # make book keeping info
         self._MakeBookkeepingInfo()
 
+        return self.flukaregistry
 
     def ElementFactory(self, e, r, t,
                        g4add = True,
@@ -543,8 +558,9 @@ class Machine(object) :
     def MakeGeant4InitialGeometry(self, worldsize = [5000, 5000, 5000], worldMaterial = "G4_AIR"):
         worldSolid = _pyg4.geant4.solid.Box("world",worldsize[0], worldsize[1], worldsize[2], self.g4registry)
         self.worldLogical = _pyg4.geant4.LogicalVolume(worldSolid, worldMaterial, "worldLogical", self.g4registry)
+        self.g4registry.setWorldVolume(self.worldLogical)
 
-    def MakeFlukaInitialGeometry(self, worldsize = [5000, 5000, 5000], worldmaterial = "AIR"):
+    def MakeFlukaInitialGeometry(self, worldsize = [100, 100, 100], worldmaterial = "AIR"):
         blackbody = _pyg4.fluka.RPP("BLKBODY",
                                -2*worldsize[0],2*worldsize[0],
                                -2*worldsize[1],2*worldsize[1],
@@ -651,11 +667,16 @@ class Machine(object) :
         # make book keeping information
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'drift'
-        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv", name+"_bp_pv", name+"_vac_pv"]
+
+        # needed to book keep potentially deep lv-pv constructions in conversion
+        physicalVolumeNames = bpouterlogical.makeLogicalPhysicalNameSets()[1]
+        physicalVolumeNames.add(bpouterphysical.name)
+        self.elementBookkeeping[name]['physicalVolumes'] = list(physicalVolumeNames)
         try :
             self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
         except KeyError :
             pass
+
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 
@@ -730,13 +751,15 @@ class Machine(object) :
         # make book keeping information
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'drift'
-        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv", name+"_bp_pv", name+"_vac_pv"]
+
+        # needed to book keep potentially deep lv-pv constructions in conversion
+        physicalVolumeNames = bpouterlogical.makeLogicalPhysicalNameSets()[1]
+        physicalVolumeNames.add(bpouterphysical.name)
+        self.elementBookkeeping[name]['physicalVolumes'] = list(physicalVolumeNames)
         try :
             self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
         except KeyError :
             pass
-        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
-        self.elementBookkeeping[name]['translation'] = translation.tolist()
 
         # make transformed mesh for overlaps
         outerMesh = self._MakePlacedMeshFromPV(bpouterphysical)
@@ -779,7 +802,7 @@ class Machine(object) :
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
-                                                        name+"bp_pv",
+                                                        name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
         # convert materials
@@ -806,7 +829,11 @@ class Machine(object) :
         # make book keeping information
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'rbend'
-        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv"]
+
+        # needed to book keep potentially deep lv-pv constructions in conversion
+        physicalVolumeNames = outerlogical.makeLogicalPhysicalNameSets()[1]
+        physicalVolumeNames.add(outerphysical.name)
+        self.elementBookkeeping[name]['physicalVolumes'] = list(physicalVolumeNames)
         try :
             self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
         except KeyError :
@@ -876,11 +903,16 @@ class Machine(object) :
         # make book keeping information
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'sbend'
-        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_outer_pv"]
+
+        # needed to book keep potentially deep lv-pv constructions in conversion
+        physicalVolumeNames = outerlogical.makeLogicalPhysicalNameSets()[1]
+        physicalVolumeNames.add(outerphysical.name)
+        self.elementBookkeeping[name]['physicalVolumes'] = list(physicalVolumeNames)
         try :
             self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
         except KeyError :
             pass
+
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 
@@ -937,11 +969,16 @@ class Machine(object) :
         # make book keeping information
         self.elementBookkeeping[name] = {}
         self.elementBookkeeping[name]['category'] = 'sampler'
-        self.elementBookkeeping[name]['physicalVolumes'] = [name+"_pv"]
+
+        # needed to book keep potentially deep lv-pv constructions in conversion
+        physicalVolumeNames = outerlogical.makeLogicalPhysicalNameSets()[1]
+        physicalVolumeNames.add(outerphysical.name)
+        self.elementBookkeeping[name]['physicalVolumes'] = list(physicalVolumeNames)
         try :
             self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
         except KeyError :
             pass
+
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
 

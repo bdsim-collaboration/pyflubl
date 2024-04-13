@@ -4,8 +4,13 @@ import numpy as _np
 def test_T111_Ring_SBend() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
+    b = _pfbl.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
+    b.AddBeamPosition(0,0,0,0,0)
+    b.AddBeamAxes(0,0,0,0,0,0)
+
     n = 5
     bendangle = 2.*_np.pi/float(n)
+
     for i in range(0,n,1):
         m.AddDrift(name="d1-"+str(i), length=0.5,
                    beampipeMaterial="G4_STAINLESS-STEEL",
