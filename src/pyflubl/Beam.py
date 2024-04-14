@@ -111,12 +111,12 @@ class Beam :
         self.beamposExtraCard = _Card("BEAMPOS", self.radius, None, None, None, None, None, dsum)
 
     def AddBeamAxes(self,
-                    xxCosine = 0 ,
+                    xxCosine = 1,
                     xyCosine = 0,
                     xzCosine = 0,
                     zxCosine = 0,
                     zyCosine = 0,
-                    zzCosine = 0):
+                    zzCosine = 1):
 
         self.xxCosine = xxCosine
         self.xyCosine = xyCosine

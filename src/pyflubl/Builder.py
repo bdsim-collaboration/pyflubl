@@ -279,8 +279,13 @@ class Machine(object) :
         self.flukaregistry = _pyg4.fluka.FlukaRegistry()
         self.flukanamecount = 0
 
-        # beam/scorers etc
+        # title/global/defaults/beam/scorers etc
+        self.title = None
+        self.fglobal = None
+        self.defaults = None
         self.beam = None
+        self.randomiz = None
+        self.start = None
 
         # element to book-keeping-dict information
         self.elementBookkeeping = _OrderedDict()
@@ -434,8 +439,26 @@ class Machine(object) :
         self.Append(e)
 
 
+    def AddTitle(self, title):
+        self.title = title
+
+    def AddGlobal(self, fglobal):
+        self.fglobal = fglobal
+
+    def AddDefaults(self, defaults):
+        self.defaults = defaults
+
     def AddBeam(self, beam):
         self.beam = beam
+
+    def AddRandomiz(self, randomiz):
+        self.randomiz = randomiz
+
+    def AddStart(self, start):
+        self.start = start
+
+    def AddUserdump(self, userdump):
+        self.userdump = userdump
 
     def _MakeBookkeepingInfo(self):
 
@@ -478,7 +501,20 @@ class Machine(object) :
         geant4GDMLFileName = filename+".gdml"
         bookkeepignFileName = filename+".json"
 
-        self.beam.AddRegistry(freg)
+        if self.title:
+            self.title.AddRegistry(freg)
+        if self.fglobal:
+            self.fglobal.AddRegistry(freg)
+        if self.defaults :
+            self.defaults.AddRegistry(freg)
+        if self.beam :
+            self.beam.AddRegistry(freg)
+        if self.randomiz :
+            self.randomiz.AddRegistry(freg)
+        if self.start :
+            self.start.AddRegistry(freg)
+        if self.userdump :
+            self.userdump.AddRegistry(freg)
 
         fw = _pyg4.fluka.Writer()
         fw.addDetector(self.flukaregistry)
@@ -503,9 +539,17 @@ class Machine(object) :
 
     def MakeFlukaModel(self):
 
+        # initial world size
+        extent = self.GetModelExtent()
+
+        # sizes in cm
+        xmax = max(abs(extent[0][0]), abs(extent[1][0]))*100+300
+        ymax = max(abs(extent[0][1]), abs(extent[1][1]))*100+300
+        zmax = max(abs(extent[0][2]), abs(extent[1][2]))*100+300
+
         # make world region and surrounding black body
-        self.MakeFlukaInitialGeometry()
-        self.MakeGeant4InitialGeometry()
+        self.MakeFlukaInitialGeometry(worldsize=[xmax,ymax,zmax])
+        self.MakeGeant4InitialGeometry(worldsize=[2*xmax*10, 2*ymax*10, 2*zmax*10])
 
         # fix faces of elements
         self._FixElementFaces(view=False)
@@ -560,7 +604,7 @@ class Machine(object) :
         self.worldLogical = _pyg4.geant4.LogicalVolume(worldSolid, worldMaterial, "worldLogical", self.g4registry)
         self.g4registry.setWorldVolume(self.worldLogical)
 
-    def MakeFlukaInitialGeometry(self, worldsize = [100, 100, 100], worldmaterial = "AIR"):
+    def MakeFlukaInitialGeometry(self, worldsize = [250, 250, 250], worldmaterial = "AIR"):
         blackbody = _pyg4.fluka.RPP("BLKBODY",
                                -2*worldsize[0],2*worldsize[0],
                                -2*worldsize[1],2*worldsize[1],
@@ -1237,6 +1281,29 @@ class Machine(object) :
 
     def _LoadGDMLGeometry(self, element):
         geometryFile = self._GetDictVariable(element, "geometryFile", "None")
+
+
+    def GetModelExtent(self):
+        # loop over positions and find maxima
+        vmin = [9e99, 9e99, 9e99]
+        vmax = [-9e99, -9e99, -9e99]
+
+        for p in self.midint :
+            if p[0] < vmin[0] :
+                vmin[0] = p[0]
+            if p[1] < vmin[1] :
+                vmin[1] = p[1]
+            if p[2] < vmin[2] :
+                vmin[2] = p[2]
+
+            if p[0] > vmax[0]:
+                vmax[0] = p[0]
+            if p[1] > vmax[1] :
+                vmax[1] = p[1]
+            if p[2] > vmax[2] :
+                vmax[2] = p[2]
+
+        return [vmin,vmax]
 
     def ViewGeant4(self, separateMeshes = False):
         if not separateMeshes :
