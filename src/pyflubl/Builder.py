@@ -380,6 +380,10 @@ class Machine(object) :
     def AddJoin(self):
         pass
 
+    def AddCustom(self, name, length, containerLV):
+        e = Element(name, "custom", length, containerLV=containerLV)
+        self.Append(e)
+
     def AddDrift(self,name, length, **kwargs):
         # beampipe
         # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
@@ -572,6 +576,9 @@ class Machine(object) :
     def ElementFactory(self, e, r, t,
                        g4add = True,
                        fc = True):
+        # gap?
+        if e.category == "custom":
+            return self.MakeFlukaCustom(e, r, t*1000, g4add, fc)
         if e.category == "drift":
             return self.MakeFlukaBeamPipe1(name=e.name, element=e,
                                            rotation=r, translation=t * 1000,
@@ -728,6 +735,25 @@ class Machine(object) :
         # make transformed mesh for overlaps
         outerMesh = self._MakePlacedMeshFromPV(bpouterphysical)
         return {"placedmesh":outerMesh}
+
+    def MakeFlukaCustom(self, element,
+                        rotation=_np.array([[1,0,0],[0,1,0],[0,0,1]]),
+                        translation=_np.array([0,0,0]),
+                        geant4RegistryAdd=False,
+                        flukaConvert=True):
+        name = element.name
+        g4registry = self._GetRegistry(geant4RegistryAdd)
+        rot = _matrix2tbxyz(_np.linalg.inv(rotation @ _tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, -_np.pi / 2, 0])))
+        lv = element.containerLV
+        pv = _pyg4.geant4.PhysicalVolume(rot,
+                                         translation,
+                                         lv,
+                                         name + "_pv",
+                                         self.worldLogical,
+                                         g4registry)
+
+        return self._MakeFlukaComponentCommon(name, lv, pv, flukaConvert, rotation, translation, "custom")
+
 
     def MakeFlukaBeamPipe1(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
