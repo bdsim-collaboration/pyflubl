@@ -2,6 +2,7 @@ try: # Deprecated, removed in Python 3.10
     from collections import MutableMapping as _MutableMapping
 except ImportError: # Python 3.10 onwards.
     from collections.abc import MutableMapping as _MutableMapping
+from collections import defaultdict as _defaultdict
 import numbers as _numbers
 
 import numpy as _np
@@ -288,7 +289,7 @@ class Machine(object) :
         self.start = None
 
         # element to book-keeping-dict information
-        self.elementBookkeeping = _OrderedDict()
+        self.elementBookkeeping = _defaultdict(dict)
 
         # persistent book keeping
         self.nameRegion = {}
