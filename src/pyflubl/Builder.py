@@ -479,9 +479,8 @@ class Machine(object):
 
 
     def _WriteBookkeepingInfo(self, fileName="output.json", pretty=True):
-
-        if not self.finished :
-            self._makeBookkeepingInfo()
+        if not self.finished:
+            self._MakeBookkeepingInfo()
 
         jsonDumpDict = _OrderedDict()
         jsonDumpDict["elements"] = self.elementBookkeeping
