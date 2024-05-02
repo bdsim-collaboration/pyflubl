@@ -153,6 +153,7 @@ class ElementBase(_MutableMapping):
         s += ';\n'
         return s
 
+
 class Element(ElementBase):
     def __init__(self, name = "element", category = None, length = 0.0,
                  transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]),
@@ -185,9 +186,10 @@ class Element(ElementBase):
     def __repr__(self):
         s = "{}: {}".format(self.name, self.category)
         return s
-class SplitOrJoinElement(Element) :
-    def __init__(self, length = 0, transforms = None, lines = None, type = "split", **kwargs):
 
+
+class SplitOrJoinElement(Element):
+    def __init__(self, length=0, transforms=None, lines=None, type="split", **kwargs):
         super().__init__()
 
         if transforms :
@@ -260,8 +262,10 @@ class Line(list) :
         for item in self:
             s += str(item) #uses elements __repr__ function
         return s
-class Machine(object) :
-    def __init__(self, bakeTransforms = False):
+
+
+class Machine(object):
+    def __init__(self, bakeTransforms=False):
         self.elements = {}
         self.prototypes = {}
         self.sequence = []
@@ -368,12 +372,11 @@ class Machine(object) :
                 self.endint.append(self.endint[-1] + self.midrotationint[-1] @ delta)
 
     def AddElement(self, item):
-
-        if item is not Element :
+        if item is not Element:
             msg = "Only Elements or Lines can be added to the machine"
             raise TypeError(msg)
-
         self.Append(item)
+
     def AddSplit(self):
         pass
 
@@ -432,7 +435,6 @@ class Machine(object) :
         # transformation to be populated when built
         self.prototypes[name] = {"element":e, "rotation":None, "translation":None}
 
-
     def AddScoringHistogram(self):
         pass
 
@@ -442,7 +444,6 @@ class Machine(object) :
     def AddSamplerPlane(self, name, length, **kwargs):
         e = Element(name=name, category="sampler_plane", length = length)
         self.Append(e)
-
 
     def AddTitle(self, title):
         self.title = title
@@ -466,7 +467,6 @@ class Machine(object) :
         self.userdump = userdump
 
     def _MakeBookkeepingInfo(self):
-
         self.finished = True
         # region number to name
         for i, r in enumerate(self.flukaregistry.regionDict) :
@@ -543,7 +543,6 @@ class Machine(object) :
             # print(element.category)
 
     def MakeFlukaModel(self):
-
         # initial world size
         extent = self.GetModelExtent()
 
@@ -568,7 +567,7 @@ class Machine(object) :
             e = self.elements[s]
             self.ElementFactory(e,r,t)
 
-        # make book keeping info
+        # make bookkeeping info
         self._MakeBookkeepingInfo()
 
         return self.flukaregistry
