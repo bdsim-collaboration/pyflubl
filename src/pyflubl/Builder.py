@@ -25,13 +25,22 @@ pyflublcategories = [
     'rbend',
     'sbend',
     'quadrupole',
-    'sampler_plane'
+    'custom',
+    'sampler_plane',
+    'gap'
     ]
+pyflublcategories_straight = [
+    'drift',
+    'quadrupole',
+    'custom',
+    'sampler_plane',
+    'gap'
+]
 
 
 def _CalculateElementTransformation(e):
-    if e.category == "drift" or  \
-       e.category == "quadrupole" :
+
+    if e.category in pyflublcategories_straight:
         rotation = _np.array([[1,0,0],
                               [0,1,0],
                               [0,0,1]])
@@ -73,6 +82,8 @@ def _CalculateElementTransformation(e):
         delta = _np.array([0,0,e.length])
 
         return [midrotation, endrotation, delta]
+    else:
+        raise TypeError("unknown type for transformation")
 
 class ElementBase(_MutableMapping):
     """
