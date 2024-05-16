@@ -407,8 +407,8 @@ class Machine(object):
     def AddJoin(self):
         pass
 
-    def AddCustom(self, name, length, containerLV):
-        e = Element(name, "custom", length, containerLV=containerLV)
+    def AddCustom(self, name, length, containerLV, **kwargs):
+        e = ElementCustom(name, length, containerLV, **kwargs)
         self.Append(e)
 
     def AddDrift(self, name, length, **kwargs):
