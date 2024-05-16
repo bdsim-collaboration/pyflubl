@@ -199,12 +199,22 @@ class Element(ElementBase):
         return s
 
 
+class ElementCustom(Element):
+    def __init__(self, name, length, containerLV, transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]), **kwargs):
+        super().__init__(name, "custom", length, transform)
+        self.containerLV = containerLV
+
+class ElementGap(Element):
+    def __init__(self, length, transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
+        super().__init__("a_nameless_gap", "gap", length, transform)
+
+
 class SplitOrJoinElement(Element):
     def __init__(self, length=0, transforms=None, lines=None, type="split", **kwargs):
         super().__init__()
 
         if transforms :
-            if type(transforms) is list or type(transforms) is _np.array :
+            if type(transforms) is list or type(transforms) is _np.array:
                 if transforms[0] is _np.array:
                     self.transforms = transforms
                 else :
@@ -351,6 +361,8 @@ class Machine(object):
         if not isinstance(item, (Element, Line)):
             msg = "Only Elements or Lines can be added to the machine"
             raise TypeError(msg)
+        elif isinstance(item, ElementGap):
+            pass # don't bother trying to cache the name, it has none
         elif item.name not in list(self.elements.keys()):
             #hasn't been used before - define it
             if type(item) is Line:
@@ -365,7 +377,8 @@ class Machine(object):
         # add to the sequence - optional as we may be appending a parent definition to the list
         # of objects to write before the main definitions.
         if addToSequence:
-            self.sequence.append(item.name)
+            if not isinstance(item, ElementGap):
+                self.sequence.append(item.name)
             self.length += item.length
             self.lenint.append(self.length)
 
@@ -403,6 +416,10 @@ class Machine(object):
         # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
         # vacuumMaterial, beampipeThickness, beampipeMaterial
         e = Element(name=name, category="drift", length=length, **kwargs)
+        self.Append(e)
+
+    def AddGap(self, length):
+        e = ElementGap(length)
         self.Append(e)
 
     def AddRBend(self, name, length,  **kwargs):
