@@ -222,7 +222,7 @@ class SplitOrJoinElement(Element):
         pass
 
 
-class Line(list) :
+class Line(list):
     def __init__(self, name, *args):
         self.category = "line"
         for item in args[0]:
@@ -295,7 +295,7 @@ class Machine(object):
         # element to book-keeping-dict information
         self.elementBookkeeping = _defaultdict(dict)
 
-        # persistent book keeping
+        # persistent bookkeeping
         self.nameRegion = {}
         self.regionnumber_regionname = {}
         self.regionname_regionnumber = {}
@@ -387,7 +387,7 @@ class Machine(object):
         e = Element(name, "custom", length, containerLV=containerLV)
         self.Append(e)
 
-    def AddDrift(self,name, length, **kwargs):
+    def AddDrift(self, name, length, **kwargs):
         # beampipe
         # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
         # vacuumMaterial, beampipeThickness, beampipeMaterial

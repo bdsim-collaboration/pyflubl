@@ -15,8 +15,7 @@ from pyg4ometry.convert.geant42Fluka import geant4PhysicalVolume2Fluka as _geant
 from pyg4ometry.convert.geant42Fluka import geant4MaterialDict2Fluka as _geant4MaterialDict2Fluka
 from pyg4ometry.fluka.directive import rotoTranslationFromTra2 as _rotoTranslationFromTra2
 
-class FlukaMachine :
-
+class FlukaMachine:
     def __init__(self, useLattice = False, worldSize = (10000,10000,10000), storageSize=(100,100,100), storageLocation=(0,0,0)):
 
         # temporary book keeping

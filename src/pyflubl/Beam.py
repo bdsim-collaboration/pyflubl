@@ -1,5 +1,6 @@
 from pyg4ometry.fluka.card import Card as _Card
-class Beam :
+
+class Beam:
     def __init__(self,
                  energy=1.0, # BEAM WHAT(1) >0.0 GeV/c <0.0 GeV
                  energySpread=0.0, # BEAM WHAT(2) >0.0 GeV, <0.0 FWHM of gaussian
