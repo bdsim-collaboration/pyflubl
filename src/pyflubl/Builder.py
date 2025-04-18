@@ -8,7 +8,7 @@ import numpy as _np
 import json as _json
 import copy as _copy
 import pprint as _pprint
-from collections import OrderedDict as _OrderedDict
+from collections import defaultdict as _defaultdict
 import random as _random
 
 import pyg4ometry as _pyg4
@@ -289,7 +289,7 @@ class Machine(object) :
         self.userdump = None
 
         # element to book-keeping-dict information
-        self.elementBookkeeping = _OrderedDict()
+        self.elementBookkeeping = _defaultdict()
 
         # persistent book keeping
         self.nameRegion = {}
@@ -479,7 +479,7 @@ class Machine(object) :
         if not self.finished :
             self._makeBookkeepingInfo()
 
-        jsonDumpDict = _OrderedDict()
+        jsonDumpDict = _defaultdict()
         jsonDumpDict["elements"] = self.elementBookkeeping
         jsonDumpDict["regionname_regionnumber"] = self.regionname_regionnumber
         jsonDumpDict["regionnumber_regionname"] = self.regionnumber_regionname
