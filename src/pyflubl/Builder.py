@@ -864,42 +864,10 @@ class Machine(object) :
                                                         g4registry)
 
 
-        # convert materials
-        materialNameSet = outerlogical.makeMaterialNameSet()
-        self._MakeFlukaMaterials(list(materialNameSet))
-
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
-        if flukaConvert :
-            flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(outerphysical,
-                                                                                mtra=rotation,
-                                                                                tra=translation,
-                                                                                flukaRegistry=self.flukaregistry,
-                                                                                flukaNameCount=self.flukanamecount,
-                                                                                bakeTransforms=self.bakeTransforms)
 
-            # cut volume out of mother zone
-            for daughterzones in flukaouterregion.zones:
-                self.worldzone.addSubtraction(daughterzones)
-
-        # make book keeping information
-        self.elementBookkeeping[name] = {}
-        self.elementBookkeeping[name]['category'] = 'sbend'
-
-        # needed to book keep potentially deep lv-pv constructions in conversion
-        physicalVolumeNames = outerlogical.makeLogicalPhysicalNameSets()[1]
-        physicalVolumeNames.add(outerphysical.name)
-        self.elementBookkeeping[name]['physicalVolumes'] = list(physicalVolumeNames)
-        try :
-            self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
-        except KeyError :
-            pass
-
-        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
-        self.elementBookkeeping[name]['translation'] = translation.tolist()
-
-        # make transformed mesh for overlaps
-        outerMesh = self._MakePlacedMeshFromPV(outerphysical)
-        return {"placedmesh":outerMesh}
+        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+                                              rotation, translation, "sbend")
 
 
     def MakeFlukaQuadrupole(self, name, element,
