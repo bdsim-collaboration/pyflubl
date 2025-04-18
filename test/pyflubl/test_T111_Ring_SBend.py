@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import numpy as _np
 
-def test_T111_Ring_SBend() :
+def test_T111_ring_sbend() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Defaults('EM-CASCA')

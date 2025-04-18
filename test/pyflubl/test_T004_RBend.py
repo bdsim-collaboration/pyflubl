@@ -26,6 +26,6 @@ def test_T004_rbend() :
     m.AddSamplerPlane(name="s2", length=1e-6, samplersize=1)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "G4_STAINLESS-STEEL",
                beampipeRadius=30, beampipeThickness=5)
-    m.Write("T005_RBend")
+    m.Write("T004_RBend")
 
     return m

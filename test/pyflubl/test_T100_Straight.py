@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import numpy as _np
 
-def test_T100_Straight() :
+def test_T100_straight() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Defaults('EM-CASCA')

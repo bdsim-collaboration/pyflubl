@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import numpy as _np
 
-def test_T002_Drift_Cut() :
+def test_T002_drift_cut() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Defaults('EM-CASCA')

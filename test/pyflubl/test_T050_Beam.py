@@ -1,6 +1,6 @@
 import pyflubl as _pfbl
 
-def test_T050_Beam():
+def test_T050_beam():
 
     b = _pfbl.Beam(10, 0.01)
     b.AddBeamPosition(1, 2, 3, 4, 5, 6)
