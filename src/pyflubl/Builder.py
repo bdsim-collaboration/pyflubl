@@ -653,6 +653,45 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
+    def _MakeFlukaComponentCommon(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category):
+        # convert materials
+        materialNameSet = containerLV.makeMaterialNameSet()
+        self._MakeFlukaMaterials(list(materialNameSet))
+
+        # convert geometry
+        if flukaConvert:
+            flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(containerPV,
+                                                                                mtra=rotation,
+                                                                                tra=translation,
+                                                                                flukaRegistry=self.flukaregistry,
+                                                                                flukaNameCount=self.flukanamecount,
+                                                                                bakeTransforms=self.bakeTransforms)
+
+            # cut volume out of mother zone
+            for daughterzones in flukaouterregion.zones:
+                self.worldzone.addSubtraction(daughterzones)
+
+        # make bookkeeping information
+        self.elementBookkeeping[name]['category'] = category
+
+        # needed to book keep potentially deep lv-pv constructions in conversion
+        physicalVolumeNames = containerLV.makeLogicalPhysicalNameSets()[1]
+        physicalVolumeNames.add(containerPV.name)
+        self.elementBookkeeping[name]['physicalVolumes'] = list(physicalVolumeNames)
+        try:
+            self.elementBookkeeping[name]['flukaRegions'] = [self.flukaregistry.PhysVolToRegionMap[pv] for pv in
+                                                             self.elementBookkeeping[name]['physicalVolumes']]
+        except KeyError:
+            pass
+
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
+        # make transformed mesh for overlaps
+        outerMesh = self._MakePlacedMeshFromPV(containerPV)
+        return {"placedmesh": outerMesh}
+
+
     def MakeFlukaBeamPipe(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                           translation = _np.array([0,0,0]),
@@ -688,46 +727,9 @@ class Machine(object) :
         bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
 
-        # convert materials
-        materialNameSet = bpouterlogical.makeMaterialNameSet()
-        self._MakeFlukaMaterials(list(materialNameSet))
 
-        # convert geometry
-        if flukaConvert :
-            flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(bpouterphysical,
-                                                                                mtra=rotation,
-                                                                                tra=translation,
-                                                                                flukaRegistry=self.flukaregistry,
-                                                                                flukaNameCount=self.flukanamecount,
-                                                                                bakeTransforms=self.bakeTransforms)
-
-            outer = _copy.deepcopy(outer)
-            # cut volume out of mother zone
-            for daughterzones in flukaouterregion.zones:
-                if outer:
-                    outer.addSubtraction(daughterzones)
-                else:
-                    self.worldzone.addSubtraction(daughterzones)
-
-        # make book keeping information
-        self.elementBookkeeping[name] = {}
-        self.elementBookkeeping[name]['category'] = 'drift'
-
-        # needed to book keep potentially deep lv-pv constructions in conversion
-        physicalVolumeNames = bpouterlogical.makeLogicalPhysicalNameSets()[1]
-        physicalVolumeNames.add(bpouterphysical.name)
-        self.elementBookkeeping[name]['physicalVolumes'] = list(physicalVolumeNames)
-        try :
-            self.elementBookkeeping[name]['flukaRegions'] = [ self.flukaregistry.PhysVolToRegionMap[pv] for pv in self.elementBookkeeping[name]['physicalVolumes']]
-        except KeyError :
-            pass
-
-        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
-        self.elementBookkeeping[name]['translation'] = translation.tolist()
-
-        # make transformed mesh for overlaps
-        outerMesh = self._MakePlacedMeshFromPV(bpouterphysical)
-        return {"placedmesh":outerMesh}
+        return self._MakeFlukaComponentCommon(name,bpouterlogical, bpouterphysical, flukaConvert,
+                                              rotation, translation, "drift")
 
     def MakeFlukaBeamPipe1(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
