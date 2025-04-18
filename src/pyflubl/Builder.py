@@ -286,6 +286,7 @@ class Machine(object) :
         self.beam = None
         self.randomiz = None
         self.start = None
+        self.userdump = None
 
         # element to book-keeping-dict information
         self.elementBookkeeping = _OrderedDict()
