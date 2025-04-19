@@ -30,7 +30,9 @@ pyflublcategories = [
 
 def _CalculateElementTransformation(e):
     if e.category == "drift" or  \
-       e.category == "quadrupole" :
+       e.category == "quadrupole" or \
+       e.category == "gap" or \
+       e.category == "custom" :
         rotation = _np.array([[1,0,0],
                               [0,1,0],
                               [0,0,1]])
@@ -184,6 +186,7 @@ class Element(ElementBase):
     def __repr__(self):
         s = "{}: {}".format(self.name, self.category)
         return s
+
 class SplitOrJoinElement(Element) :
     def __init__(self, length = 0, transforms = None, lines = None, type = "split", **kwargs):
 
@@ -218,6 +221,14 @@ class SplitOrJoinElement(Element) :
     def AddMachine(self, transform, machine):
         pass
 
+class ElementCustom(Element):
+    def __init__(self, name, length, containerLV, transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]), **kwargs):
+        super().__init__(name, "custom", length, transform)
+        self.containerLV = containerLV
+
+class ElementGap(Element):
+    def __init__(self, name, length, transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
+        super().__init__(name, "gap", length, transform)
 
 class Line(list) :
     def __init__(self, name, *args):
@@ -412,6 +423,14 @@ class Machine(object) :
         e = Element(name=name, category="quadrupole", length = length, **kwargs)
         self.Append(e)
 
+    def AddGap(self, name, length):
+        e = ElementGap(name, length)
+        self.Append(e)
+
+    def AddCustom(self, name, length, **kwargs):
+        e = ElementCustom(name, length, containerLV = kwargs['customlv'])
+        self.Append(e)
+
     def AddLatticeInstance(self, name, prototypeName):
         e = Element(name=name,
                     category="lattice_instance",
@@ -588,6 +607,14 @@ class Machine(object) :
             return self.MakeFlukaQuadrupole(name=e.name, element=e,
                                             rotation=r, translation=t * 1000,
                                             geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "gap" :
+            return self.MakeFlukaGap(name=e.name, element=e,
+                                     rotation=r, translation=t * 1000,
+                                     geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "custom":
+            return self.MakeFlukaCustom(name=e.name, element=e,
+                                        rotation=r, translation=t * 1000,
+                                        geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "sampler_plane":
             return self.MakeFlukaSampler(name=e.name, element=e,
                                          rotation=r, translation=t * 1000,
@@ -902,6 +929,56 @@ class Machine(object) :
         return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "quad")
 
+    def MakeFlukaGap(self, name, element,
+                     rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                     translation = _np.array([0,0,0]),
+                     geant4RegistryAdd = False,
+                     flukaConvert = True):
+
+        # registry
+        g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # length
+        length = element.length * 1000
+
+        # make box of correct size
+        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",500,500,length,g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,"G4_AIR",name+"_lv",g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
+                                                      translation,
+                                                      outerlogical,
+                                                      name+"_pv",
+                                                      self.worldLogical,
+                                                      g4registry)
+
+        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+                                              rotation, translation, "gap")
+
+    def MakeFlukaCustom(self, name, element,
+                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                        translation = _np.array([0,0,0]),
+                        geant4RegistryAdd = False,
+                        flukaConvert = True):
+
+        # registry
+        g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # length
+        length = element.length * 1000
+
+        # make box of correct size
+        outerlogical  = element.containerLV
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
+                                                      translation,
+                                                      outerlogical,
+                                                      name+"_pv",
+                                                      self.worldLogical,
+                                                      g4registry)
+
+        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+                                              rotation, translation, "gap")
+
+    # TODO remove this as custom
     def MakeFlukaGeometryPlacement(self,
                                    name,
                                    geometry,
@@ -1096,7 +1173,7 @@ class Machine(object) :
                     elif e.category == "drift" and je.category == "rbend"  and iElement != 0 :
                         e['e2'] = je['angle']/2
                     elif e.category == "drift" and je.category == "rbend"  and iElement == 0 :
-                        e['e2'] = je['angle']/2
+                        e['e1'] = je['angle']/2
 
                 if view:
                     v.addMesh(elementName+jElementName,jinter)
