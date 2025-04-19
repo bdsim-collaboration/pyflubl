@@ -419,6 +419,13 @@ class Machine(object) :
         e = Element(name=name, category="sbend", length = length, **kwargs)
         self.Append(e)
 
+    def AddSBendSplit(self, name, length, nsplit=10, **kwargs):
+        angle = kwargs['angle']/nsplit
+        length = length/nsplit
+        for i in range(0,nsplit):
+            self.AddSBend(name+"_split_"+str(i), length, angle = angle)
+
+
     def AddQuadrupole(self, name, length, **kwargs):
         e = Element(name=name, category="quadrupole", length = length, **kwargs)
         self.Append(e)
