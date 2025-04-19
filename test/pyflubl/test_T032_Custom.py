@@ -2,7 +2,7 @@ import pyflubl as _pfbl
 import pyg4ometry as _pyg4
 import numpy as _np
 
-def test_T032_custom() :
+def test_T032_custom_GDML() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Defaults('EM-CASCA')
@@ -24,9 +24,9 @@ def test_T032_custom() :
     outersolid = _pyg4.geant4.solid.Tubs("custom_solid",0, 750, 1000, 0, _np.pi*2, g4registry)
     outerlogical = _pyg4.geant4.LogicalVolume(outersolid, "G4_AIR", "custom_lv", g4registry)
 
-    m.AddCustom(name="c1", length=1, customlv = outerlogical)
+    m.AddCustomGDML(name="c1", length=1, customlv = outerlogical)
     m.AddSamplerPlane(name="s1", length=1e-6)
-    m.Write("T032_Custom")
+    m.Write("T032_Custom_GDML")
 
     return m
 

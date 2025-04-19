@@ -434,7 +434,7 @@ class Machine(object) :
         e = ElementGap(name, length)
         self.Append(e)
 
-    def AddCustom(self, name, length, **kwargs):
+    def AddCustomGDML(self, name, length, **kwargs):
         e = ElementCustom(name, length, containerLV = kwargs['customlv'])
         self.Append(e)
 
