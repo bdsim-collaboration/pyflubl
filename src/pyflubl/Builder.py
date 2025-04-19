@@ -32,7 +32,8 @@ def _CalculateElementTransformation(e):
     if e.category == "drift" or  \
        e.category == "quadrupole" or \
        e.category == "gap" or \
-       e.category == "custom" :
+       e.category == "customG4" or \
+       e.category == "customFluka"     :
         rotation = _np.array([[1,0,0],
                               [0,1,0],
                               [0,0,1]])
@@ -223,8 +224,16 @@ class SplitOrJoinElement(Element) :
 
 class ElementCustomG4(Element):
     def __init__(self, name, length, containerLV, transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]), **kwargs):
-        super().__init__(name, "custom", length, transform)
+        super().__init__(name, "customG4", length, transform)
         self.containerLV = containerLV
+
+class ElementCustomFluka(Element):
+    def __init__(self, name, length, customOuterRegions, customInnerRegions, flukaRegistry,
+                 transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]), **kwargs):
+        super().__init__(name, "customFluka", length, transform)
+        self.outer_regions = customOuterRegions
+        self.inner_regions = customInnerRegions
+        self.fluka_registry = flukaRegistry
 
 class ElementGap(Element):
     def __init__(self, name, length, transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
@@ -435,7 +444,14 @@ class Machine(object) :
         self.Append(e)
 
     def AddCustomG4(self, name, length, **kwargs):
-        e = ElementCustomG4(name, length, containerLV = kwargs['customlv'])
+        e = ElementCustomG4(name, length, containerLV = kwargs['customLV'])
+        self.Append(e)
+
+    def AddCustomFluka(self, name, length, **kwargs):
+        e = ElementCustomFluka(name, length,
+                               customOuterRegions = kwargs['customOuterRegions'],
+                               customInnerRegions = kwargs['customInnerRegions'],
+                               flukaRegistry = kwargs['flukaRegistry'])
         self.Append(e)
 
     def AddLatticeInstance(self, name, prototypeName):
@@ -570,9 +586,9 @@ class Machine(object) :
         extent = self.GetModelExtent()
 
         # sizes in cm
-        xmax = max(abs(extent[0][0]), abs(extent[1][0]))*100+300
-        ymax = max(abs(extent[0][1]), abs(extent[1][1]))*100+300
-        zmax = max(abs(extent[0][2]), abs(extent[1][2]))*100+300
+        xmax = max(abs(extent[0][0]), abs(extent[1][0]))*100 + 1000
+        ymax = max(abs(extent[0][1]), abs(extent[1][1]))*100 + 1000
+        zmax = max(abs(extent[0][2]), abs(extent[1][2]))*100 + 1000
 
         # make world region and surrounding black body
         self.MakeFlukaInitialGeometry(worldsize=[xmax,ymax,zmax])
@@ -618,10 +634,13 @@ class Machine(object) :
             return self.MakeFlukaGap(name=e.name, element=e,
                                      rotation=r, translation=t * 1000,
                                      geant4RegistryAdd=g4add, flukaConvert=fc)
-        elif e.category == "custom":
-            return self.MakeFlukaCustom(name=e.name, element=e,
-                                        rotation=r, translation=t * 1000,
-                                        geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "customG4":
+            return self.MakeFlukaCustomG4(name=e.name, element=e,
+                                          rotation=r, translation=t * 1000,
+                                          geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "customFluka":
+            return self.MakeFlukaCustomFluka(name=e.name, element=e,
+                                             rotation=r, translation=t * 1000)
         elif e.category == "sampler_plane":
             return self.MakeFlukaSampler(name=e.name, element=e,
                                          rotation=r, translation=t * 1000,
@@ -961,11 +980,11 @@ class Machine(object) :
         return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap")
 
-    def MakeFlukaCustom(self, name, element,
-                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
-                        translation = _np.array([0,0,0]),
-                        geant4RegistryAdd = False,
-                        flukaConvert = True):
+    def MakeFlukaCustomG4(self, name, element,
+                          rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                          translation = _np.array([0,0,0]),
+                          geant4RegistryAdd = False,
+                          flukaConvert = True):
 
         # registry
         g4registry = self._GetRegistry(geant4RegistryAdd)
@@ -984,6 +1003,48 @@ class Machine(object) :
 
         return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap")
+
+    def MakeFlukaCustomFluka(self, name, element,
+                             rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                             translation = _np.array([0,0,0])):
+        outer_regions = element.outer_regions
+        inner_regions = element.inner_regions
+
+        # transfer bodies and regions to fluka registry
+        for region in outer_regions + inner_regions :
+            if region.name not in self.flukaregistry.regionDict :
+                self.flukaregistry.addRegion(region)
+            for zone in region.zones :
+                for body in zone.bodies() :
+                    if body.name not in self.flukaregistry.bodyDict :
+                        self.flukaregistry.addBody(body)
+
+        # transfer materials to fluka registry
+        # loop over regions, find assignmas, find material
+        for region in outer_regions + inner_regions:
+            region_name = region.name
+            fluka_registry = element.fluka_registry
+
+            mat = fluka_registry.assignmas[region.name]
+            self.flukaregistry.addMaterialAssignments(mat[0],region.name)
+
+        # cut volume out of mother zone
+        for outer_region in outer_regions :
+            for outer_zones in outer_region.zones:
+                self.worldzone.addSubtraction(outer_zones)
+
+        # loop over outer regions, form meshes and union
+        first = True
+        for outer_region in outer_regions :
+            if first :
+                m = outer_region.mesh()
+                first = False
+            else :
+                m.union(outer_region.mesh())
+
+        m.scale(10,10,10)
+
+        return {"placedmesh": m}
 
     # TODO remove this as custom
     def MakeFlukaGeometryPlacement(self,
