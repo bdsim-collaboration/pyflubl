@@ -221,7 +221,7 @@ class SplitOrJoinElement(Element) :
     def AddMachine(self, transform, machine):
         pass
 
-class ElementCustom(Element):
+class ElementCustomG4(Element):
     def __init__(self, name, length, containerLV, transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]), **kwargs):
         super().__init__(name, "custom", length, transform)
         self.containerLV = containerLV
@@ -434,8 +434,8 @@ class Machine(object) :
         e = ElementGap(name, length)
         self.Append(e)
 
-    def AddCustomGDML(self, name, length, **kwargs):
-        e = ElementCustom(name, length, containerLV = kwargs['customlv'])
+    def AddCustomG4(self, name, length, **kwargs):
+        e = ElementCustomG4(name, length, containerLV = kwargs['customlv'])
         self.Append(e)
 
     def AddLatticeInstance(self, name, prototypeName):
