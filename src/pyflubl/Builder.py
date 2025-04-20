@@ -795,7 +795,7 @@ class Machine(object) :
 
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
-        g4material = self._GetDictVariable(element,"beampipeMaterial","Temp")
+        g4material = self._GetDictVariable(element,"beampipeMaterial","G4_Galactic")
         beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
         beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
         e1 = self._GetDictVariable(element,"e1",0)
@@ -1010,6 +1010,11 @@ class Machine(object) :
         outer_regions = element.outer_regions
         inner_regions = element.inner_regions
 
+        # cut out regions for placement
+        for region in outer_regions + inner_regions :
+            for zones in region.zones:
+                self.worldzone.addSubtraction(zones)
+
         # transfer bodies and regions to fluka registry
         for region in outer_regions + inner_regions :
             if region.name not in self.flukaregistry.regionDict :
@@ -1017,6 +1022,8 @@ class Machine(object) :
             for zone in region.zones :
                 for body in zone.bodies() :
                     if body.name not in self.flukaregistry.bodyDict :
+                        body = body._transform(rotation, translation)
+                        body._scale(0.1)
                         self.flukaregistry.addBody(body)
 
         # transfer materials to fluka registry
@@ -1027,11 +1034,6 @@ class Machine(object) :
 
             mat = fluka_registry.assignmas[region.name]
             self.flukaregistry.addMaterialAssignments(mat[0],region.name)
-
-        # cut volume out of mother zone
-        for outer_region in outer_regions :
-            for outer_zones in outer_region.zones:
-                self.worldzone.addSubtraction(outer_zones)
 
         # loop over outer regions, form meshes and union
         first = True

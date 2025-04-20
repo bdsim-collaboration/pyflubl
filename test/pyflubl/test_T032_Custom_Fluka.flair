@@ -1,7 +1,7 @@
 # flair project file
 Version: 300
 Mode: fluka
-md5: b71bc78bee2b1d41ef56ade9e9ed70b4
+md5: c90b2426027953e86a2968171366c5d9
 Input:
 TITLE
 *Set the defaults for precision simulations
@@ -16,11 +16,9 @@ SPH blkbody 0.0 0.0 0.0 100000.0
 *Void sphere
 SPH void 0.0 0.0 0.0 10000.0
 *Cylindrical target
-RCC target 0.0 0.0 45.0 0.0 0.0 10.0 5.0
-RCC shield 0.0 0 0 0 0 100.0 50
-	@select=8
-RCC beam 0 0 0 0 0 100.0 10.0
-	@select=8
+RCC target 0 0 -5.0 0 0 10.0 5.0
+RCC shield 0 0 -50.0 0 0 100.0 50.0
+RCC beam 0 0 -50.0 0 0 100.0 10.0
 END
 *Black hole
 REGION BLKBODY 5
@@ -28,13 +26,13 @@ REGION BLKBODY 5
 *Void around
 REGION VOID 5
 	+void -shield
+	@select=1
 *Target
 REGION TARGET 5
 	+target
-REGION SHIELD
+REGION SHIELD 5
 	+shield -beam
-	@select=1
-REGION BEAM
+REGION BEAM 5
 	+beam -target
 END
 GEOEND
@@ -56,6 +54,10 @@ Page: Flair
 # Run information
 Run: <default>
 End
+Geometry: Geometry
+	Frame.tsplit: 1.0
+	Frame.vsplit: 1.0
+End
 
 # Plots information
 Plot: Red
@@ -63,16 +65,16 @@ Plot: Red
 	basisu: 0 0 1
 	basisv: 1 0 0
 	coord: Z-X
-	extends: 143.99999999999994 72.43460764587522
+	extends: 248.83199999999997 175.70727576601666
 	group: Geometry
 	layer: Lattice
-	origin: 14.7956 0 76.0488
+	origin: -17.6497 0 116.27
 End
 Plot: Green
 	Type: Geometry
-	basisu: 0.836516 0.0173377 0.547668
+	basisu: 0.836516 0.0173376 0.547668
 	basisv: 0.224144 0.901221 -0.370891
-	extends: 100.0 50.30181086519115
+	extends: 100.0 50700.0
 	group: Geometry
 	layer: 3D
 End
@@ -80,14 +82,14 @@ Plot: Blue
 	Type: Geometry
 	basisu: 0 0 1
 	coord: Z-Y
-	extends: 100.0 50.30181086519115
+	extends: 100.0 0.2785515320334262
 	group: Geometry
 	layer: Lattice
 End
 Plot: Magenta
 	Type: Geometry
 	coord: X-Y
-	extends: 100.0 50.30181086519115
+	extends: 100.0 0.2785515320334262
 	group: Geometry
 	layer: Lattice
 End

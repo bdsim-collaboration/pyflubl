@@ -13,9 +13,9 @@ SPH blkbody    0.0 0.0 0.0 100000.0
 *Void sphere
 SPH void       0.0 0.0 0.0 10000.0
 *Cylindrical target
-RCC target     0.0 0.0 45.0 0.0 0.0 10.0 5.0
-RCC shield     0.0 0 0 0 0 100.0 50
-RCC beam       0 0 0 0 0 100.0 10.0
+RCC target     0 0 -5.0 0 0 10.0 5.0
+RCC shield     0 0 -50.0 0 0 100.0 50.0
+RCC beam       0 0 -50.0 0 0 100.0 10.0
 END
 *Black hole
 BLKBODY      5 +blkbody -void
