@@ -228,11 +228,11 @@ class ElementCustomG4(Element):
         self.containerLV = containerLV
 
 class ElementCustomFluka(Element):
-    def __init__(self, name, length, customOuterRegions, customInnerRegions, flukaRegistry,
+    def __init__(self, name, length, customOuterBodies, customRegions, flukaRegistry,
                  transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]), **kwargs):
         super().__init__(name, "customFluka", length, transform)
-        self.outer_regions = customOuterRegions
-        self.inner_regions = customInnerRegions
+        self.outer_bodies = customOuterBodies
+        self.regions = customRegions
         self.fluka_registry = flukaRegistry
 
 class ElementGap(Element):
@@ -449,8 +449,8 @@ class Machine(object) :
 
     def AddCustomFluka(self, name, length, **kwargs):
         e = ElementCustomFluka(name, length,
-                               customOuterRegions = kwargs['customOuterRegions'],
-                               customInnerRegions = kwargs['customInnerRegions'],
+                               customOuterBodies = kwargs['customOuterBodies'],
+                               customRegions = kwargs['customRegions'],
                                flukaRegistry = kwargs['flukaRegistry'])
         self.Append(e)
 
@@ -640,7 +640,8 @@ class Machine(object) :
                                           geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "customFluka":
             return self.MakeFlukaCustomFluka(name=e.name, element=e,
-                                             rotation=r, translation=t * 1000)
+                                             rotation=r, translation=t * 1000,
+                                             flukaBuild=fc)
         elif e.category == "sampler_plane":
             return self.MakeFlukaSampler(name=e.name, element=e,
                                          rotation=r, translation=t * 1000,
@@ -1006,38 +1007,44 @@ class Machine(object) :
 
     def MakeFlukaCustomFluka(self, name, element,
                              rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
-                             translation = _np.array([0,0,0])):
-        outer_regions = element.outer_regions
-        inner_regions = element.inner_regions
+                             translation = _np.array([0,0,0]),
+                             flukaBuild = True):
 
-        # cut out regions for placement
-        for region in outer_regions + inner_regions :
-            for zones in region.zones:
-                self.worldzone.addSubtraction(zones)
+        outer_bodies = element.outer_bodies
+        regions = element.regions
 
-        # transfer bodies and regions to fluka registry
-        for region in outer_regions + inner_regions :
-            if region.name not in self.flukaregistry.regionDict :
-                self.flukaregistry.addRegion(region)
-            for zone in region.zones :
-                for body in zone.bodies() :
-                    if body.name not in self.flukaregistry.bodyDict :
-                        body = body._transform(rotation, translation)
-                        body._scale(0.1)
-                        self.flukaregistry.addBody(body)
+        if flukaBuild:
+            print('MakeFlukaCustomFluka')
 
-        # transfer materials to fluka registry
-        # loop over regions, find assignmas, find material
-        for region in outer_regions + inner_regions:
-            region_name = region.name
-            fluka_registry = element.fluka_registry
+            # cut out regions for placement
+            for body in outer_bodies:
+                z = _pyg4.fluka.Zone()
+                z.addIntersection(body)
+                self.worldzone.addSubtraction(z)
 
-            mat = fluka_registry.assignmas[region.name]
-            self.flukaregistry.addMaterialAssignments(mat[0],region.name)
+            # transfer bodies and regions to fluka registry
+            for region in regions:
+                if region.name not in self.flukaregistry.regionDict :
+                    self.flukaregistry.addRegion(region)
+                for zone in region.zones :
+                    for body in zone.bodies() :
+                        if body.name not in self.flukaregistry.bodyDict :
+                            body = body._transform(rotation, translation)
+                            body._scale(0.1)
+                            self.flukaregistry.addBody(body)
+
+            # transfer materials to fluka registry
+            # loop over regions, find assignmas, find material
+            for region in regions:
+                region_name = region.name
+                fluka_registry = element.fluka_registry
+
+                mat = fluka_registry.assignmas[region.name]
+                self.flukaregistry.addMaterialAssignments(mat[0],region.name)
 
         # loop over outer regions, form meshes and union
         first = True
-        for outer_region in outer_regions :
+        for outer_region in regions :
             if first :
                 m = outer_region.mesh()
                 first = False
@@ -1206,6 +1213,7 @@ class Machine(object) :
 
     def _FixElementFaces(self, view = True):
 
+        print("_FixElementFaces")
         if view :
             v = _pyg4.visualisation.VtkViewerNew()
             v.addAxes(2500)
@@ -1258,6 +1266,8 @@ class Machine(object) :
         if view :
             v.buildPipelinesAppend()
             v.view()
+
+        print("_FixElementFaces")
 
     def _MakeOffsetAndTiltTransforms(self, element, rotation, translation):
         offsetX = self._GetDictVariable(element,"offsetX",0)

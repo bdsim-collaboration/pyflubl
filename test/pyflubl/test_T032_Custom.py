@@ -51,18 +51,20 @@ def test_T032_custom_Fluka() :
     m.AddStart(s)
 
     # custom fluka geometry
-    reader = _pyg4.fluka.Reader("test_T032_Custom_Fluka.inp")
+    reader = _pyg4.fluka.Reader("test_T032_Custom_Fluka_Gap.inp")
     registry = reader.getRegistry()
 
-    outer_regions = [registry.regionDict[k] for k in ['SHIELD', 'BEAM']]
-    inner_regions = [registry.regionDict[k] for k in ['TARGET']]
+    outer_bodies = [registry.bodyDict[k] for k in ['outer']]
+    regions = [registry.regionDict[k] for k in ['OUTER','SHIELD','BEAM','TARGET']]
 
+
+    print(outer_bodies)
     m.AddDrift(name="d1", length=1)
     m.AddSBend(name="b1", length=1, angle=_np.pi/8)
     m.AddDrift(name="d2", length=1)
     m.AddCustomFluka(name="c1", length=1,
-                     customOuterRegions = outer_regions,
-                     customInnerRegions = inner_regions,
+                     customOuterBodies= outer_bodies,
+                     customRegions = regions,
                      flukaRegistry= registry)
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.AddDrift(name="d3",length=1)
