@@ -1,0 +1,37 @@
+TITLE
+
+*Set the defaults for precision simulations
+DEFAULTS                                                              PRECISIO
+*Define the beam characteristics
+BEAM
+*Define the beam position
+BEAMPOS
+GEOBEGIN                                                              COMBNAME
+    0    0          
+*Black body
+SPH blkbody    0.0 0.0 0.0 100000.0
+*Void sphere
+SPH void       0.0 0.0 0.0 10000.0
+*Cylindrical target
+RCC target     0.0 0.0 0.0 0.0 0.0 10.0 5.0
+RCC vacuum     120.0 0 -32.0 57.357643635105 0 81.915204428899 5.0
+RCC beampipe   120.0 0 -32.0 57.357643635105 0 81.915204428899 5.5
+END
+*Black hole
+BLKBODY      5 +blkbody -void
+*Void around
+VOID         5 +void -beampipe
+VACUUM       5 +vacuum
+BEAMPIPE     5 +beampipe -vacuum
+END
+GEOEND
+*..+....1....+....2....+....3....+....4....+....5....+....6....+....7..
+ASSIGNMA    BLCKHOLE   BLKBODY
+ASSIGNMA      VACUUM      VOID
+ASSIGNMA      VACUUM    VACUUM
+ASSIGNMA    BERYLLIU  BEAMPIPE
+*Set the random number seed
+RANDOMIZ         1.0
+*Set the number of primary histories to be simulated in the run
+START
+STOP

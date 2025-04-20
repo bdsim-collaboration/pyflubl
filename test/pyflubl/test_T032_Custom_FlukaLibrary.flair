@@ -1,0 +1,91 @@
+# flair project file
+Version: 300
+Mode: fluka
+md5: 2fd28a54f76b20fd36674f97f5fa18ee
+Input:
+TITLE
+*Set the defaults for precision simulations
+DEFAULTS PRECISIO
+*Define the beam characteristics
+BEAM
+*Define the beam position
+BEAMPOS
+GEOBEGIN COMBNAME
+*Black body
+SPH blkbody 0.0 0.0 0.0 100000.0
+*Void sphere
+SPH void 0.0 0.0 0.0 10000.0
+*Cylindrical target
+RCC target 0.0 0.0 0.0 0.0 0.0 10.0 5.0
+RCC vacuum 120.0 0 -32.0 57.357643635105 0 81.915204428899 5.0
+	@select=9
+RCC beampipe 120.0 0 -32.0 57.357643635105 0 81.915204428899 5.5
+	@select=9
+END
+*Black hole
+REGION BLKBODY 5
+	+blkbody -void
+*Void around
+REGION VOID 5
+	+void -beampipe
+REGION VACUUM
+	+vacuum
+REGION BEAMPIPE
+	+beampipe -vacuum
+END
+GEOEND
+*..+....1....+....2....+....3....+....4....+....5....+....6....+....7..
+ASSIGNMA , BLCKHOLE BLKBODY
+ASSIGNMA , VACUUM VOID
+ASSIGNMA , VACUUM VACUUM
+ASSIGNMA , BERYLLIU BEAMPIPE
+*Set the random number seed
+RANDOMIZ , 1.0
+*Set the number of primary histories to be simulated in the run
+START
+STOP
+EndInput
+
+Page: Flair
+
+# Run information
+Run: <default>
+End
+
+# Plots information
+Plot: Red
+	Type: Geometry
+	basisu: 0 0 1
+	basisv: 1 0 0
+	coord: Z-X
+	extends: 298.598399999999 199.62010027855086
+	group: Geometry
+	layer: Lattice
+	origin: 125.901 0 0.460584
+End
+Plot: Green
+	Type: Geometry
+	basisu: 0.836516 0.0173376 0.547668
+	basisv: 0.224144 0.901221 -0.370891
+	extends: 100.0 66.75977653631284
+	group: Geometry
+	layer: 3D
+	origin: 34.1222 29.9576 93.4148
+End
+Plot: Blue
+	Type: Geometry
+	basisu: 0 0 1
+	coord: Z-Y
+	extends: 358.3180799999998 238.54601983286892
+	group: Geometry
+	layer: Lattice
+	origin: 100 -107.137 -12.9488
+End
+Plot: Magenta
+	Type: Geometry
+	coord: X-Y
+	extends: 16.150558288984577 10.782076623093054
+	group: Geometry
+	layer: Lattice
+	origin: 99.9738 -0.727564 50
+End
