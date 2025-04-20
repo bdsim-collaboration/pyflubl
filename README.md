@@ -1,4 +1,4 @@
-pyflubl
-#######
+# Python FLUKA beamline geometry builds (pyflubl)
 
-FLUKA beamline builder.
+* Should interface with BDSIM
+* Requires pyg4ometry
