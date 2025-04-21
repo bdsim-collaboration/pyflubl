@@ -19,9 +19,9 @@ def test_IPAC_2025() :
     s = _pfbl.Start(10)
     m.AddStart(s)
 
-    m.AddDrift(name="d1", length=1)
+    m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSBendSplit(name="b1", length=1, angle=_np.pi/8)
-    m.AddDrift(name="d2", length=1)
+    m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSBendSplit(name="b2", length=1, angle=-_np.pi/8)
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.AddCustomFlukaFile(name="c1", length=1,
@@ -29,7 +29,7 @@ def test_IPAC_2025() :
                          outerBodies="outer",
                          regionNames="OUTER SHIELD BEAM TARGET")
     m.AddSamplerPlane(name="s2", length=1e-6)
-    m.AddDrift(name="d3", length=0.5)
+    m.AddDrift(name="d3", length=0.5, beampipeMaterial = "TUNGSTEN")
     m.Write("IPAC_2025")
 
     return m

@@ -18,14 +18,11 @@ def test_T004_rbend() :
     s = _pfbl.Start(10)
     m.AddStart(s)
 
-    m.AddDrift(name="d1", length=1, beampipeMaterial = "G4_STAINLESS-STEEL",
+    m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
     #m.AddSamplerPlane(name="s1", length=1e-6, samplersize=1)
-    m.AddRBend(name="rb1", length=2, angle=_np.pi/4, beampipeMaterial = "G4_STAINLESS-STEEL",
+    m.AddRBend(name="rb1", length=2, angle=_np.pi/4, beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
-    #m.AddSamplerPlane(name="s2", length=1e-6, samplersize=1)
-    #m.AddDrift(name="d2", length=1, beampipeMaterial = "G4_STAINLESS-STEEL",
-    #           beampipeRadius=30, beampipeThickness=5)
     m.Write("T004_RBend")
 
     return m

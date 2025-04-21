@@ -21,8 +21,13 @@ def test_T032_custom_G4() :
 
     # custom geometry
     g4registry = m._GetRegistry(True)
+    outerMaterial = _pyg4.geant4.MaterialSingleElement("AIR",
+                                                       atomic_number=1,
+                                                       atomic_weight=1,
+                                                       density=1)
+
     outersolid = _pyg4.geant4.solid.Tubs("custom_solid",0, 750, 1000, 0, _np.pi*2, g4registry)
-    outerlogical = _pyg4.geant4.LogicalVolume(outersolid, "G4_AIR", "custom_lv", g4registry)
+    outerlogical = _pyg4.geant4.LogicalVolume(outersolid, outerMaterial, "custom_lv", g4registry)
 
     m.AddDrift(name="d1", length=1)
     m.AddSBend(name="b1", length=1, angle=_np.pi/6)

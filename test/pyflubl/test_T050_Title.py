@@ -15,7 +15,7 @@ def test_T050_title() :
     m.AddBeam(b)
 
     m.AddDrift(name="d1", length=1,
-               beampipeMaterial = "G4_STAINLESS-STEEL",
+               beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T050_Title")

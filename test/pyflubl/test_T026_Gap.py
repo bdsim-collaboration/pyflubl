@@ -18,12 +18,12 @@ def test_T026_gap() :
     m.AddStart(s)
 
     m.AddDrift(name="d1", length=1,
-               beampipeMaterial = "G4_STAINLESS-STEEL",
+               beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
     m.AddGap(name="g1", length=1)
     # m.AddSamplerPlane(name="s1", length=1e-6)
     m.AddDrift(name="d2", length=1,
-               beampipeMaterial = "G4_STAINLESS-STEEL",
+               beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
     m.Write("T026_Gap")
 

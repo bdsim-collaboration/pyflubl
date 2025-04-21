@@ -19,7 +19,7 @@ def test_T002_drift_cut() :
     m.AddStart(s)
 
     m.AddDrift(name="d1", length=1,
-               beampipeMaterial = "G4_STAINLESS-STEEL",
+               beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5,
                e1=_np.pi/4, e2=_np.pi/4)
     m.AddSamplerPlane(name="s1", length=1e-6, samplersize=1)

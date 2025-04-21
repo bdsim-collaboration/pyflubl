@@ -736,10 +736,13 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
-    def _MakeFlukaComponentCommon(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category):
+    def _MakeFlukaComponentCommon(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
+                                  convertMaterials = False):
         # convert materials
-        #materialNameSet = containerLV.makeMaterialNameSet()
-        #self._MakeFlukaMaterials(list(materialNameSet))
+        if convertMaterials:
+            print("_MakeFlukaComponentCommon> convertMaterials")
+            materialNameSet = containerLV.makeMaterialNameSet()
+            self._MakeFlukaMaterials(list(materialNameSet))
 
         # convert geometry
         if flukaConvert:
@@ -825,16 +828,22 @@ class Machine(object) :
 
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
-        g4material = self._GetDictVariable(element,"beampipeMaterial","G4_Galactic")
+        beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial","TUNGSTEN")
         beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
         beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
         e1 = self._GetDictVariable(element,"e1",0)
         e2 = self._GetDictVariable(element,"e2",0)
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
+        # make fake geant4 materials for conversion
+        beampipeMaterial = _pyg4.geant4.MaterialSingleElement(name=beampipeMaterialName, atomic_number=1, atomic_weight=1, density=1)
+        outerMaterial    = _pyg4.geant4.MaterialSingleElement(name="AIR", atomic_number=1, atomic_weight=1, density=1)
+        vacuumMaterial   = _pyg4.geant4.MaterialSingleElement(name="VACUUM", atomic_number=1, atomic_weight=1, density=1)
+
+
         # make tubs of outer size
         bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2, g4registry)
-        bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,"G4_AIR",name+"_outer_lv",g4registry)
+        bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,outerMaterial,name+"_outer_lv",g4registry)
         bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,-_np.pi/2,0]))),
                                                       translation,
                                                       bpouterlogical,
@@ -849,7 +858,7 @@ class Machine(object) :
                                              _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
                                              _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
                                              g4registry)
-        bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
+        bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,beampipeMaterial,name+"_bp_lv",g4registry)
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
 
         vacsolid = _pyg4.geant4.solid.CutTubs(name+"_vac_solid",
@@ -858,7 +867,7 @@ class Machine(object) :
                                              _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
                                              _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
                                              g4registry)
-        vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,"G4_Galactic",name+"_cav_lv",g4registry)
+        vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,vacuumMaterial,name+"_cav_lv",g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_vac_pv",bpouterlogical,g4registry)
 
         rotation = rotation @ _tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, -_np.pi / 2, 0])
@@ -881,17 +890,18 @@ class Machine(object) :
                        geant4RegistryAdd = True,
                        flukaConvert = True) :
 
-        g4material = "G4_AIR"
-
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
+        # make fake geant4 materials for conversion
+        outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",200*1.41,200*1.41, length, g4registry)
-        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz( _np.linalg.inv(rotation)),
                                                     translation,
                                                     outerlogical,name+"_outer_pv",
@@ -916,17 +926,20 @@ class Machine(object) :
                        geant4RegistryAdd = False,
                        flukaConvert = True):
 
-        g4material = "G4_AIR"
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
         g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # make fake geant4 materials for conversion
+        outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         dz = 2*length/angle*_np.sin(angle/2)
 
         # make trap of correct size
         outersolid    = self._MakeGeant4GenericTrap(name,dz, 100, 100, -angle/2, angle/2, g4registry)
-        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,g4material,name+"_outer_lv",g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
                                                     translation,
                                                     outerlogical,name+"_outer_pv",
@@ -961,11 +974,15 @@ class Machine(object) :
 
         quadlength = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
         g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # make fake geant4 materials for conversion
+        outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",500,500,quadlength,g4registry)
-        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,"G4_AIR",name+"_lv",g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
                                                       translation,
                                                       outerlogical,
@@ -997,9 +1014,13 @@ class Machine(object) :
         # length
         length = element.length * 1000
 
+        # outer material
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+        outerMaterial = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
+
         # make box of correct size
-        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",500,500,length,g4registry)
-        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,"G4_AIR",name+"_lv",g4registry)
+        outersolid    = _pyg4.geant4.solid.Box(name+"_solid", 500, 500, length, g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid, outerMaterial, name+"_lv", g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
                                                       translation,
                                                       outerlogical,
@@ -1032,7 +1053,8 @@ class Machine(object) :
                                                       g4registry)
 
         return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "gap")
+                                              rotation, translation, "gap",
+                                              convertMaterials=flukaConvert)
 
     def MakeFlukaCustomFluka(self, name, element,
                              rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
@@ -1115,9 +1137,12 @@ class Machine(object) :
 
         samplerLength = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
-        samplerMaterial = self._GetDictVariable(element,"samplerMaterial","G4_AIR")
+        samplerMaterialName = self._GetDictVariable(element,"samplerMaterial","AIR")
         samplerDiameter = self._GetDictVariable(element,"samplerDiameter",2000)
         g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # make fake geant4 materials for conversion
+        samplerMaterial = _pyg4.geant4.MaterialSingleElement(name=samplerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make box of correct size
         samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplerDiameter,samplerDiameter,samplerLength,g4registry)
@@ -1176,12 +1201,16 @@ class Machine(object) :
             g4registry = self.g4registry
 
         length = element.length*1000
-        g4material = self._GetDictVariable(element,"beampipeMaterial","G4_STAINLESS-STEEL")
+        vacuumMaterialName = self._GetDictVariable(element,"vacuumMaterial","VACUUM")
+        beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial","TUNGSTEN")
         beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
         beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
         e1 = self._GetDictVariable(element,"e1",0)
         e2 = self._GetDictVariable(element,"e2",0)
 
+        # fake materials
+        vacuumMaterial = _pyg4.geant4.MaterialSingleElement(name=vacuumMaterialName, atomic_number=1, atomic_weight=1, density=1)
+        beampipeMaterial = _pyg4.geant4.MaterialSingleElement(name=beampipeMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make actual beampipe
         bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",
@@ -1190,7 +1219,7 @@ class Machine(object) :
                                              _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
                                              _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
                                              g4registry)
-        bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
+        bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,beampipeMaterial,name+"_bp_lv",g4registry)
 
         vacsolid = _pyg4.geant4.solid.CutTubs(name+"_vac_solid",
                                              0, beampipeRadius, length,
@@ -1198,7 +1227,7 @@ class Machine(object) :
                                              _tbxyz2matrix([0,e1,0]) @ _np.array([0,0,-1]),
                                              _tbxyz2matrix([0,-e2,0]) @ _np.array([0,0,1]),
                                              g4registry)
-        vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,"G4_Galactic",name+"_cav_lv",g4registry)
+        vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,vacuumMaterial,name+"_cav_lv",g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],vaclogical,name+"_vac_pv",bplogical,g4registry)
 
         return bplogical
@@ -1207,11 +1236,12 @@ class Machine(object) :
         for g4material in materials :
             if g4material not in self.flukaregistry.materialShortName :
                 if type(g4material) is str :
+                    g4material_name = g4material
                     g4material = _pyg4.geant4.nist_material_2geant4Material(g4material)
-                materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
-                _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
-                self.flukaregistry.materialShortName[g4material.name] = materialNameShort
-                self.flukaregistry.iMaterials += 1
+                    materialNameShort = "M" + format(self.flukaregistry.iMaterials, "03")
+                    _geant4Material2Fluka(g4material,self.flukaregistry,materialNameShort=materialNameShort)
+                    self.flukaregistry.materialShortName[g4material_name] = materialNameShort
+                    self.flukaregistry.iMaterials += 1
 
     def _GetDictVariable(self, element, key, default):
         try :
@@ -1242,7 +1272,7 @@ class Machine(object) :
 
     def _FixElementFaces(self, view = True):
 
-        print("_FixElementFaces")
+        print("_FixElementFaces>")
         if view :
             v = _pyg4.visualisation.VtkViewerNew()
             v.addAxes(2500)
@@ -1296,7 +1326,7 @@ class Machine(object) :
             v.buildPipelinesAppend()
             v.view()
 
-        print("_FixElementFaces")
+        print("FixElementFaces<")
 
     def _MakeOffsetAndTiltTransforms(self, element, rotation, translation):
         offsetX = self._GetDictVariable(element,"offsetX",0)
