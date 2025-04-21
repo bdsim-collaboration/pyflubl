@@ -21,11 +21,17 @@ def test_T032_Custom_Pyg4(vis=False, interactive=False) :
     ws = _g4.solid.Box("ws", wx, wy, wz, reg, "mm")
     bs = _g4.solid.Box("bs", bx, by, bz, reg, "mm")
 
+    bs1 = _g4.solid.Box("bs1", 50, 50, 50, reg, "mm")
+
+
     # structure
     wl = _g4.LogicalVolume(ws, wm, "wl", reg)
     bl = _g4.LogicalVolume(bs, bm, "bl", reg)
 
+    bl1 = _g4.LogicalVolume(bs1, bm, "bl1", reg)
+
     bp = _g4.PhysicalVolume([0, 0, 0], [0, 0, 0], bl, "b_pv1", wl, reg)
+    bp1 = _g4.PhysicalVolume([0,0,0], [-400,0,-400], bl1, "b2_pv1", bl, reg)
 
     # set world volume
     reg.setWorld(wl.name)

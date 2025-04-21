@@ -12,11 +12,20 @@
 	<solids>
 		<box name="ws" x="wx" y="wy" z="wz" lunit="mm"/>
 		<box name="bs" x="bx" y="by" z="bz" lunit="mm"/>
+		<box name="bs1" x="50" y="50" z="50" lunit="mm"/>
 	</solids>
 	<structure>
+		<volume name="bl1">
+			<materialref ref="G4_Au"/>
+			<solidref ref="bs1"/>
+		</volume>
 		<volume name="bl">
 			<materialref ref="G4_Au"/>
 			<solidref ref="bs"/>
+			<physvol name="b2_pv1">
+				<volumeref ref="bl1"/>
+				<position name="b2_pv1_pos" x="-400.000000000000000" y="0.000000000000000" z="-400.000000000000000" unit="mm"/>
+			</physvol>
 		</volume>
 		<volume name="wl">
 			<materialref ref="G4_Galactic"/>
