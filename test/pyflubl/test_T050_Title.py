@@ -3,13 +3,13 @@ import pyflubl as _pfbl
 def test_T050_title() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
-    d = _pfbl.Defaults('EM-CASCA')
+    d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    t = _pfbl.Title("TEST SIMULATION")
+    t = _pfbl.Fluka.Title("TEST SIMULATION")
     m.AddTitle(t)
 
-    b = _pfbl.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
+    b = _pfbl.Fluka.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
     b.AddBeamPosition(0,0,0,0,0)
     b.AddBeamAxes(0,0,0,0,0,0)
     m.AddBeam(b)

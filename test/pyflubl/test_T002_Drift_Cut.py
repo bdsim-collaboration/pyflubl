@@ -4,18 +4,18 @@ import numpy as _np
 def test_T002_drift_cut() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
-    d = _pfbl.Defaults('EM-CASCA')
+    d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    b = _pfbl.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
+    b = _pfbl.Fluka.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
     b.AddBeamPosition(0,0,0,0,0)
     b.AddBeamAxes(1,0,0,0,0,1)
     m.AddBeam(b)
 
-    r = _pfbl.Randomiz()
+    r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Start(10)
+    s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
     m.AddDrift(name="d1", length=1,

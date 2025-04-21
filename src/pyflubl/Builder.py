@@ -1054,7 +1054,7 @@ class Machine(object) :
 
         return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap",
-                                              convertMaterials=flukaConvert)
+                                              convertMaterials=False)
 
     def MakeFlukaCustomFluka(self, name, element,
                              rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),

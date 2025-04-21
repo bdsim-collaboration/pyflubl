@@ -5,18 +5,18 @@ import numpy as _np
 def test_T032_custom_G4() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
-    d = _pfbl.Defaults('EM-CASCA')
+    d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    b = _pfbl.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
+    b = _pfbl.Fluka.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
     b.AddBeamPosition(0,0,0,0,0)
     b.AddBeamAxes(1,0,0,0,0,1)
     m.AddBeam(b)
 
-    r = _pfbl.Randomiz()
+    r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Start(10)
+    s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
     # custom geometry
@@ -25,7 +25,6 @@ def test_T032_custom_G4() :
                                                        atomic_number=1,
                                                        atomic_weight=1,
                                                        density=1)
-
     outersolid = _pyg4.geant4.solid.Tubs("custom_solid",0, 750, 1000, 0, _np.pi*2, g4registry)
     outerlogical = _pyg4.geant4.LogicalVolume(outersolid, outerMaterial, "custom_lv", g4registry)
 
@@ -42,18 +41,18 @@ def test_T032_custom_G4() :
 def test_T032_custom_G4_File() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
-    d = _pfbl.Defaults('EM-CASCA')
+    d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    b = _pfbl.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
+    b = _pfbl.Fluka.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
     b.AddBeamPosition(0,0,0,0,0)
     b.AddBeamAxes(1,0,0,0,0,1)
     m.AddBeam(b)
 
-    r = _pfbl.Randomiz()
+    r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Start(10)
+    s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
     m.AddDrift(name="d1", length=1)
@@ -68,18 +67,18 @@ def test_T032_custom_G4_File() :
 def test_T032_custom_Fluka() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
-    d = _pfbl.Defaults('EM-CASCA')
+    d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    b = _pfbl.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
+    b = _pfbl.Fluka.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
     b.AddBeamPosition(0,0,0,0,0)
     b.AddBeamAxes(1,0,0,0,0,1)
     m.AddBeam(b)
 
-    r = _pfbl.Randomiz()
+    r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Start(10)
+    s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
     # custom fluka geometry
@@ -107,18 +106,18 @@ def test_T032_custom_Fluka() :
 def test_T032_custom_Fluka_File() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
-    d = _pfbl.Defaults('EM-CASCA')
+    d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    b = _pfbl.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
+    b = _pfbl.Fluka.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
     b.AddBeamPosition(0,0,0,0,0)
     b.AddBeamAxes(1,0,0,0,0,1)
     m.AddBeam(b)
 
-    r = _pfbl.Randomiz()
+    r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Start(10)
+    s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
     # custom fluka geometry

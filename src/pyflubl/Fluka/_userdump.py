@@ -1,4 +1,5 @@
 from pyg4ometry.fluka.card import Card as _Card
+
 class Userdump :
     def __init__(self, mgdraw, lun, mgdrawOption, userDump, outputFile):
         self.mgdraw = mgdraw # WHAT(1)
@@ -20,4 +21,3 @@ class Userdump :
         if self.userdumpCard :
             retString = self.userdumpCard.toFreeString()
         return retString
-
