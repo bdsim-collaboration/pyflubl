@@ -19,24 +19,15 @@ def test_IPAC_2025() :
     s = _pfbl.Start(10)
     m.AddStart(s)
 
-    # custom fluka geometry
-    reader = _pyg4.fluka.Reader("./geometryInput/test_T032_Custom_Fluka_Gap.inp")
-    registry = reader.getRegistry()
-
-    outer_bodies = [registry.bodyDict[k] for k in ['outer']]
-    regions = [registry.regionDict[k] for k in ['OUTER','SHIELD','BEAM','TARGET']]
-
-
-    print(outer_bodies)
     m.AddDrift(name="d1", length=1)
     m.AddSBendSplit(name="b1", length=1, angle=_np.pi/8)
     m.AddDrift(name="d2", length=1)
     m.AddSBendSplit(name="b2", length=1, angle=-_np.pi/8)
     m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddCustomFluka(name="c1", length=1,
-                     customOuterBodies= outer_bodies,
-                     customRegions = regions,
-                     flukaRegistry= registry)
+    m.AddCustomFlukaFile(name="c1", length=1,
+                         geometryFile="./geometryInput/test_T032_Custom_Fluka_Gap.inp",
+                         outerBodies="outer",
+                         regionNames="OUTER SHIELD BEAM TARGET")
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d3", length=0.5)
     m.Write("IPAC_2025")
