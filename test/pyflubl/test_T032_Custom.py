@@ -35,9 +35,6 @@ def test_T032_custom_G4() :
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T032_Custom_G4")
 
-    return m
-
-
 def test_T032_custom_G4_File() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
@@ -61,8 +58,6 @@ def test_T032_custom_G4_File() :
     m.AddCustomG4File(name="c1", length=1, geometryFile="./geometryInput/test_T032_Custom_Pyg4.gdml", lvName="bl")
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T032_Custom_G4_File")
-
-    return m
 
 def test_T032_custom_Fluka() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
@@ -101,8 +96,6 @@ def test_T032_custom_Fluka() :
     m.AddDrift(name="d4", length=1)
     m.Write("T032_Custom_Fluka")
 
-    return m
-
 def test_T032_custom_Fluka_File() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
@@ -138,5 +131,3 @@ def test_T032_custom_Fluka_File() :
     m.AddSBendSplit(name="b2", length=2, angle=-_np.pi/8)
     m.AddDrift(name="d4", length=1)
     m.Write("T032_Custom_Fluka_File")
-
-    return m

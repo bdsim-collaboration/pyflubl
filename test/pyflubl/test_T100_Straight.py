@@ -26,5 +26,3 @@ def test_T100_straight() :
         m.AddSamplerPlane(name="s1_"+str(i), length=1e-6, samplersize=1)
 
     m.Write("T100_Stright")
-
-    return m

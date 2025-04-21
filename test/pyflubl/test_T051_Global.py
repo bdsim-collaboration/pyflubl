@@ -21,5 +21,3 @@ def test_T051_global() :
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T051_Global")
 
-    return m
-

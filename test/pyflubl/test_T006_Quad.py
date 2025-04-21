@@ -27,7 +27,6 @@ def quad_basic(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T006_Quad"):
                beampipeRadius=30, beampipeThickness=5)
     m.Write(fileName)
 
-    return m
 
 def test_T006_quad() :
     quad_basic()

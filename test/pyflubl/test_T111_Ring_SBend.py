@@ -36,5 +36,3 @@ def test_T111_ring_sbend() :
         m.AddSamplerPlane(name="s1_"+str(i), length=1e-6)
 
     m.Write("T111_Ring_SBend")
-
-    return m

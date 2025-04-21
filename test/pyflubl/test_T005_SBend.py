@@ -27,8 +27,6 @@ def test_T005_sbend() :
                beampipeRadius=30, beampipeThickness=5)
     m.Write("T005_SBend")
 
-    return m
-
 def test_T005_sbend_split() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
@@ -54,5 +52,3 @@ def test_T005_sbend_split() :
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
     m.Write("T005_SBend_Split")
-
-    return m

@@ -23,5 +23,4 @@ def test_T001_drift() :
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T001_Drift")
 
-    return m
 

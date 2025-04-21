@@ -37,5 +37,3 @@ def test_T110_ring_rbend() :
 
     m.CheckModel()
     m.Write("T110_Ring_RBend")
-
-    return m

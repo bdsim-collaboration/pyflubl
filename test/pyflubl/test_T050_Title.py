@@ -20,5 +20,3 @@ def test_T050_title() :
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T050_Title")
 
-    return m
-

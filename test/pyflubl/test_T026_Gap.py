@@ -27,5 +27,4 @@ def test_T026_gap() :
                beampipeRadius=30, beampipeThickness=5)
     m.Write("T026_Gap")
 
-    return m
 
