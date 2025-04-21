@@ -447,12 +447,41 @@ class Machine(object) :
         e = ElementCustomG4(name, length, containerLV = kwargs['customLV'])
         self.Append(e)
 
+    def AddCustomG4File(self, name, length, **kwargs):
+        geometry_file = kwargs['geometryFile']
+        lv_name = kwargs['lvName']
+
+        # registry for converter
+        g4registry = self._GetRegistry(True)
+
+        # load file
+        reader = _pyg4.gdml.Reader(geometry_file, registryIn = g4registry)
+        lv = g4registry.logicalVolumeDict[lv_name]
+
+        self.AddCustomG4(name,length, customLV = lv)
+
     def AddCustomFluka(self, name, length, **kwargs):
         e = ElementCustomFluka(name, length,
                                customOuterBodies = kwargs['customOuterBodies'],
                                customRegions = kwargs['customRegions'],
                                flukaRegistry = kwargs['flukaRegistry'])
         self.Append(e)
+
+    def AddCustomFlukaFile(self, name, length, **kwargs):
+        geometry_file = kwargs['geometryFile']
+        outer_bodies = kwargs['outerBodies']
+        region_names = kwargs['regionNames']
+
+        reader = _pyg4.fluka.Reader(geometry_file)
+        registry = reader.getRegistry()
+
+        outer_bodies = [registry.bodyDict[k] for k in outer_bodies.split()]
+        regions = [registry.regionDict[k] for k in region_names.split()]
+
+        self.AddCustomFluka(name,length,
+                            customOuterBodies = outer_bodies,
+                            customRegions = regions,
+                            flukaRegistry = registry)
 
     def AddLatticeInstance(self, name, prototypeName):
         e = Element(name=name,
@@ -709,8 +738,8 @@ class Machine(object) :
 
     def _MakeFlukaComponentCommon(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category):
         # convert materials
-        materialNameSet = containerLV.makeMaterialNameSet()
-        self._MakeFlukaMaterials(list(materialNameSet))
+        #materialNameSet = containerLV.makeMaterialNameSet()
+        #self._MakeFlukaMaterials(list(materialNameSet))
 
         # convert geometry
         if flukaConvert:
