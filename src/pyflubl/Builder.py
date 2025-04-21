@@ -223,9 +223,10 @@ class SplitOrJoinElement(Element) :
         pass
 
 class ElementCustomG4(Element):
-    def __init__(self, name, length, containerLV, transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]), **kwargs):
+    def __init__(self, name, length, containerLV, convertMaterials=False, transform=_np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]), **kwargs):
         super().__init__(name, "customG4", length, transform)
         self.containerLV = containerLV
+        self.convertMaterials = convertMaterials
 
 class ElementCustomFluka(Element):
     def __init__(self, name, length, customOuterBodies, customRegions, flukaRegistry,
@@ -444,7 +445,7 @@ class Machine(object) :
         self.Append(e)
 
     def AddCustomG4(self, name, length, **kwargs):
-        e = ElementCustomG4(name, length, containerLV = kwargs['customLV'])
+        e = ElementCustomG4(name, length, containerLV = kwargs['customLV'], convertMaterials=kwargs['convertMaterials'])
         self.Append(e)
 
     def AddCustomG4File(self, name, length, **kwargs):
@@ -458,7 +459,7 @@ class Machine(object) :
         reader = _pyg4.gdml.Reader(geometry_file, registryIn = g4registry)
         lv = g4registry.logicalVolumeDict[lv_name]
 
-        self.AddCustomG4(name,length, customLV = lv)
+        self.AddCustomG4(name,length, customLV = lv, convertMaterials = True)
 
     def AddCustomFluka(self, name, length, **kwargs):
         e = ElementCustomFluka(name, length,
@@ -666,7 +667,8 @@ class Machine(object) :
         elif e.category == "customG4":
             return self.MakeFlukaCustomG4(name=e.name, element=e,
                                           rotation=r, translation=t * 1000,
-                                          geant4RegistryAdd=g4add, flukaConvert=fc)
+                                          geant4RegistryAdd=g4add, flukaConvert=fc,
+                                          convertMaterials=e.convertMaterials)
         elif e.category == "customFluka":
             return self.MakeFlukaCustomFluka(name=e.name, element=e,
                                              rotation=r, translation=t * 1000,
@@ -1035,7 +1037,8 @@ class Machine(object) :
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                           translation = _np.array([0,0,0]),
                           geant4RegistryAdd = False,
-                          flukaConvert = True):
+                          flukaConvert = True,
+                          convertMaterials= False):
 
         # registry
         g4registry = self._GetRegistry(geant4RegistryAdd)
@@ -1054,7 +1057,7 @@ class Machine(object) :
 
         return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap",
-                                              convertMaterials=False)
+                                              convertMaterials=convertMaterials)
 
     def MakeFlukaCustomFluka(self, name, element,
                              rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),

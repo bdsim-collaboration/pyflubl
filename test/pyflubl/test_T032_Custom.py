@@ -31,7 +31,7 @@ def test_T032_custom_G4() :
     m.AddDrift(name="d1", length=1)
     m.AddSBend(name="b1", length=1, angle=_np.pi/6)
     m.AddDrift(name="d2", length=1)
-    m.AddCustomG4(name="c1", length=1, customLV = outerlogical)
+    m.AddCustomG4(name="c1", length=1, customLV = outerlogical, convertMaterials=False)
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T032_Custom_G4")
 
