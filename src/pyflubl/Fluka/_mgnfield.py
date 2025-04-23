@@ -13,16 +13,19 @@ class Mgnfield(_BaseCard):
                  sdum = "",
                  strength = 0,
                  rotDefini = "IDENT",
-                 applyRegion = 0):
+                 applyRegion = 0,
+                 regionFrom = 0,
+                 regionTo = None,
+                 regionStep = None):
 
         super().__init__()
 
-        if dsum == "":
+        if sdum == "":
             self.card = _Card("MGNFIELD", maxAngle, boundaryIntersectionError,
                               minStepLength, bx, by, bz, sdum)
         else:
-            self.card = _Card("MGNFIELD",strength, rotDefini,applyRegion,
-                              None,None,None,sdum)
+            self.card = _Card("MGNFIELD",strength, rotDefini, applyRegion,
+                              regionFrom, regionTo, regionStep, sdum)
 
 
 
