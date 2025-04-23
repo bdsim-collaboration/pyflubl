@@ -5,3 +5,5 @@ from ._usrbin import *
 from ._usrdump import *
 from ._open import *
 from ._plot import *
+
+from ._usbsuw import *
