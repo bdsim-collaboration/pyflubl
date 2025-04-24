@@ -738,7 +738,7 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
-    def _MakeFlukaComponentCommon(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
+    def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
                                   convertMaterials = False):
         # convert materials
         if convertMaterials:
@@ -783,6 +783,17 @@ class Machine(object) :
         return {"placedmesh": outerMesh}
 
 
+    def _MakeFlukaComponentCommonFluka(self, name, regionNames, rotation, translation, category) :
+
+        # make bookkeeping information
+        if name not in self.elementBookkeeping :
+            self.elementBookkeeping[name] = {}
+
+        self.elementBookkeeping[name]['flukaRegions'] = regionNames
+        self.elementBookkeeping[name]['category'] = category
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
     def MakeFlukaBeamPipe(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                           translation = _np.array([0,0,0]),
@@ -819,7 +830,7 @@ class Machine(object) :
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
 
 
-        return self._MakeFlukaComponentCommon(name,bpouterlogical, bpouterphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
                                               rotation, translation, "drift")
 
     def MakeFlukaBeamPipe1(self, name, element,
@@ -874,7 +885,7 @@ class Machine(object) :
 
         rotation = rotation @ _tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, -_np.pi / 2, 0])
 
-        return self._MakeFlukaComponentCommon(name,bpouterlogical, bpouterphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
                                               rotation, translation, "drift")
 
     def MakeFlukaRectangularStraightOuter(self, straight_x_size, straight_y_size, length, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
@@ -919,7 +930,7 @@ class Machine(object) :
                                                         outerlogical,
                                                         g4registry)
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "rbend")
 
     def MakeFlukaSBend(self, name, element,
@@ -964,7 +975,7 @@ class Machine(object) :
 
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "sbend")
 
 
@@ -1001,7 +1012,7 @@ class Machine(object) :
                                                         outerlogical,
                                                         g4registry)
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "quad")
 
     def MakeFlukaGap(self, name, element,
@@ -1030,7 +1041,7 @@ class Machine(object) :
                                                       self.worldLogical,
                                                       g4registry)
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap")
 
     def MakeFlukaCustomG4(self, name, element,
@@ -1055,7 +1066,7 @@ class Machine(object) :
                                                       self.worldLogical,
                                                       g4registry)
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap",
                                               convertMaterials=convertMaterials)
 
@@ -1063,6 +1074,8 @@ class Machine(object) :
                              rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                              translation = _np.array([0,0,0]),
                              flukaBuild = True):
+
+        regionNamesTransferred = []
 
         outer_bodies = element.outer_bodies
         regions = element.regions
@@ -1078,6 +1091,8 @@ class Machine(object) :
 
             # transfer bodies and regions to fluka registry
             for region in regions:
+                regionNamesTransferred.append(region.name)
+
                 if region.name not in self.flukaregistry.regionDict :
                     self.flukaregistry.addRegion(region)
                 for zone in region.zones :
@@ -1106,6 +1121,8 @@ class Machine(object) :
                 m.union(outer_region.mesh())
 
         m.scale(10,10,10)
+
+        self._MakeFlukaComponentCommonFluka(name, regionNamesTransferred, rotation, translation, element.category)
 
         return {"placedmesh": m}
 
@@ -1157,7 +1174,7 @@ class Machine(object) :
                                                       self.worldLogical,
                                                       g4registry)
 
-        return self._MakeFlukaComponentCommon(name,samplerlogical, samplerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,samplerlogical, samplerphysical, flukaConvert,
                                               rotation, translation, "sampler")
 
     def _MakeGeant4GenericTrap(self, name,
