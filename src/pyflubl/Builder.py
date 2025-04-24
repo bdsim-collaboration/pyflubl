@@ -613,7 +613,7 @@ class Machine(object) :
     def MakeFlukaModel(self):
 
         # initial world size
-        extent = self.GetModelExtent()
+        extent = self._CalculateModelExtent()
 
         # sizes in cm
         xmax = max(abs(extent[0][0]), abs(extent[1][0]))*100 + 1000
@@ -975,10 +975,20 @@ class Machine(object) :
 
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
 
-        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "sbend")
+        ret_dict =  self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+                                                     rotation, translation, "sbend")
+
+        # make field
+        rho = length/(2*_np.sin(angle/2.))
+        b_field = self._CalculateDipoleFieldStrength(self.beam.energy, rho)
+
+        # make field transform
+
+        # assign field to region(s)
 
 
+
+        return ret_dict
     def MakeFlukaQuadrupole(self, name, element,
                             rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                             translation = _np.array([0,0,0]),
@@ -1361,8 +1371,13 @@ class Machine(object) :
     def _LoadGDMLGeometry(self, element):
         geometryFile = self._GetDictVariable(element, "geometryFile", "None")
 
+    def _CalculateDipoleFieldStrength(self, momentum, rho):
+        return 3.3356*momentum / rho
 
-    def GetModelExtent(self):
+    def _CalculateQuadrupoleFieldStrength(self, momentum, k1):
+        return 0
+
+    def _CalculateModelExtent(self):
         # loop over positions and find maxima
         vmin = [9e99, 9e99, 9e99]
         vmax = [-9e99, -9e99, -9e99]
