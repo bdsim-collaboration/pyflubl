@@ -281,6 +281,9 @@ class Line(list) :
             s += str(item) #uses elements __repr__ function
         return s
 class Machine(object) :
+
+    _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
+
     def __init__(self, bakeTransforms = False):
         self.elements = {}
         self.prototypes = {}
@@ -508,9 +511,9 @@ class Machine(object) :
         pass
 
     def AddSamplerPlane(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs, self._sampler_plane_allowed_keys)
         e = Element(name=name, category="sampler_plane", length = length, **kwargs)
         self.Append(e)
-
 
     def AddTitle(self, title):
         self.title = title
@@ -1399,6 +1402,11 @@ class Machine(object) :
 
         return [vmin,vmax]
 
+    def _CheckElementKwargs(self, kwargs, allowed_keys):
+        for key in kwargs:
+            if key not in allowed_keys:
+                raise TypeError(f"Unexpected keyword argument: {key}")
+
     def ViewGeant4(self, separateMeshes = False):
         if not separateMeshes :
             v = _pyg4.visualisation.VtkViewerNew()
@@ -1420,4 +1428,5 @@ class Machine(object) :
             v.view()
             return v
 
-
+# dynamic doc strings
+Machine.AddSamplerPlane.__doc__ = """allowed kwargs: """ + " ".join(Machine._sampler_plane_allowed_keys)
