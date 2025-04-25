@@ -285,6 +285,8 @@ class Machine(object) :
     _outer_allowed_keys = ["outerHorizontalSize", "outerVerticalSize","outerMaterial"]
     _beampipe_allowed_keys = ["vacuumMaterial", "beampipeMaterial","beampipeRadius", "beampipeThickness",
                               "e1", "e2"]
+    _rbend_allowed_keys = ["angle"]
+    _sbend_allowed_keys = ["angle"]
     _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
 
     def __init__(self, bakeTransforms = False):
@@ -413,23 +415,25 @@ class Machine(object) :
         self.Append(e)
 
     def AddRBend(self, name, length,  **kwargs):
-        self._CheckElementKwargs(kwargs, self._beampipe_allowed_keys + self._outer_allowed_keys)
+        self._CheckElementKwargs(kwargs,
+                                 self._beampipe_allowed_keys + \
+                                 self._outer_allowed_keys + \
+                                 self._rbend_allowed_keys)
         e = Element(name=name, category="rbend", length=length, **kwargs)
         self.Append(e)
 
     def AddSBend(self, name, length, **kwargs):
-        # beampipe
-        # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
-        # vacuumMaterial, beampipeThickness, beampipeMaterial
-
-        # sbend
-        # angle, B, e1, e2, material, yokeOnInside, hStyle, k1, tilt
+        self._CheckElementKwargs(kwargs,
+                                 self._beampipe_allowed_keys + \
+                                 self._outer_allowed_keys + \
+                                 self._sbend_allowed_keys)
         e = Element(name=name, category="sbend", length = length, **kwargs)
         self.Append(e)
 
     def AddSBendSplit(self, name, length, nsplit=10, **kwargs):
         angle = kwargs['angle']/nsplit
         length = length/nsplit
+
         for i in range(0,nsplit):
             self.AddSBend(name+"_split_"+str(i), length, angle = angle)
 
@@ -840,10 +844,10 @@ class Machine(object) :
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
 
-        vacuumMaterial = self._GetDictVariable(element, "vacuumMaterial", "AIR")
+        vacuumMaterial = self._GetDictVariable(element, "vacuumMaterial", "VACUUM")
 
-        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 1000)
-        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 1000)
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 200)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 200)
         outerMaterial = self._GetDictVariable(element, "outerMaterial","AIR")
 
         beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial","TUNGSTEN")
@@ -912,14 +916,18 @@ class Machine(object) :
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 200)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 200)
         outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make fake geant4 materials for conversion
         outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make box of correct size
-        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",200*1.41,200*1.41, length, g4registry)
+        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",outerHorizontalSize,outerVerticalSize, length, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz( _np.linalg.inv(rotation)),
                                                     translation,
@@ -948,7 +956,11 @@ class Machine(object) :
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 200)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 200)
         outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make fake geant4 materials for conversion
@@ -957,7 +969,7 @@ class Machine(object) :
         dz = 2*length/angle*_np.sin(angle/2)
 
         # make trap of correct size
-        outersolid    = self._MakeGeant4GenericTrap(name,dz, 100, 100, -angle/2, angle/2, g4registry)
+        outersolid    = self._MakeGeant4GenericTrap(name,dz, outerHorizontalSize, outerVerticalSize, -angle/2, angle/2, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
                                                     translation,
@@ -1433,5 +1445,6 @@ class Machine(object) :
 
 # dynamic doc strings
 Machine.AddDrift.__doc__ =  """allowed kwargs: """ + " ".join(Machine._beampipe_allowed_keys) + " " + " ".join(Machine._outer_allowed_keys)
-Machine.AddRBend.__doc__ =  """allowed kwargs: """ + " ".join(Machine._beampipe_allowed_keys) + " " + " ".join(Machine._outer_allowed_keys)
+Machine.AddRBend.__doc__ =  """allowed kwargs: """ + " ".join(Machine._beampipe_allowed_keys) + " " + " ".join(Machine._outer_allowed_keys) + " " + " ".join(Machine._rbend_allowed_keys)
+Machine.AddSBend.__doc__ =  """allowed kwargs: """ + " ".join(Machine._beampipe_allowed_keys) + " " + " ".join(Machine._outer_allowed_keys) + " " + " ".join(Machine._sbend_allowed_keys)
 Machine.AddSamplerPlane.__doc__ = """allowed kwargs: """ + " ".join(Machine._sampler_plane_allowed_keys)
