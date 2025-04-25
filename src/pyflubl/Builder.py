@@ -508,7 +508,7 @@ class Machine(object) :
         pass
 
     def AddSamplerPlane(self, name, length, **kwargs):
-        e = Element(name=name, category="sampler_plane", length = length)
+        e = Element(name=name, category="sampler_plane", length = length, **kwargs)
         self.Append(e)
 
 
