@@ -282,6 +282,9 @@ class Line(list) :
         return s
 class Machine(object) :
 
+    _outer_allowed_keys = ["outerHorizontalSize", "outerVerticalSize","outerMaterial"]
+    _beampipe_allowed_keys = ["vacuumMaterial", "beampipeMaterial","beampipeRadius", "beampipeThickness",
+                              "e1", "e2"]
     _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
 
     def __init__(self, bakeTransforms = False):
@@ -405,20 +408,12 @@ class Machine(object) :
         pass
 
     def AddDrift(self,name, length, **kwargs):
-        # beampipe
-        # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
-        # vacuumMaterial, beampipeThickness, beampipeMaterial
+        self._CheckElementKwargs(kwargs, self._beampipe_allowed_keys + self._outer_allowed_keys)
         e = Element(name=name, category="drift", length=length, **kwargs)
         self.Append(e)
 
     def AddRBend(self, name, length,  **kwargs):
-        # beampipe
-        # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
-        # vacuumMaterial, beampipeThickness, beampipeMaterial
-
-        # sbend
-        # angle, B, e1, e2, material, yokeOnInside, hStyle, k1, tilt
-
+        self._CheckElementKwargs(kwargs, self._beampipe_allowed_keys + self._outer_allowed_keys)
         e = Element(name=name, category="rbend", length=length, **kwargs)
         self.Append(e)
 
@@ -844,21 +839,29 @@ class Machine(object) :
 
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+
+        vacuumMaterial = self._GetDictVariable(element, "vacuumMaterial", "AIR")
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 1000)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 1000)
+        outerMaterial = self._GetDictVariable(element, "outerMaterial","AIR")
+
         beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial","TUNGSTEN")
         beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
         beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
+
         e1 = self._GetDictVariable(element,"e1",0)
         e2 = self._GetDictVariable(element,"e2",0)
+
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make fake geant4 materials for conversion
         beampipeMaterial = _pyg4.geant4.MaterialSingleElement(name=beampipeMaterialName, atomic_number=1, atomic_weight=1, density=1)
-        outerMaterial    = _pyg4.geant4.MaterialSingleElement(name="AIR", atomic_number=1, atomic_weight=1, density=1)
-        vacuumMaterial   = _pyg4.geant4.MaterialSingleElement(name="VACUUM", atomic_number=1, atomic_weight=1, density=1)
-
+        outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterial, atomic_number=1, atomic_weight=1, density=1)
+        vacuumMaterial   = _pyg4.geant4.MaterialSingleElement(name=vacuumMaterial, atomic_number=1, atomic_weight=1, density=1)
 
         # make tubs of outer size
-        bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2, g4registry)
+        bpoutersolid    = self._MakeGeant4GenericTrap(name,length, outerHorizontalSize, outerVerticalSize, -e1, e2, g4registry)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,outerMaterial,name+"_outer_lv",g4registry)
         bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,-_np.pi/2,0]))),
                                                       translation,
@@ -1429,4 +1432,6 @@ class Machine(object) :
             return v
 
 # dynamic doc strings
+Machine.AddDrift.__doc__ =  """allowed kwargs: """ + " ".join(Machine._beampipe_allowed_keys) + " " + " ".join(Machine._outer_allowed_keys)
+Machine.AddRBend.__doc__ =  """allowed kwargs: """ + " ".join(Machine._beampipe_allowed_keys) + " " + " ".join(Machine._outer_allowed_keys)
 Machine.AddSamplerPlane.__doc__ = """allowed kwargs: """ + " ".join(Machine._sampler_plane_allowed_keys)
