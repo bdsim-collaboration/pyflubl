@@ -29,3 +29,35 @@ def plot_usrbin(ub, detector_idx = 0, projection = 0):
     detector_projection = ub.detector[detector_idx].data.sum(projection)
 
     _plt.imshow(_np.log10(detector_projection))
+
+def plot_machine(machine) :
+    m = machine
+
+    for ekey in m.elements :
+        e  = m.elements[ekey]
+
+        if e.name in m.elementBookkeeping :
+            einfo = m.elementBookkeeping[e.name]
+        else :
+            print("element has no bookkeeping info", e.name)
+            continue
+
+        _plt.subplot(3,1,1)
+        _plt.plot(einfo['translation'][2], einfo['translation'][0],"+")
+        _plt.xlabel("z/mm")
+        _plt.ylabel("x/mm")
+
+        _plt.subplot(3,1,2)
+        _plt.plot(einfo['translation'][2], einfo['translation'][1],"+")
+        _plt.xlabel("z/mm")
+        _plt.ylabel("y/mm")
+
+        _plt.subplot(3,1,3)
+        _plt.plot(einfo['translation'][0], einfo['translation'][1],"+")
+        _plt.xlabel("x/mm")
+        _plt.ylabel("y/mm")
+
+        _plt.tight_layout()
+
+
+
