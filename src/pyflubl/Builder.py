@@ -19,6 +19,8 @@ from pyg4ometry.transformation import matrix2tbxyz as _matrix2tbxyz
 from pyg4ometry.transformation import tbxyz2matrix as _tbxyz2matrix
 from pyg4ometry.transformation import tbxyz2axisangle as _tbxyz2axisangle
 
+from .Options import Options as _Options
+
 pyflublcategories = [
     'drift',
     'rbend',
@@ -292,6 +294,10 @@ class Machine(object) :
     _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
 
     def __init__(self, bakeTransforms = False):
+
+        # options (a.k.a defaults)
+        self.options = _Options()
+
         self.elements = {}
         self.prototypes = {}
         self.sequence = []
@@ -852,15 +858,15 @@ class Machine(object) :
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
 
-        vacuumMaterial = self._GetDictVariable(element, "vacuumMaterial", "VACUUM")
+        vacuumMaterial = self._GetDictVariable(element, "vacuumMaterial",  self.options.vacuumMaterial)
 
-        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 200)
-        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 200)
-        outerMaterial = self._GetDictVariable(element, "outerMaterial","AIR")
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterial = self._GetDictVariable(element, "outerMaterial",self.options.outerMaterial)
 
-        beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial","TUNGSTEN")
-        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
-        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
+        beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial",self.options.beampipeMaterial)
+        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",self.options.beampipeRadius)
+        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",self.options.beampipeThickness)
 
         e1 = self._GetDictVariable(element,"e1",0)
         e2 = self._GetDictVariable(element,"e2",0)
@@ -925,9 +931,9 @@ class Machine(object) :
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
 
-        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 200)
-        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 200)
-        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
 
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
@@ -965,9 +971,9 @@ class Machine(object) :
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
 
-        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 200)
-        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 200)
-        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
 
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
@@ -1024,9 +1030,9 @@ class Machine(object) :
         quadlength = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
 
-        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 200)
-        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 200)
-        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
 
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
@@ -1068,7 +1074,7 @@ class Machine(object) :
         length = element.length * 1000
 
         # outer material
-        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
         outerMaterial = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make box of correct size
