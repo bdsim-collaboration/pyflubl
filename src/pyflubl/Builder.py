@@ -293,6 +293,8 @@ class Machine(object) :
     _quadrupole_allowed_keys = ["k1"]
     _customg4_allowed_keys = ["customLV","convertMaterials"]
     _customg4file_allowed_keys = ["geometryFile","lvName"]
+    _customfluka_allowed_keys = ["customOuterBodies", "customRegions", "flukaRegistry"]
+    _customflukafile_allowed_keys = ["geometryFile", "customOuterBodies", "customRegions"]
     _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
 
 
@@ -487,6 +489,8 @@ class Machine(object) :
         self.AddCustomG4(name,length, customLV = lv, convertMaterials = True)
 
     def AddCustomFluka(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._customfluka_allowed_keys)
+
         e = ElementCustomFluka(name, length,
                                customOuterBodies = kwargs['customOuterBodies'],
                                customRegions = kwargs['customRegions'],
@@ -494,9 +498,12 @@ class Machine(object) :
         self.Append(e)
 
     def AddCustomFlukaFile(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._customflukafile_allowed_keys)
+
+
         geometry_file = kwargs['geometryFile']
-        outer_bodies = kwargs['outerBodies']
-        region_names = kwargs['regionNames']
+        outer_bodies = kwargs['customOuterBodies']
+        region_names = kwargs['customRegions']
 
         reader = _pyg4.fluka.Reader(geometry_file)
         registry = reader.getRegistry()
@@ -1496,3 +1503,7 @@ Machine.AddCustomG4File.__doc__ = """allowed kwargs """ + \
                                   " " + " ".join(Machine._customg4file_allowed_keys)
 Machine.AddSamplerPlane.__doc__ = """allowed kwargs: """ + \
                                   " ".join(Machine._sampler_plane_allowed_keys)
+Machine.AddCustomFluka.__doc__ = """allowed kwargs: """ + \
+                                  " ".join(Machine._customfluka_allowed_keys)
+Machine.AddCustomFlukaFile.__doc__ = """allowed kwargs: """ + \
+                                     " ".join(Machine._customflukafile_allowed_keys)

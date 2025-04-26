@@ -124,8 +124,8 @@ def test_T032_custom_Fluka_File() :
     m.AddSBend(name="b1", length=1, angle=_np.pi/8)
     m.AddDrift(name="d2", length=1)
     m.AddCustomFlukaFile(name="c1", length=1, geometryFile="./geometryInput/test_T032_Custom_Fluka_Gap.inp",
-                         outerBodies="outer",
-                         regionNames="OUTER SHIELD BEAM TARGET")
+                         customOuterBodies="outer",
+                         customRegions="OUTER SHIELD BEAM TARGET")
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.AddDrift(name="d3",length=1)
     m.AddSBendSplit(name="b2", length=2, angle=-_np.pi/8)
