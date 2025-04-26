@@ -287,6 +287,8 @@ class Machine(object) :
                               "e1", "e2"]
     _rbend_allowed_keys = ["angle"]
     _sbend_allowed_keys = ["angle"]
+    _tiltshift_allowed_keys = ["offsetX", "offsetY", "tilt"]
+    _quadrupole_allowed_keys = ["k1"]
     _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
 
     def __init__(self, bakeTransforms = False):
@@ -439,6 +441,12 @@ class Machine(object) :
 
 
     def AddQuadrupole(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,
+                                 self._beampipe_allowed_keys + \
+                                 self._outer_allowed_keys + \
+                                 self._tiltshift_allowed_keys + \
+                                 self._quadrupole_allowed_keys)
+
         e = Element(name=name, category="quadrupole", length = length, **kwargs)
         self.Append(e)
 
@@ -865,7 +873,7 @@ class Machine(object) :
         vacuumMaterial   = _pyg4.geant4.MaterialSingleElement(name=vacuumMaterial, atomic_number=1, atomic_weight=1, density=1)
 
         # make tubs of outer size
-        bpoutersolid    = self._MakeGeant4GenericTrap(name,length, outerHorizontalSize, outerVerticalSize, -e1, e2, g4registry)
+        bpoutersolid    = self._MakeGeant4GenericTrap(name,length, outerHorizontalSize/2, outerVerticalSize/2, -e1, e2, g4registry)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,outerMaterial,name+"_outer_lv",g4registry)
         bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,-_np.pi/2,0]))),
                                                       translation,
@@ -969,7 +977,7 @@ class Machine(object) :
         dz = 2*length/angle*_np.sin(angle/2)
 
         # make trap of correct size
-        outersolid    = self._MakeGeant4GenericTrap(name,dz, outerHorizontalSize, outerVerticalSize, -angle/2, angle/2, g4registry)
+        outersolid    = self._MakeGeant4GenericTrap(name,dz, outerHorizontalSize/2, outerVerticalSize/2, -angle/2, angle/2, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
                                                     translation,
@@ -1015,14 +1023,18 @@ class Machine(object) :
 
         quadlength = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", 200)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", 200)
         outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make fake geant4 materials for conversion
         outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make box of correct size
-        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",500,500,quadlength,g4registry)
+        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,quadlength,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
                                                       translation,
@@ -1444,7 +1456,22 @@ class Machine(object) :
             return v
 
 # dynamic doc strings
-Machine.AddDrift.__doc__ =  """allowed kwargs: """ + " ".join(Machine._beampipe_allowed_keys) + " " + " ".join(Machine._outer_allowed_keys)
-Machine.AddRBend.__doc__ =  """allowed kwargs: """ + " ".join(Machine._beampipe_allowed_keys) + " " + " ".join(Machine._outer_allowed_keys) + " " + " ".join(Machine._rbend_allowed_keys)
-Machine.AddSBend.__doc__ =  """allowed kwargs: """ + " ".join(Machine._beampipe_allowed_keys) + " " + " ".join(Machine._outer_allowed_keys) + " " + " ".join(Machine._sbend_allowed_keys)
-Machine.AddSamplerPlane.__doc__ = """allowed kwargs: """ + " ".join(Machine._sampler_plane_allowed_keys)
+Machine.AddDrift.__doc__ =  """allowed kwargs: """ + \
+                            " ".join(Machine._beampipe_allowed_keys) +\
+                            " " + " ".join(Machine._outer_allowed_keys)
+Machine.AddRBend.__doc__ =  ("""allowed kwargs: """ + \
+                            " ".join(Machine._beampipe_allowed_keys) + \
+                            " " + " ".join(Machine._outer_allowed_keys) +
+                             " " + " ".join(Machine._rbend_allowed_keys))
+Machine.AddSBend.__doc__ =  """allowed kwargs: """ + \
+                            " ".join(Machine._beampipe_allowed_keys) + \
+                            " " + " ".join(Machine._outer_allowed_keys) + \
+                            " " + " ".join(Machine._sbend_allowed_keys)
+Machine.AddQuadrupole.__doc__ = """allowed kwargs """ + \
+                                " ".join(Machine._beampipe_allowed_keys) + \
+                                " " + " ".join(Machine._outer_allowed_keys) + \
+                                " " + " ".join(Machine._quadrupole_allowed_keys) + \
+                                " " + " ".join(Machine._tiltshift_allowed_keys)
+
+Machine.AddSamplerPlane.__doc__ = """allowed kwargs: """ + \
+                                  " ".join(Machine._sampler_plane_allowed_keys)
