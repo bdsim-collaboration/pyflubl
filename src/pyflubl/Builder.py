@@ -291,7 +291,10 @@ class Machine(object) :
     _sbend_allowed_keys = ["angle"]
     _tiltshift_allowed_keys = ["offsetX", "offsetY", "tilt"]
     _quadrupole_allowed_keys = ["k1"]
+    _customg4_allowed_keys = ["customLV","convertMaterials"]
+    _customg4file_allowed_keys = ["geometryFile","lvName"]
     _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
+
 
     def __init__(self, bakeTransforms = False):
 
@@ -456,15 +459,21 @@ class Machine(object) :
         e = Element(name=name, category="quadrupole", length = length, **kwargs)
         self.Append(e)
 
-    def AddGap(self, name, length):
+    def AddGap(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._outer_allowed_keys)
+
         e = ElementGap(name, length)
         self.Append(e)
 
     def AddCustomG4(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._customg4_allowed_keys)
+
         e = ElementCustomG4(name, length, containerLV = kwargs['customLV'], convertMaterials=kwargs['convertMaterials'])
         self.Append(e)
 
     def AddCustomG4File(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._customg4file_allowed_keys)
+
         geometry_file = kwargs['geometryFile']
         lv_name = kwargs['lvName']
 
@@ -1478,6 +1487,12 @@ Machine.AddQuadrupole.__doc__ = """allowed kwargs """ + \
                                 " " + " ".join(Machine._outer_allowed_keys) + \
                                 " " + " ".join(Machine._quadrupole_allowed_keys) + \
                                 " " + " ".join(Machine._tiltshift_allowed_keys)
+Machine.AddGap.__doc__ = """allowed kwargs """ + \
+                         " " + " ".join(Machine._outer_allowed_keys)
 
+Machine.AddCustomG4.__doc__ = """allowed kwargs """ + \
+                              " " + " ".join(Machine._customg4_allowed_keys)
+Machine.AddCustomG4File.__doc__ = """allowed kwargs """ + \
+                                  " " + " ".join(Machine._customg4file_allowed_keys)
 Machine.AddSamplerPlane.__doc__ = """allowed kwargs: """ + \
                                   " ".join(Machine._sampler_plane_allowed_keys)
