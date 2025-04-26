@@ -28,7 +28,7 @@ def test_T111_ring_sbend() :
         m.AddDrift(name="d1-"+str(i), length=0.5,
                    beampipeMaterial="TUNGSTEN",
                    beampipeRadius=30, beampipeThickness=5)
-        m.AddSBend(name="rb_"+str(i), length=0.5, angle=bendangle)
+        m.AddSBendSplit(name="rb_"+str(i), length=0.5, angle=bendangle, nsplit=3)
         m.AddDrift(name="d2-"+str(i), length=0.5,
                    beampipeMaterial="TUNGSTEN",
                    beampipeRadius=30, beampipeThickness=5)

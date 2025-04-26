@@ -18,9 +18,23 @@ def test_T001_drift() :
     m.AddStart(s)
 
     m.AddDrift(name="d1", length=1,
-               beampipeMaterial = "TUNGSTEN",
+               vacuumMaterial="HYDROGEN",
+               beampipeMaterial = "IRON",
                beampipeRadius=30, beampipeThickness=5)
     m.AddSamplerPlane(name="s1", length=1e-6)
+
+    m.AddDrift(name="d2", length=1,
+               vacuumMaterial="HELIUM",
+               beampipeMaterial = "COPPER",
+               beampipeRadius=50, beampipeThickness=10)
+
+    m.AddDrift(name="d3", length=1,
+               vacuumMaterial="NITROGEN",
+               beampipeMaterial = "SILVER",
+               beampipeRadius=100, beampipeThickness=20,
+               outerMaterial="GOLD")
+
+
     m.Write("T001_Drift")
 
-
+    return m

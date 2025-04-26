@@ -23,6 +23,6 @@ def test_T100_straight() :
         m.AddDrift(name="d1_"+str(i), length=1,
                    beampipeMaterial="TUNGSTEN",
                    beampipeRadius=30, beampipeThickness=5)
-        m.AddSamplerPlane(name="s1_"+str(i), length=1e-6, samplersize=1)
+        m.AddSamplerPlane(name="s1_"+str(i), length=1e-6)
 
     m.Write("T100_Stright")

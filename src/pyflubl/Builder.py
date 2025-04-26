@@ -19,6 +19,8 @@ from pyg4ometry.transformation import matrix2tbxyz as _matrix2tbxyz
 from pyg4ometry.transformation import tbxyz2matrix as _tbxyz2matrix
 from pyg4ometry.transformation import tbxyz2axisangle as _tbxyz2axisangle
 
+from .Options import Options as _Options
+
 pyflublcategories = [
     'drift',
     'rbend',
@@ -281,7 +283,26 @@ class Line(list) :
             s += str(item) #uses elements __repr__ function
         return s
 class Machine(object) :
+
+    _outer_allowed_keys = ["outerHorizontalSize", "outerVerticalSize","outerMaterial"]
+    _beampipe_allowed_keys = ["vacuumMaterial", "beampipeMaterial","beampipeRadius", "beampipeThickness",
+                              "e1", "e2"]
+    _rbend_allowed_keys = ["angle"]
+    _sbend_allowed_keys = ["angle"]
+    _tiltshift_allowed_keys = ["offsetX", "offsetY", "tilt"]
+    _quadrupole_allowed_keys = ["k1"]
+    _customg4_allowed_keys = ["customLV","convertMaterials"]
+    _customg4file_allowed_keys = ["geometryFile","lvName"]
+    _customfluka_allowed_keys = ["customOuterBodies", "customRegions", "flukaRegistry"]
+    _customflukafile_allowed_keys = ["geometryFile", "customOuterBodies", "customRegions"]
+    _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
+
+
     def __init__(self, bakeTransforms = False):
+
+        # options (a.k.a defaults)
+        self.options = _Options()
+
         self.elements = {}
         self.prototypes = {}
         self.sequence = []
@@ -402,53 +423,59 @@ class Machine(object) :
         pass
 
     def AddDrift(self,name, length, **kwargs):
-        # beampipe
-        # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
-        # vacuumMaterial, beampipeThickness, beampipeMaterial
+        self._CheckElementKwargs(kwargs, self._beampipe_allowed_keys + self._outer_allowed_keys)
         e = Element(name=name, category="drift", length=length, **kwargs)
         self.Append(e)
 
     def AddRBend(self, name, length,  **kwargs):
-        # beampipe
-        # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
-        # vacuumMaterial, beampipeThickness, beampipeMaterial
-
-        # sbend
-        # angle, B, e1, e2, material, yokeOnInside, hStyle, k1, tilt
-
+        self._CheckElementKwargs(kwargs,
+                                 self._beampipe_allowed_keys + \
+                                 self._outer_allowed_keys + \
+                                 self._rbend_allowed_keys)
         e = Element(name=name, category="rbend", length=length, **kwargs)
         self.Append(e)
 
     def AddSBend(self, name, length, **kwargs):
-        # beampipe
-        # apertureType, beampipeRadius or aper1, aper2, aper3, aper4
-        # vacuumMaterial, beampipeThickness, beampipeMaterial
-
-        # sbend
-        # angle, B, e1, e2, material, yokeOnInside, hStyle, k1, tilt
+        self._CheckElementKwargs(kwargs,
+                                 self._beampipe_allowed_keys + \
+                                 self._outer_allowed_keys + \
+                                 self._sbend_allowed_keys)
         e = Element(name=name, category="sbend", length = length, **kwargs)
         self.Append(e)
 
     def AddSBendSplit(self, name, length, nsplit=10, **kwargs):
         angle = kwargs['angle']/nsplit
         length = length/nsplit
+
         for i in range(0,nsplit):
             self.AddSBend(name+"_split_"+str(i), length, angle = angle)
 
 
     def AddQuadrupole(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,
+                                 self._beampipe_allowed_keys + \
+                                 self._outer_allowed_keys + \
+                                 self._tiltshift_allowed_keys + \
+                                 self._quadrupole_allowed_keys)
+
         e = Element(name=name, category="quadrupole", length = length, **kwargs)
         self.Append(e)
 
-    def AddGap(self, name, length):
+    def AddGap(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._outer_allowed_keys)
+
         e = ElementGap(name, length)
         self.Append(e)
 
     def AddCustomG4(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._customg4_allowed_keys)
+
         e = ElementCustomG4(name, length, containerLV = kwargs['customLV'], convertMaterials=kwargs['convertMaterials'])
         self.Append(e)
 
     def AddCustomG4File(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._customg4file_allowed_keys)
+
         geometry_file = kwargs['geometryFile']
         lv_name = kwargs['lvName']
 
@@ -462,6 +489,8 @@ class Machine(object) :
         self.AddCustomG4(name,length, customLV = lv, convertMaterials = True)
 
     def AddCustomFluka(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._customfluka_allowed_keys)
+
         e = ElementCustomFluka(name, length,
                                customOuterBodies = kwargs['customOuterBodies'],
                                customRegions = kwargs['customRegions'],
@@ -469,9 +498,12 @@ class Machine(object) :
         self.Append(e)
 
     def AddCustomFlukaFile(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,self._customflukafile_allowed_keys)
+
+
         geometry_file = kwargs['geometryFile']
-        outer_bodies = kwargs['outerBodies']
-        region_names = kwargs['regionNames']
+        outer_bodies = kwargs['customOuterBodies']
+        region_names = kwargs['customRegions']
 
         reader = _pyg4.fluka.Reader(geometry_file)
         registry = reader.getRegistry()
@@ -508,9 +540,9 @@ class Machine(object) :
         pass
 
     def AddSamplerPlane(self, name, length, **kwargs):
-        e = Element(name=name, category="sampler_plane", length = length)
+        self._CheckElementKwargs(kwargs, self._sampler_plane_allowed_keys)
+        e = Element(name=name, category="sampler_plane", length = length, **kwargs)
         self.Append(e)
-
 
     def AddTitle(self, title):
         self.title = title
@@ -613,7 +645,7 @@ class Machine(object) :
     def MakeFlukaModel(self):
 
         # initial world size
-        extent = self.GetModelExtent()
+        extent = self._CalculateModelExtent()
 
         # sizes in cm
         xmax = max(abs(extent[0][0]), abs(extent[1][0]))*100 + 1000
@@ -738,7 +770,7 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
-    def _MakeFlukaComponentCommon(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
+    def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
                                   convertMaterials = False):
         # convert materials
         if convertMaterials:
@@ -783,6 +815,17 @@ class Machine(object) :
         return {"placedmesh": outerMesh}
 
 
+    def _MakeFlukaComponentCommonFluka(self, name, regionNames, rotation, translation, category) :
+
+        # make bookkeeping information
+        if name not in self.elementBookkeeping :
+            self.elementBookkeeping[name] = {}
+
+        self.elementBookkeeping[name]['flukaRegions'] = regionNames
+        self.elementBookkeeping[name]['category'] = category
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
     def MakeFlukaBeamPipe(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                           translation = _np.array([0,0,0]),
@@ -819,7 +862,7 @@ class Machine(object) :
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
 
 
-        return self._MakeFlukaComponentCommon(name,bpouterlogical, bpouterphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
                                               rotation, translation, "drift")
 
     def MakeFlukaBeamPipe1(self, name, element,
@@ -830,21 +873,29 @@ class Machine(object) :
 
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
-        beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial","TUNGSTEN")
-        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
-        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
+
+        vacuumMaterial = self._GetDictVariable(element, "vacuumMaterial",  self.options.vacuumMaterial)
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterial = self._GetDictVariable(element, "outerMaterial",self.options.outerMaterial)
+
+        beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial",self.options.beampipeMaterial)
+        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",self.options.beampipeRadius)
+        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",self.options.beampipeThickness)
+
         e1 = self._GetDictVariable(element,"e1",0)
         e2 = self._GetDictVariable(element,"e2",0)
+
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make fake geant4 materials for conversion
         beampipeMaterial = _pyg4.geant4.MaterialSingleElement(name=beampipeMaterialName, atomic_number=1, atomic_weight=1, density=1)
-        outerMaterial    = _pyg4.geant4.MaterialSingleElement(name="AIR", atomic_number=1, atomic_weight=1, density=1)
-        vacuumMaterial   = _pyg4.geant4.MaterialSingleElement(name="VACUUM", atomic_number=1, atomic_weight=1, density=1)
-
+        outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterial, atomic_number=1, atomic_weight=1, density=1)
+        vacuumMaterial   = _pyg4.geant4.MaterialSingleElement(name=vacuumMaterial, atomic_number=1, atomic_weight=1, density=1)
 
         # make tubs of outer size
-        bpoutersolid    = self._MakeGeant4GenericTrap(name,length, 100, 100, -e1, e2, g4registry)
+        bpoutersolid    = self._MakeGeant4GenericTrap(name,length, outerHorizontalSize/2, outerVerticalSize/2, -e1, e2, g4registry)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,outerMaterial,name+"_outer_lv",g4registry)
         bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,-_np.pi/2,0]))),
                                                       translation,
@@ -874,7 +925,7 @@ class Machine(object) :
 
         rotation = rotation @ _tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, -_np.pi / 2, 0])
 
-        return self._MakeFlukaComponentCommon(name,bpouterlogical, bpouterphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
                                               rotation, translation, "drift")
 
     def MakeFlukaRectangularStraightOuter(self, straight_x_size, straight_y_size, length, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
@@ -895,14 +946,18 @@ class Machine(object) :
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
-        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
+
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make fake geant4 materials for conversion
         outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make box of correct size
-        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",200*1.41,200*1.41, length, g4registry)
+        outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",outerHorizontalSize,outerVerticalSize, length, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz( _np.linalg.inv(rotation)),
                                                     translation,
@@ -919,7 +974,7 @@ class Machine(object) :
                                                         outerlogical,
                                                         g4registry)
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "rbend")
 
     def MakeFlukaSBend(self, name, element,
@@ -931,7 +986,11 @@ class Machine(object) :
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
-        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
+
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make fake geant4 materials for conversion
@@ -940,7 +999,7 @@ class Machine(object) :
         dz = 2*length/angle*_np.sin(angle/2)
 
         # make trap of correct size
-        outersolid    = self._MakeGeant4GenericTrap(name,dz, 100, 100, -angle/2, angle/2, g4registry)
+        outersolid    = self._MakeGeant4GenericTrap(name,dz, outerHorizontalSize/2, outerVerticalSize/2, -angle/2, angle/2, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
                                                     translation,
@@ -964,10 +1023,20 @@ class Machine(object) :
 
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "sbend")
+        ret_dict =  self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+                                                     rotation, translation, "sbend")
+
+        # make field
+        rho = length/(2*_np.sin(angle/2.))
+        b_field = self._CalculateDipoleFieldStrength(self.beam.energy, rho)
+
+        # make field transform
+
+        # assign field to region(s)
 
 
+
+        return ret_dict
     def MakeFlukaQuadrupole(self, name, element,
                             rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                             translation = _np.array([0,0,0]),
@@ -976,14 +1045,18 @@ class Machine(object) :
 
         quadlength = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
-        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
+
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
         # make fake geant4 materials for conversion
         outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make box of correct size
-        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",500,500,quadlength,g4registry)
+        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,quadlength,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
                                                       translation,
@@ -1001,7 +1074,7 @@ class Machine(object) :
                                                         outerlogical,
                                                         g4registry)
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "quad")
 
     def MakeFlukaGap(self, name, element,
@@ -1017,7 +1090,7 @@ class Machine(object) :
         length = element.length * 1000
 
         # outer material
-        outerMaterialName = self._GetDictVariable(element,"outerMaterial","AIR")
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
         outerMaterial = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make box of correct size
@@ -1030,7 +1103,7 @@ class Machine(object) :
                                                       self.worldLogical,
                                                       g4registry)
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap")
 
     def MakeFlukaCustomG4(self, name, element,
@@ -1055,7 +1128,7 @@ class Machine(object) :
                                                       self.worldLogical,
                                                       g4registry)
 
-        return self._MakeFlukaComponentCommon(name,outerlogical, outerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap",
                                               convertMaterials=convertMaterials)
 
@@ -1063,6 +1136,8 @@ class Machine(object) :
                              rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                              translation = _np.array([0,0,0]),
                              flukaBuild = True):
+
+        regionNamesTransferred = []
 
         outer_bodies = element.outer_bodies
         regions = element.regions
@@ -1078,6 +1153,8 @@ class Machine(object) :
 
             # transfer bodies and regions to fluka registry
             for region in regions:
+                regionNamesTransferred.append(region.name)
+
                 if region.name not in self.flukaregistry.regionDict :
                     self.flukaregistry.addRegion(region)
                 for zone in region.zones :
@@ -1106,6 +1183,8 @@ class Machine(object) :
                 m.union(outer_region.mesh())
 
         m.scale(10,10,10)
+
+        self._MakeFlukaComponentCommonFluka(name, regionNamesTransferred, rotation, translation, element.category)
 
         return {"placedmesh": m}
 
@@ -1157,7 +1236,7 @@ class Machine(object) :
                                                       self.worldLogical,
                                                       g4registry)
 
-        return self._MakeFlukaComponentCommon(name,samplerlogical, samplerphysical, flukaConvert,
+        return self._MakeFlukaComponentCommonG4(name,samplerlogical, samplerphysical, flukaConvert,
                                               rotation, translation, "sampler")
 
     def _MakeGeant4GenericTrap(self, name,
@@ -1344,8 +1423,13 @@ class Machine(object) :
     def _LoadGDMLGeometry(self, element):
         geometryFile = self._GetDictVariable(element, "geometryFile", "None")
 
+    def _CalculateDipoleFieldStrength(self, momentum, rho):
+        return 3.3356*momentum / rho
 
-    def GetModelExtent(self):
+    def _CalculateQuadrupoleFieldStrength(self, momentum, k1):
+        return 0
+
+    def _CalculateModelExtent(self):
         # loop over positions and find maxima
         vmin = [9e99, 9e99, 9e99]
         vmax = [-9e99, -9e99, -9e99]
@@ -1366,6 +1450,11 @@ class Machine(object) :
                 vmax[2] = p[2]
 
         return [vmin,vmax]
+
+    def _CheckElementKwargs(self, kwargs, allowed_keys):
+        for key in kwargs:
+            if key not in allowed_keys:
+                raise TypeError(f"Unexpected keyword argument: {key}")
 
     def ViewGeant4(self, separateMeshes = False):
         if not separateMeshes :
@@ -1388,4 +1477,33 @@ class Machine(object) :
             v.view()
             return v
 
+# dynamic doc strings
+Machine.AddDrift.__doc__ =  """allowed kwargs: """ + \
+                            " ".join(Machine._beampipe_allowed_keys) +\
+                            " " + " ".join(Machine._outer_allowed_keys)
+Machine.AddRBend.__doc__ =  ("""allowed kwargs: """ + \
+                            " ".join(Machine._beampipe_allowed_keys) + \
+                            " " + " ".join(Machine._outer_allowed_keys) +
+                             " " + " ".join(Machine._rbend_allowed_keys))
+Machine.AddSBend.__doc__ =  """allowed kwargs: """ + \
+                            " ".join(Machine._beampipe_allowed_keys) + \
+                            " " + " ".join(Machine._outer_allowed_keys) + \
+                            " " + " ".join(Machine._sbend_allowed_keys)
+Machine.AddQuadrupole.__doc__ = """allowed kwargs """ + \
+                                " ".join(Machine._beampipe_allowed_keys) + \
+                                " " + " ".join(Machine._outer_allowed_keys) + \
+                                " " + " ".join(Machine._quadrupole_allowed_keys) + \
+                                " " + " ".join(Machine._tiltshift_allowed_keys)
+Machine.AddGap.__doc__ = """allowed kwargs """ + \
+                         " " + " ".join(Machine._outer_allowed_keys)
 
+Machine.AddCustomG4.__doc__ = """allowed kwargs """ + \
+                              " " + " ".join(Machine._customg4_allowed_keys)
+Machine.AddCustomG4File.__doc__ = """allowed kwargs """ + \
+                                  " " + " ".join(Machine._customg4file_allowed_keys)
+Machine.AddSamplerPlane.__doc__ = """allowed kwargs: """ + \
+                                  " ".join(Machine._sampler_plane_allowed_keys)
+Machine.AddCustomFluka.__doc__ = """allowed kwargs: """ + \
+                                  " ".join(Machine._customfluka_allowed_keys)
+Machine.AddCustomFlukaFile.__doc__ = """allowed kwargs: """ + \
+                                     " ".join(Machine._customflukafile_allowed_keys)

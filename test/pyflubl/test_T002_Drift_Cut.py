@@ -22,6 +22,6 @@ def test_T002_drift_cut() :
                beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5,
                e1=_np.pi/4, e2=_np.pi/4)
-    m.AddSamplerPlane(name="s1", length=1e-6, samplersize=1)
+    m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T002_Drift_Cut")
 
