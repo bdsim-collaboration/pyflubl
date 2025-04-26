@@ -444,11 +444,11 @@ class Machine(object) :
         self.Append(e)
 
     def AddSBendSplit(self, name, length, nsplit=10, **kwargs):
-        angle = kwargs['angle']/nsplit
+        angle = kwargs.pop('angle')/nsplit
         length = length/nsplit
 
         for i in range(0,nsplit):
-            self.AddSBend(name+"_split_"+str(i), length, angle = angle)
+            self.AddSBend(name+"_split_"+str(i), length, angle = angle, **kwargs)
 
 
     def AddQuadrupole(self, name, length, **kwargs):
@@ -1284,9 +1284,10 @@ class Machine(object) :
 
         length = element.length*1000
         vacuumMaterialName = self._GetDictVariable(element,"vacuumMaterial","VACUUM")
-        beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial","TUNGSTEN")
-        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",30)
-        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",5)
+        beampipeMaterialName = self._GetDictVariable(element,"beampipeMaterial",self.options.beampipeMaterial)
+        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",self.options.beampipeRadius)
+        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",self.options.beampipeThickness)
+
         e1 = self._GetDictVariable(element,"e1",0)
         e2 = self._GetDictVariable(element,"e2",0)
 
