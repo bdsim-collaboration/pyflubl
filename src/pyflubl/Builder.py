@@ -1131,8 +1131,11 @@ class Machine(object) :
         collimatorsolid1 = _pyg4.geant4.solid.Box(name+"_rcol1_solid",horizontalWidth,verticalWidth,length,g4registry)
         collimatorsolid2 = _pyg4.geant4.solid.Box(name+"_rcol2_solid",xsize,ysize,length,g4registry)
 
-        collimatorsolid = _pyg4.geant4.solid.Subtraction(name+"_rcol_solid",collimatorsolid1, collimatorsolid2,
-                                                         [[0,0,0],[0,0,0]], g4registry)
+        if xsize == 0 or ysize == 0 :
+            collimatorsolid = collimatorsolid1
+        else :
+            collimatorsolid = _pyg4.geant4.solid.Subtraction(name+"_rcol_solid",collimatorsolid1, collimatorsolid2,
+                                                             [[0,0,0],[0,0,0]], g4registry)
 
         collimatorlogical  = _pyg4.geant4.LogicalVolume(collimatorsolid,collimatorMaterial,name+"_rcol_lv",g4registry)
         collimatorlogicalphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],

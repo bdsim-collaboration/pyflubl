@@ -18,11 +18,15 @@ def test_T018_rcol() :
     m.AddStart(s)
 
     m.AddDrift(name="d1", length=1)
-    m.AddSamplerPlane(name="s1", length=1e-6)
     m.AddRCol(name="rc1", length=1, horizontalWidth=200, xsize=50, ysize=50,
               material="IRON", outerMaterial="VACUUM")
+    m.AddSamplerPlane(name="s1", length=1e-6)
     m.AddDrift(name="d2", length=1)
+    m.AddRCol(name="rc2", length=1, horizontalWidth=200, xsize=0, ysize=50,
+              material="IRON", outerMaterial="VACUUM")
+    m.AddSamplerPlane(name="s2", length=1e-6)
+    m.AddDrift(name="d3", length=1)
 
-    m.Write("T017_RCol")
+    m.Write("T018_RCol")
 
     return m
