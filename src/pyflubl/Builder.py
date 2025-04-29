@@ -38,6 +38,7 @@ def _CalculateElementTransformation(e):
             e.category == "ecol" or \
             e.category == "jcol" or \
             e.category == "dump" or \
+            e.category == "wirescanner" or \
             e.category == "gap" or \
             e.category == "customG4" or \
             e.category == "customFluka" :
@@ -301,6 +302,8 @@ class Machine(object) :
     _ecol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth"]
     _jcol_allowed_keys = ["xsize","ysize","material","xsizeLeft","xsizeRight","jawTiltLeft", "jwaTiltRight","horizontalWidth", "colour"]
     _dump_allowed_keys = ["horizontalWidth","verticalWidth","apertureType"]
+    _wirescanner_allowed_keys = ["wireDiameter","wireLength","material","wireAngle",
+                                  "wireOffsetX","wireOffsetY","wireOffsetZ"]
     _customg4_allowed_keys = ["customLV","convertMaterials"]
     _customg4file_allowed_keys = ["geometryFile","lvName"]
     _customfluka_allowed_keys = ["customOuterBodies", "customRegions", "flukaRegistry"]
@@ -515,6 +518,16 @@ class Machine(object) :
                                  self._target_allowed_keys)
 
         e = Element(name=name, category="dump", length = length, **kwargs)
+        self.Append(e)
+
+    def AddWireScanner(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,
+                                 self._outer_allowed_keys + \
+                                 self._tiltshift_allowed_keys + \
+                                 self._beampipe_allowed_keys + \
+                                 self._wirescanner_allowed_keys)
+
+        e = Element(name=name, category="wirescanner", length = length, **kwargs)
         self.Append(e)
 
     def AddGap(self, name, length, **kwargs):
@@ -768,10 +781,10 @@ class Machine(object) :
             return self.MakeFlukaDump(name=e.name, element=e,
                                       rotation=r, translation=t * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
-        elif e.category == "dump" :
-            return self.MakeFlukaDump(name=e.name, element=e,
-                                      rotation=r, translation=t * 1000,
-                                      geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "wirescanner" :
+            return self.MakeFlukaWireScanner(name=e.name, element=e,
+                                             rotation=r, translation=t * 1000,
+                                             geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "gap" :
             return self.MakeFlukaGap(name=e.name, element=e,
                                      rotation=r, translation=t * 1000,
@@ -1046,7 +1059,7 @@ class Machine(object) :
                                                     g4registry)
 
         # make beampipe
-        beampipelogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
@@ -1092,7 +1105,7 @@ class Machine(object) :
         elementCopy.length= dz/1000.0
         elementCopy['e1'] = angle/2
         elementCopy['e2'] = angle/2
-        beampipelogical = self._MakeGeant4BeamPipe(name+"bp",elementCopy,g4registry)
+        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",elementCopy,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],
                                                         [0,0,0],
                                                         beampipelogical,
@@ -1146,7 +1159,7 @@ class Machine(object) :
                                                       g4registry)
 
         # make beampipe
-        beampipelogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
@@ -1465,8 +1478,70 @@ class Machine(object) :
                                                      g4registry)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "target")
+                                              rotation, translation, "dump")
 
+
+    def MakeFlukaWireScanner(self, name, element,
+                            rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                            translation = _np.array([0,0,0]),
+                            geant4RegistryAdd = False,
+                            flukaConvert = True):
+
+        length = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
+
+        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",self.options.beampipeRadius)
+
+        wireDiameter = self._GetDictVariable(element,"wireDiameter",0.01)
+        wireLength = self._GetDictVariable(element,"wireLength",2*beampipeRadius-10)
+        material = self._GetDictVariable(element,"material","TUNGSTEN")
+        wireAngle = self._GetDictVariable(element,"wireAngle",0)
+        wireOffsetX = self._GetDictVariable(element,"wireOffsetX",0)
+        wireOffsetY = self._GetDictVariable(element,"wireOffsetY",0)
+        wireOffsetZ = self._GetDictVariable(element,"wireOffsetZ",0)
+
+        g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # make fake geant4 materials for conversion
+        outerMaterial = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
+        wireMaterial = _pyg4.geant4.MaterialSingleElement(name=material, atomic_number=1, atomic_weight=1, density=1)
+
+        # make box of correct size
+        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
+                                                      translation,
+                                                      outerlogical,
+                                                      name+"_pv",
+                                                      self.worldLogical,
+                                                      g4registry)
+
+        # make beampipe
+        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                        [0,0,0],
+                                                        beampipelogical,
+                                                        name+"bp_pv",
+                                                        outerlogical,
+                                                        g4registry)
+
+        # make wire and add to vaclogical
+        wiresolid = _pyg4.geant4.solid.Tubs(name+"_wire_solid",0,wireDiameter/2,wireLength,0, 2*_np.pi,g4registry)
+        wirelogical = _pyg4.geant4.LogicalVolume(wiresolid,wireMaterial,name+"__wire_lv",g4registry)
+        wirephysical  = _pyg4.geant4.PhysicalVolume([_np.pi/2,wireAngle,0],
+                                                    [wireOffsetX,wireOffsetY,wireOffsetZ],
+                                                    wirelogical,
+                                                    name+"_wire_pv",
+                                                    vaclogical,
+                                                    g4registry)
+
+
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+                                              rotation, translation, "wirescanner")
 
     def MakeFlukaGap(self, name, element,
                      rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
@@ -1704,7 +1779,7 @@ class Machine(object) :
         vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,vacuumMaterial,name+"_cav_lv",g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],vaclogical,name+"_vac_pv",bplogical,g4registry)
 
-        return bplogical
+        return [bplogical, vaclogical]
 
     def _MakeFlukaMaterials(self, materials = []):
         for g4material in materials :
@@ -1906,6 +1981,11 @@ Machine.AddDump.__doc__ = """allowed kwargs """ + \
                           " " + " ".join(Machine._outer_allowed_keys) + \
                           " " + " ".join(Machine._tiltshift_allowed_keys) + \
                           " " + " ".join(Machine._dump_allowed_keys)
+Machine.AddWireScanner.__doc__ = """allowed kwargs """ + \
+                          " " + " ".join(Machine._outer_allowed_keys) + \
+                          " " + " ".join(Machine._tiltshift_allowed_keys) + \
+                          " " + " ".join(Machine._beampipe_allowed_keys) + \
+                          " " + " ".join(Machine._wirescanner_allowed_keys)
 Machine.AddGap.__doc__ = """allowed kwargs """ + \
                          " " + " ".join(Machine._outer_allowed_keys)
 
