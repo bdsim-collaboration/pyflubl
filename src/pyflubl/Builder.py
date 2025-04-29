@@ -1287,10 +1287,12 @@ class Machine(object) :
         print(horizontalWidth, xsize, leftwidth, rightwidth, leftcentre, rightcentre)
 
         if xsizeLeft != 0:
-            pass
+            leftwidth = horizontalWidth / 2
+            leftcentre = xsizeLeft + leftwidth / 2
 
         if xsizeRight != 0:
-            pass
+            rightwidth = horizontalWidth / 2
+            rightcentre = - xsizeRight - rightwidth / 2
 
         if jawTiltLeft == 0 and jawTiltRight == 0 :
             leftsolid = _pyg4.geant4.solid.Box(name + "_jcol_left_solid", leftwidth, verticalWidth, length,
@@ -1298,7 +1300,7 @@ class Machine(object) :
             rightsolid = _pyg4.geant4.solid.Box(name + "_jcol_right_solid", rightwidth, verticalWidth, length,
                                                g4registry)
 
-            rightlogical  = _pyg4.geant4.LogicalVolume(leftsolid,collimatorMaterial,name+"_rcol_right_lv",g4registry)
+            rightlogical  = _pyg4.geant4.LogicalVolume(rightsolid,collimatorMaterial,name+"_rcol_right_lv",g4registry)
             rightphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[rightcentre,0,0],
                                                          rightlogical,
                                                          name+"_jcol_right_pv",

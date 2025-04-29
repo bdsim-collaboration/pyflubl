@@ -19,14 +19,21 @@ def test_T020_jcol() :
     m.AddStart(s)
 
     m.AddDrift(name="d1", length=1)
-    m.AddJCol(name="ec1", length=1, horizontalWidth=200, xsize=25, ysize=25,
+    m.AddJCol(name="jc1", length=1, horizontalWidth=200, xsize=25,
               material="IRON", outerMaterial="VACUUM")
     m.AddSamplerPlane(name="s1", length=1e-6)
+
     m.AddDrift(name="d2", length=1)
-    m.AddJCol(name="ec2", length=1, horizontalWidth=200, xsize=25, ysize=25,
+    m.AddJCol(name="jc2", length=1, horizontalWidth=200, xsize=25,
               material="IRON", outerMaterial="VACUUM", tilt=_np.pi/2)
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d3", length=1)
+
+    m.AddDrift(name="d4", length=1)
+    m.AddJCol(name="jc3", length=1, horizontalWidth=200, xsizeLeft=10, xsizeRight = 20,
+              material="IRON", outerMaterial="VACUUM")
+    m.AddSamplerPlane(name="s3", length=1e-6)
+    m.AddDrift(name="d5", length=1)
 
     m.Write("T020_JCol")
 
