@@ -6,11 +6,11 @@ class Options:
 
         self.beampipeMaterial = "IRON"
         self.beampipeThickness = 5
-        self.beampipeRadius = 100
+        self.beampipeRadius = 50
 
         self.outerMaterial = "AIR"
-        self.outerHorizontalSize = 200
-        self.outerVerticalSize = 200
+        self.outerHorizontalSize = 300
+        self.outerVerticalSize = 300
 
 
     def __repr__(self):

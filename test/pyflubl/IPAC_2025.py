@@ -26,8 +26,8 @@ def test_IPAC_2025() :
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.AddCustomFlukaFile(name="c1", length=1,
                          geometryFile="./geometryInput/test_T032_Custom_Fluka_Gap.inp",
-                         outerBodies="outer",
-                         regionNames="OUTER SHIELD BEAM TARGET")
+                         customOuterBodies="outer",
+                         customRegions="OUTER SHIELD BEAM TARGET")
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d3", length=0.5, beampipeMaterial = "TUNGSTEN")
     m.Write("IPAC_2025")
