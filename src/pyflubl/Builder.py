@@ -295,7 +295,7 @@ class Machine(object) :
     _sbend_allowed_keys = ["angle"]
     _tiltshift_allowed_keys = ["offsetX", "offsetY", "tilt"]
     _quadrupole_allowed_keys = ["k1"]
-    _target_allowed_keys = ["material","horizontalWidth","apertureType"]
+    _target_allowed_keys = ["material","horizontalWidth","verticalWidth","apertureType"]
     _rcol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth"]
     _ecol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth"]
     _jcol_allowed_keys = ["xsize","ysize","material","xsizeLeft","xsizeRight","jawTiltLeft", "jwaTiltRight","horizontalWidth", "colour"]
@@ -1153,8 +1153,10 @@ class Machine(object) :
         outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
 
         materialName = self._GetDictVariable(element,"material","IRON")
+        apertureType = self._GetDictVariable(element,"apertureType","rectangle")
         horizontalWidth = self._GetDictVariable(element,"horizontalWidth",outerHorizontalSize-5)
-        verticalWidth = self._GetDictVariable(element,"horizontalWidth",outerVerticalSize-5)
+        verticalWidth = self._GetDictVariable(element,"verticalWidth",horizontalWidth)
+
 
         # make fake geant4 materials for conversion
         outerMaterial = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
@@ -1173,7 +1175,13 @@ class Machine(object) :
                                                       self.worldLogical,
                                                       g4registry)
 
-        targetsolid = _pyg4.geant4.solid.Box(name+"_target_solid",horizontalWidth, verticalWidth,length,g4registry)
+        if apertureType == "rectangle":
+            targetsolid = _pyg4.geant4.solid.Box(name+"_target_solid",horizontalWidth, verticalWidth,length,g4registry)
+        elif apertureType == "circular" or apertureType == "elliptical":
+            targetsolid = _pyg4.geant4.solid.EllipticalTube(name+"_target_solid",horizontalWidth, verticalWidth,length,g4registry)
+        else :
+            targetsolid = _pyg4.geant4.solid.Box(name+"_target_solid",horizontalWidth, verticalWidth,length,g4registry)
+
         targetlogical  = _pyg4.geant4.LogicalVolume(targetsolid,targetMaterial,name+"_targe_lv",g4registry)
         targetphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                      [0,0,0],

@@ -18,10 +18,13 @@ def test_T017_target() :
     m.AddStart(s)
 
     m.AddDrift(name="d1", length=1)
-    m.AddTarget(name="rc1", length=1, horizontalWidth=200, material="IRON", outerMaterial="VACUUM")
+    m.AddTarget(name="t1", length=1, horizontalWidth=200, material="IRON",
+                outerMaterial="VACUUM")
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.AddDrift(name="d2", length=1)
-
+    m.AddTarget(name="t2", length=1, horizontalWidth=200, verticalWidth=100, apertureType="circular",
+                material="IRON", outerMaterial="VACUUM")
+    m.AddSamplerPlane(name="s2", length=1e-6)
 
     m.Write("T017_target")
 
