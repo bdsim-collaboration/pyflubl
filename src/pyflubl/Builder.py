@@ -33,6 +33,7 @@ pyflublcategories = [
 def _CalculateElementTransformation(e):
     if e.category == "drift" or  \
             e.category == "quadrupole" or \
+            e.category == "target" or \
             e.category == "rcol" or \
             e.category == "ecol" or \
             e.category == "jcol" or \
@@ -294,6 +295,7 @@ class Machine(object) :
     _sbend_allowed_keys = ["angle"]
     _tiltshift_allowed_keys = ["offsetX", "offsetY", "tilt"]
     _quadrupole_allowed_keys = ["k1"]
+    _target_allowed_keys = ["material","horizontalWidth","apertureType"]
     _rcol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth"]
     _ecol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth"]
     _jcol_allowed_keys = ["xsize","ysize","material","xsizeLeft","xsizeRight","jawTiltLeft", "jwaTiltRight","horizontalWidth", "colour"]
@@ -302,7 +304,6 @@ class Machine(object) :
     _customfluka_allowed_keys = ["customOuterBodies", "customRegions", "flukaRegistry"]
     _customflukafile_allowed_keys = ["geometryFile", "customOuterBodies", "customRegions"]
     _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
-
 
     def __init__(self, bakeTransforms = True):
 
@@ -465,6 +466,16 @@ class Machine(object) :
                                  self._quadrupole_allowed_keys)
 
         e = Element(name=name, category="quadrupole", length = length, **kwargs)
+        self.Append(e)
+
+
+    def AddTarget(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,
+                                 self._outer_allowed_keys + \
+                                 self._tiltshift_allowed_keys + \
+                                 self._target_allowed_keys)
+
+        e = Element(name=name, category="target", length = length, **kwargs)
         self.Append(e)
 
     def AddRCol(self, name, length, **kwargs):
@@ -726,6 +737,10 @@ class Machine(object) :
             return self.MakeFlukaQuadrupole(name=e.name, element=e,
                                             rotation=r, translation=t * 1000,
                                             geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "target" :
+            return self.MakeFlukaTarget(name=e.name, element=e,
+                                        rotation=r, translation=t * 1000,
+                                        geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "rcol" :
             return self.MakeFlukaRCol(name=e.name, element=e,
                                       rotation=r, translation=t * 1000,
@@ -1122,6 +1137,53 @@ class Machine(object) :
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "quad")
+
+
+    def MakeFlukaTarget(self, name, element,
+                      rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                      translation = _np.array([0,0,0]),
+                      geant4RegistryAdd = False,
+                      flukaConvert = True):
+
+        length = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
+
+        materialName = self._GetDictVariable(element,"material","IRON")
+        horizontalWidth = self._GetDictVariable(element,"horizontalWidth",outerHorizontalSize-5)
+        verticalWidth = self._GetDictVariable(element,"horizontalWidth",outerVerticalSize-5)
+
+        # make fake geant4 materials for conversion
+        outerMaterial = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
+        targetMaterial = _pyg4.geant4.MaterialSingleElement(name=materialName, atomic_number=1, atomic_weight=1, density=1)
+
+        # pyg4ometry registry
+        g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # make box of correct size
+        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
+                                                      translation,
+                                                      outerlogical,
+                                                      name+"_pv",
+                                                      self.worldLogical,
+                                                      g4registry)
+
+        targetsolid = _pyg4.geant4.solid.Box(name+"_target_solid",horizontalWidth, verticalWidth,length,g4registry)
+        targetlogical  = _pyg4.geant4.LogicalVolume(targetsolid,targetMaterial,name+"_targe_lv",g4registry)
+        targetphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                     [0,0,0],
+                                                     targetlogical,
+                                                     name+"_taget_pv",
+                                                     outerlogical,
+                                                     g4registry)
+
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+                                              rotation, translation, "target")
 
     def MakeFlukaRCol(self, name, element,
                       rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
@@ -1742,6 +1804,10 @@ Machine.AddQuadrupole.__doc__ = """allowed kwargs """ + \
                                 " " + " ".join(Machine._outer_allowed_keys) + \
                                 " " + " ".join(Machine._quadrupole_allowed_keys) + \
                                 " " + " ".join(Machine._tiltshift_allowed_keys)
+Machine.AddTarget.__doc__ = """allowed kwargs""" \
+                            " " + " ".join(Machine._outer_allowed_keys) + \
+                            " " + " ".join(Machine._tiltshift_allowed_keys) + \
+                            " " + " ".join(Machine._target_allowed_keys)
 Machine.AddRCol.__doc__ = """allowed kwargs """ + \
                           " " + " ".join(Machine._outer_allowed_keys) + \
                           " " + " ".join(Machine._tiltshift_allowed_keys) + \
