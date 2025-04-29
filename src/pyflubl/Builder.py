@@ -34,6 +34,7 @@ def _CalculateElementTransformation(e):
     if e.category == "drift" or  \
             e.category == "quadrupole" or \
             e.category == "rcol" or \
+            e.category == "ecol" or \
             e.category == "gap" or \
             e.category == "customG4" or \
             e.category == "customFluka" :
@@ -293,6 +294,7 @@ class Machine(object) :
     _tiltshift_allowed_keys = ["offsetX", "offsetY", "tilt"]
     _quadrupole_allowed_keys = ["k1"]
     _rcol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth"]
+    _ecol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth"]
     _customg4_allowed_keys = ["customLV","convertMaterials"]
     _customg4file_allowed_keys = ["geometryFile","lvName"]
     _customfluka_allowed_keys = ["customOuterBodies", "customRegions", "flukaRegistry"]
@@ -300,7 +302,7 @@ class Machine(object) :
     _sampler_plane_allowed_keys = ["samplerDiameter", "samplerMaterial", "samplerThickness"]
 
 
-    def __init__(self, bakeTransforms = False):
+    def __init__(self, bakeTransforms = True):
 
         # options (a.k.a defaults)
         self.options = _Options()
@@ -470,6 +472,15 @@ class Machine(object) :
                                  self._rcol_allowed_keys)
 
         e = Element(name=name, category="rcol", length = length, **kwargs)
+        self.Append(e)
+
+    def AddECol(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,
+                                 self._outer_allowed_keys + \
+                                 self._tiltshift_allowed_keys + \
+                                 self._ecol_allowed_keys)
+
+        e = Element(name=name, category="ecol", length = length, **kwargs)
         self.Append(e)
 
     def AddGap(self, name, length, **kwargs):
@@ -705,6 +716,10 @@ class Machine(object) :
                                             geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "rcol" :
             return self.MakeFlukaRCol(name=e.name, element=e,
+                                      rotation=r, translation=t * 1000,
+                                      geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "ecol" :
+            return self.MakeFlukaECol(name=e.name, element=e,
                                       rotation=r, translation=t * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "gap" :
@@ -1147,6 +1162,61 @@ class Machine(object) :
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "rcol")
 
+    def MakeFlukaECol(self, name, element,
+                      rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                      translation = _np.array([0,0,0]),
+                      geant4RegistryAdd = False,
+                      flukaConvert = True):
+
+        length = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
+
+        materialName = self._GetDictVariable(element,"material","IRON")
+        xsize = self._GetDictVariable(element,"xsize",0)
+        ysize = self._GetDictVariable(element,"ysize",0)
+
+        horizontalWidth = self._GetDictVariable(element,"horizontalWidth",outerHorizontalSize-5)
+        verticalWidth = self._GetDictVariable(element,"horizontalWidth",outerVerticalSize-5)
+
+        # make fake geant4 materials for conversion
+        outerMaterial = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
+        collimatorMaterial = _pyg4.geant4.MaterialSingleElement(name=materialName, atomic_number=1, atomic_weight=1, density=1)
+        # pyg4ometry registry
+        g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # make box of correct size
+        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
+                                                      translation,
+                                                      outerlogical,
+                                                      name+"_pv",
+                                                      self.worldLogical,
+                                                      g4registry)
+
+        collimatorsolid1 = _pyg4.geant4.solid.Box(name+"_rcol1_solid",horizontalWidth,verticalWidth,length,g4registry)
+        collimatorsolid2 = _pyg4.geant4.solid.EllipticalTube(name+"_rcol2_solid",xsize,ysize,length,g4registry)
+
+        if xsize == 0 or ysize == 0 :
+            collimatorsolid = collimatorsolid1
+        else :
+            collimatorsolid = _pyg4.geant4.solid.Subtraction(name+"_rcol_solid",collimatorsolid1, collimatorsolid2,
+                                                             [[0,0,0],[0,0,0]], g4registry)
+
+        collimatorlogical  = _pyg4.geant4.LogicalVolume(collimatorsolid,collimatorMaterial,name+"_rcol_lv",g4registry)
+        collimatorlogicalphysical = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],
+                                                                collimatorlogical,
+                                                                name+"_rcol_pv",
+                                                                outerlogical,
+                                                                g4registry)
+
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+                                              rotation, translation, "ecol")
+
     def MakeFlukaGap(self, name, element,
                      rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                      translation = _np.array([0,0,0]),
@@ -1569,6 +1639,10 @@ Machine.AddRCol.__doc__ = """allowed kwargs """ + \
                           " " + " ".join(Machine._outer_allowed_keys) + \
                           " " + " ".join(Machine._tiltshift_allowed_keys) + \
                           " " + " ".join(Machine._rcol_allowed_keys)
+Machine.AddECol.__doc__ = """allowed kwargs """ + \
+                          " " + " ".join(Machine._outer_allowed_keys) + \
+                          " " + " ".join(Machine._tiltshift_allowed_keys) + \
+                          " " + " ".join(Machine._ecol_allowed_keys)
 Machine.AddGap.__doc__ = """allowed kwargs """ + \
                          " " + " ".join(Machine._outer_allowed_keys)
 
