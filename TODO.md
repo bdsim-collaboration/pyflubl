@@ -29,9 +29,9 @@
 10. vkicker
 11. hkicker
 12. tkicker
-13. rf
-14. rfx
-15. rfy
+13. ~~rf~~ impossible -> drift
+14. ~~rfx~~ impossible -> drift
+15. ~~rfy~~ impossible -> drift
 17. ~~target~~
 18. ~~rcol~~
 19. ~~ecol~~
