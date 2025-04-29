@@ -38,7 +38,7 @@
 20. ~~jcol~~
 21. degrader
 22. muspoiler
-23. shield
+23. ~~shield~~
 24. ~~dump~~
 25. solenoid
 26. wirescanner

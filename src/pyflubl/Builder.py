@@ -37,6 +37,7 @@ def _CalculateElementTransformation(e):
             e.category == "rcol" or \
             e.category == "ecol" or \
             e.category == "jcol" or \
+            e.category == "shield" or \
             e.category == "dump" or \
             e.category == "wirescanner" or \
             e.category == "gap" or \
@@ -301,6 +302,8 @@ class Machine(object) :
     _rcol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth"]
     _ecol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth"]
     _jcol_allowed_keys = ["xsize","ysize","material","xsizeLeft","xsizeRight","jawTiltLeft", "jwaTiltRight","horizontalWidth", "colour"]
+    _shield_allowed_keys = ["material","horizontalWidth","verticalWidth",
+                            "xsize", "ysize"]
     _dump_allowed_keys = ["horizontalWidth","verticalWidth","apertureType"]
     _wirescanner_allowed_keys = ["wireDiameter","wireLength","material","wireAngle",
                                   "wireOffsetX","wireOffsetY","wireOffsetZ"]
@@ -510,6 +513,16 @@ class Machine(object) :
         e = Element(name=name, category="jcol", length = length, **kwargs)
         self.Append(e)
 
+
+    def AddShield(self, name, length, **kwargs):
+        self._CheckElementKwargs(kwargs,
+                                 self._outer_allowed_keys + \
+                                 self._tiltshift_allowed_keys + \
+                                 self._beampipe_allowed_keys + \
+                                 self._shield_allowed_keys)
+
+        e = Element(name=name, category="shield", length = length, **kwargs)
+        self.Append(e)
 
     def AddDump(self, name, length, **kwargs):
         self._CheckElementKwargs(kwargs,
@@ -777,6 +790,10 @@ class Machine(object) :
             return self.MakeFlukaJCol(name=e.name, element=e,
                                       rotation=r, translation=t * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
+        elif e.category == "shield" :
+            return self.MakeFlukaShield(name=e.name, element=e,
+                                        rotation=r, translation=t * 1000,
+                                        geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "dump" :
             return self.MakeFlukaDump(name=e.name, element=e,
                                       rotation=r, translation=t * 1000,
@@ -1303,6 +1320,7 @@ class Machine(object) :
         # make fake geant4 materials for conversion
         outerMaterial = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
         collimatorMaterial = _pyg4.geant4.MaterialSingleElement(name=materialName, atomic_number=1, atomic_weight=1, density=1)
+
         # pyg4ometry registry
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
@@ -1425,6 +1443,75 @@ class Machine(object) :
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "jcol")
+
+
+    def MakeFlukaShield(self, name, element,
+                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
+                        translation = _np.array([0,0,0]),
+                        geant4RegistryAdd = False,
+                        flukaConvert = True):
+
+        length = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+
+        outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
+        outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
+        outerMaterialName = self._GetDictVariable(element,"outerMaterial",self.options.outerMaterial)
+
+        beampipeRadius = self._GetDictVariable(element,"beampipeRadius",self.options.beampipeRadius)
+        beampipeThickness = self._GetDictVariable(element,"beampipeThickness",self.options.beampipeRadius)
+
+        # shield keys
+        material = self._GetDictVariable(element,"material", "TUNGSTEN")
+        horizontalWidth = self._GetDictVariable(element,"horizontalWidth",outerHorizontalSize-1)
+        verticalWidth = self._GetDictVariable(element,"verticalWidth",outerVerticalSize-1)
+        xsize = self._GetDictVariable(element,"xsize",2*(beampipeRadius+beampipeThickness)+5)
+        ysize = self._GetDictVariable(element,"ysize",2*(beampipeRadius+beampipeThickness)+5)
+
+        g4registry = self._GetRegistry(geant4RegistryAdd)
+
+        # make fake geant4 materials for conversion
+        outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
+        shieldMaterial   = _pyg4.geant4.MaterialSingleElement(name=material, atomic_number=1, atomic_weight=1, density=1)
+
+        # make box of correct size
+        outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
+        outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
+                                                      translation,
+                                                      outerlogical,
+                                                      name+"_pv",
+                                                      self.worldLogical,
+                                                      g4registry)
+
+        # make beampipe
+        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                        [0,0,0],
+                                                        beampipelogical,
+                                                        name+"bp_pv",
+                                                        outerlogical,
+                                                        g4registry)
+
+        # make shield and add to outer logical
+        shieldsolid1 = _pyg4.geant4.solid.Box(name+"_shield1_solid", horizontalWidth, verticalWidth,
+                                              length-self.lengthsafety, g4registry)
+        shieldsolid2 = _pyg4.geant4.solid.Box(name+"_shield2_solid", xsize, ysize,
+                                              length, g4registry)
+        shieldsolid = _pyg4.geant4.solid.Subtraction(name+"_shield_sold",shieldsolid1, shieldsolid2,
+                                                     [[0,0,0],[0,0,0]], g4registry)
+        shieldlogical  = _pyg4.geant4.LogicalVolume(shieldsolid,shieldMaterial,name+"_shield_lv",g4registry)
+        shieldphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                     [0,0,0],
+                                                     shieldlogical,
+                                                     name+"_shield_pv",
+                                                     outerlogical,
+                                                     g4registry)
+
+
+        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+                                              rotation, translation, "shield")
+
 
     def MakeFlukaDump(self, name, element,
                       rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
@@ -1977,6 +2064,11 @@ Machine.AddJCol.__doc__ = """allowed kwargs """ + \
                           " " + " ".join(Machine._outer_allowed_keys) + \
                           " " + " ".join(Machine._tiltshift_allowed_keys) + \
                           " " + " ".join(Machine._jcol_allowed_keys)
+Machine.AddShield.__doc__ = """allowed kwargs """ + \
+                            " " + " ".join(Machine._outer_allowed_keys) + \
+                            " " + " ".join(Machine._tiltshift_allowed_keys) + \
+                            " " + " ".join(Machine._beampipe_allowed_keys) + \
+                            " " + " ".join(Machine._shield_allowed_keys)
 Machine.AddDump.__doc__ = """allowed kwargs """ + \
                           " " + " ".join(Machine._outer_allowed_keys) + \
                           " " + " ".join(Machine._tiltshift_allowed_keys) + \
