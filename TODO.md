@@ -41,7 +41,7 @@
 23. ~~shield~~
 24. ~~dump~~
 25. solenoid
-26. wirescanner
+26. ~~wirescanner~~
 27. ~~laser~~ impossible
 28. ~~gap~~
 29. crystalcol
