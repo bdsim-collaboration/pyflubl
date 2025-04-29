@@ -24,7 +24,7 @@
 5. sextupole
 6. octupole
 7. decapole
-8. multipole
+8. ~~multipole~~ -> drift
 9. ~~thinmultipole~~ impossible
 10. vkicker
 11. hkicker
