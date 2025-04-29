@@ -37,17 +37,18 @@
 19. ~~ecol~~
 20. ~~jcol~~
 21. degrader
-22. shield
-23. dump
-24. solenoid
-25. wirescanner
-26. ~~laser~~ impossible
-27. ~~gap~~
-28. crystalcol
-29. undulator
-30. ~~transform3d~~ impossible
-31. ~~matrix~~ impossible
-32. ~~thinmatrix~~ impossible
-33. ~~element~~
-34. ~~marker~~ impossible
-35. ct
+22. muspoiler
+23. shield
+24. dump
+25. solenoid
+26. wirescanner
+27. ~~laser~~ impossible
+28. ~~gap~~
+29. crystalcol
+30. undulator
+31. ~~transform3d~~ impossible
+32. ~~matrix~~ impossible
+33. ~~thinmatrix~~ impossible
+34. ~~element~~
+35. ~~marker~~ impossible
+36. ct
