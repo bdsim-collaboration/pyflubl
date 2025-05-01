@@ -917,6 +917,14 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
+    def _AddBookkeepingTransformation(self, name, rotation, translation):
+        # make bookkeeping information
+        if name not in self.elementBookkeeping :
+            self.elementBookkeeping[name] = {}
+
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
     def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
                                   convertMaterials = False):
         # convert materials
@@ -954,15 +962,12 @@ class Machine(object) :
         except KeyError:
             pass
 
-        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
-        self.elementBookkeeping[name]['translation'] = translation.tolist()
-
         # make transformed mesh for overlaps
         outerMesh = self._MakePlacedMeshFromPV(containerPV)
         return {"placedmesh": outerMesh}
 
 
-    def _MakeFlukaComponentCommonFluka(self, name, regionNames, rotation, translation, category) :
+    def _MakeFlukaComponentCommonFluka(self, name, regionNames, category) :
 
         # make bookkeeping information
         if name not in self.elementBookkeeping :
@@ -970,8 +975,7 @@ class Machine(object) :
 
         self.elementBookkeeping[name]['flukaRegions'] = regionNames
         self.elementBookkeeping[name]['category'] = category
-        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
-        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
 
     def MakeFlukaBeamPipe(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
@@ -1008,6 +1012,8 @@ class Machine(object) :
         bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
 
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
                                               rotation, translation, "drift")
@@ -1070,6 +1076,8 @@ class Machine(object) :
         vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,vacuumMaterial,name+"_cav_lv",g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_vac_pv",bpouterlogical,g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
         rotation = rotation @ _tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, -_np.pi / 2, 0])
 
         return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
@@ -1120,6 +1128,7 @@ class Machine(object) :
                                                         name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "rbend")
@@ -1167,6 +1176,8 @@ class Machine(object) :
                                                         outerlogical,
                                                         g4registry)
 
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
 
@@ -1220,6 +1231,8 @@ class Machine(object) :
                                                         name+"bp_pv",
                                                         outerlogical,
                                                         g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "quad")
@@ -1276,6 +1289,8 @@ class Machine(object) :
                                                      outerlogical,
                                                      g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "target")
 
@@ -1330,6 +1345,8 @@ class Machine(object) :
                                                                 name+"_rcol_pv",
                                                                 outerlogical,
                                                                 g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "rcol")
@@ -1386,6 +1403,8 @@ class Machine(object) :
                                                                 name+"_rcol_pv",
                                                                 outerlogical,
                                                                 g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "ecol")
@@ -1475,8 +1494,7 @@ class Machine(object) :
             # TODO complete tilted RCol and zero gap
             pass
 
-
-
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "jcol")
@@ -1545,6 +1563,7 @@ class Machine(object) :
                                                      outerlogical,
                                                      g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "shield")
@@ -1600,6 +1619,8 @@ class Machine(object) :
                                                      name+"_taget_pv",
                                                      outerlogical,
                                                      g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "dump")
@@ -1663,6 +1684,7 @@ class Machine(object) :
                                                     vaclogical,
                                                     g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "wirescanner")
@@ -1693,6 +1715,8 @@ class Machine(object) :
                                                       self.worldLogical,
                                                       g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap")
 
@@ -1717,6 +1741,8 @@ class Machine(object) :
                                                       name+"_pv",
                                                       self.worldLogical,
                                                       g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap",
@@ -1774,7 +1800,9 @@ class Machine(object) :
 
         m.scale(10,10,10)
 
-        self._MakeFlukaComponentCommonFluka(name, regionNamesTransferred, rotation, translation, element.category)
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
+        self._MakeFlukaComponentCommonFluka(name, regionNamesTransferred, element.category)
 
         return {"placedmesh": m}
 
@@ -1825,6 +1853,8 @@ class Machine(object) :
                                                       name+"_pv",
                                                       self.worldLogical,
                                                       g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,samplerlogical, samplerphysical, flukaConvert,
                                               rotation, translation, "sampler")
