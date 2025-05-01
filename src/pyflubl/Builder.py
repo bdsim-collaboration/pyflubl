@@ -337,10 +337,13 @@ class Machine(object) :
         self.flukanamecount = 0
 
         # title/global/defaults/beam/scorers etc
+        self.beam = None
+        self.beam1 = None
+        self.beampos = None
+        self.beamaxes = None
+        self.defaults = None
         self.title = None
         self.fglobal = None
-        self.defaults = None
-        self.beam = None
         self.randomiz = None
         self.start = None
         self.userdump = None
@@ -626,23 +629,32 @@ class Machine(object) :
         e = Element(name=name, category="sampler_plane", length = length, **kwargs)
         self.Append(e)
 
-    def AddTitle(self, title):
-        self.title = title
+    def AddBeam(self, beam):
+        self.beam = beam
 
-    def AddGlobal(self, fglobal):
-        self.fglobal = fglobal
+    def AddBeam1(self, beam1):
+        self.beam1 = beam1
+
+    def AddBeampos(self, beampos):
+        self.beampos = beampos
+
+    def AddBeamaxes(self, beamaxes):
+        self.beamaxes = beamaxes
 
     def AddDefaults(self, defaults):
         self.defaults = defaults
 
-    def AddBeam(self, beam):
-        self.beam = beam
+    def AddGlobal(self, fglobal):
+        self.fglobal = fglobal
 
     def AddRandomiz(self, randomiz):
         self.randomiz = randomiz
 
     def AddStart(self, start):
         self.start = start
+
+    def AddTitle(self, title):
+        self.title = title
 
     def AddUserdump(self, userdump):
         self.userdump = userdump
@@ -688,18 +700,24 @@ class Machine(object) :
         geant4GDMLFileName = filename+".gdml"
         bookkeepignFileName = filename+".json"
 
-        if self.title:
-            self.title.AddRegistry(freg)
-        if self.fglobal:
-            self.fglobal.AddRegistry(freg)
-        if self.defaults :
-            self.defaults.AddRegistry(freg)
         if self.beam :
             self.beam.AddRegistry(freg)
+        if self.beam1 :
+            self.beam1.AddRegistry(freg)
+        if self.beampos :
+            self.beampos.AddRegistry(freg)
+        if self.beamaxes :
+            self.beamaxes.AddRegistry(freg)
+        if self.defaults :
+            self.defaults.AddRegistry(freg)
+        if self.fglobal:
+            self.fglobal.AddRegistry(freg)
         if self.randomiz :
             self.randomiz.AddRegistry(freg)
         if self.start :
             self.start.AddRegistry(freg)
+        if self.title:
+            self.title.AddRegistry(freg)
         if self.userdump :
             self.userdump.AddRegistry(freg)
 
