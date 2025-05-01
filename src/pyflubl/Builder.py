@@ -1121,7 +1121,7 @@ class Machine(object) :
                                                     g4registry)
 
         # make beampipe
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
@@ -1168,11 +1168,11 @@ class Machine(object) :
         elementCopy.length= dz/1000.0
         elementCopy['e1'] = angle/2
         elementCopy['e2'] = angle/2
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",elementCopy,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",elementCopy,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],
                                                         [0,0,0],
                                                         beampipelogical,
-                                                        name+"bp_pv",
+                                                        name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
 
@@ -1224,11 +1224,11 @@ class Machine(object) :
                                                       g4registry)
 
         # make beampipe
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
-                                                        name+"bp_pv",
+                                                        name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
 
@@ -1540,11 +1540,11 @@ class Machine(object) :
                                                       g4registry)
 
         # make beampipe
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
-                                                        name+"bp_pv",
+                                                        name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
 
@@ -1666,11 +1666,11 @@ class Machine(object) :
                                                       g4registry)
 
         # make beampipe
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
-                                                        name+"bp_pv",
+                                                        name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
 
@@ -1681,7 +1681,7 @@ class Machine(object) :
                                                     [wireOffsetX,wireOffsetY,wireOffsetZ],
                                                     wirelogical,
                                                     name+"_wire_pv",
-                                                    vaclogical,
+                                                    vacphysical.logicalVolume,
                                                     g4registry)
 
         self._AddBookkeepingTransformation(name, rotation, translation)
@@ -1933,7 +1933,7 @@ class Machine(object) :
         vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,vacuumMaterial,name+"_cav_lv",g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],vaclogical,name+"_vac_pv",bplogical,g4registry)
 
-        return [bplogical, vaclogical]
+        return [bplogical, vacphysical]
 
     def _MakeFlukaMaterials(self, materials = []):
         for g4material in materials :
