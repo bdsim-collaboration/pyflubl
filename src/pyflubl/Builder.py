@@ -335,6 +335,7 @@ class Machine(object) :
         self.g4registry = _pyg4.geant4.Registry()
         self.flukaregistry = _pyg4.fluka.FlukaRegistry()
         self.flukanamecount = 0
+        self.flukamgncount = 0     # number of magnetic field ROT-DEF placements
 
         # title/global/defaults/beam/scorers etc
         self.beam = None
@@ -1184,11 +1185,28 @@ class Machine(object) :
         ret_dict =  self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                                      rotation, translation, "sbend")
 
-        # make field
+        if not flukaConvert:
+            return ret_dict
+
+        # calculate field strength
         rho = length/(2*_np.sin(angle/2.))
         b_field = self._CalculateDipoleFieldStrength(self.beam.energy, rho)
+        print(b_field)
+
+        # bookkeeping info for element
+        bki = self.elementBookkeeping[element.name]
 
         # make field transform
+        translation = bki['translation']
+        rotation = _matrix2tbxyz(_np.array(bki['rotation']))
+        rdi = _rotoTranslationFromTra2("TM"+format(self.flukamgncount, "03"),[rotation, translation])
+        self.flukaregistry.addRotoTranslation(rdi)
+        print(rdi.flukaFreeString())
+
+        # find vacuum region
+        vacuum_index = bki['physicalVolumes'].index(vacphysical.name)
+        vacuum_region = bki['flukaRegions'][vacuum_index]
+        print(vacuum_region)
 
         # assign field to region(s)
 
