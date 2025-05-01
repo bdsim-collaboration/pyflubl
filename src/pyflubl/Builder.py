@@ -344,9 +344,12 @@ class Machine(object) :
         self.defaults = None
         self.title = None
         self.fglobal = None
+        self.mgnfield = []
+        self.mgncreat = []
+        self.mgndata = []
         self.randomiz = None
         self.start = None
-        self.userdump = None
+        self.userdump = []
 
         # element to book-keeping-dict information
         self.elementBookkeeping = _defaultdict()
@@ -647,6 +650,15 @@ class Machine(object) :
     def AddGlobal(self, fglobal):
         self.fglobal = fglobal
 
+    def AddMgnfield(self, mgnfield):
+        self.mgnfield.append(mgnfield)
+
+    def AddMgncreat(self, mgncreat):
+        self.mgncreat.append(mgncreat)
+
+    def AddMgndata(self, mgndata):
+        self.mgndata.append(mgndata)
+
     def AddRandomiz(self, randomiz):
         self.randomiz = randomiz
 
@@ -657,7 +669,7 @@ class Machine(object) :
         self.title = title
 
     def AddUserdump(self, userdump):
-        self.userdump = userdump
+        self.userdump.append(userdump)
 
     def _MakeBookkeepingInfo(self):
 
@@ -712,14 +724,21 @@ class Machine(object) :
             self.defaults.AddRegistry(freg)
         if self.fglobal:
             self.fglobal.AddRegistry(freg)
+        if len(self.mgnfield) > 0 :
+            for mf in self.mgnfield:
+                mf.AddRegistry(freg)
+        if len(self.mgncreat) > 0 :
+            for mc in self.mgncreat:
+                mc.AddRegistry(freg)
         if self.randomiz :
             self.randomiz.AddRegistry(freg)
         if self.start :
             self.start.AddRegistry(freg)
         if self.title:
             self.title.AddRegistry(freg)
-        if self.userdump :
-            self.userdump.AddRegistry(freg)
+        if len(self.userdump) > 0 :
+            for ud in self.userdump:
+                ud.AddRegistry(freg)
 
         fw = _pyg4.fluka.Writer()
         fw.addDetector(self.flukaregistry)
