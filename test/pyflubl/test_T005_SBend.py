@@ -18,10 +18,13 @@ def test_T005_sbend() :
     s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddSBend(name="sb1", length=2, angle=_np.pi/4)
-    m.AddSamplerPlane(name="s2", length=1e-6)
+    #m.AddSamplerPlane(name="s1", length=1e-6)
+    m.AddSBend(name="sb1", length=0.2, angle=_np.pi/8)
+    #m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
     m.Write("T005_SBend")
 
@@ -43,6 +46,9 @@ def test_T005_sbend_split() :
 
     s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
 
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSamplerPlane(name="s1", length=1e-6)
