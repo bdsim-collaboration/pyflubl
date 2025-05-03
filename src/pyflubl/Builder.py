@@ -650,6 +650,9 @@ class Machine(object) :
     def AddDefaults(self, defaults):
         self.defaults = defaults
 
+    def AddElcfield(self, elcfield):
+        self.elcfield = elcfield
+
     def AddGlobal(self, fglobal):
         self.fglobal = fglobal
 
@@ -725,6 +728,8 @@ class Machine(object) :
             self.beamaxes.AddRegistry(freg)
         if self.defaults :
             self.defaults.AddRegistry(freg)
+        if self.elcfield :
+            self.elcfield.AddRegistry(freg)
         if self.fglobal:
             self.fglobal.AddRegistry(freg)
         if len(self.mgnfield) > 0 :
