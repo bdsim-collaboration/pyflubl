@@ -58,3 +58,6 @@ def test_T005_sbend_split() :
     m.Write("T005_SBend_Split")
 
     return m
+
+if __name__ == "__main__":
+    test_T005_sbend()

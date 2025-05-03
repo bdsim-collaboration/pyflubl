@@ -40,3 +40,6 @@ def test_T050_sampler() :
     m.Write("T050_Sampler")
 
     return m
+
+if __name__ == "__main__":
+    test_T050_sampler()

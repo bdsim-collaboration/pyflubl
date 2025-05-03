@@ -20,3 +20,5 @@ def test_T050_title() :
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T050_Title")
 
+if __name__ == "__main__":
+    test_T050_title()

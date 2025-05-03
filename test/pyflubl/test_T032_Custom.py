@@ -131,3 +131,6 @@ def test_T032_custom_Fluka_File() :
     m.AddSBendSplit(name="b2", length=2, angle=-_np.pi/8)
     m.AddDrift(name="d4", length=1)
     m.Write("T032_Custom_Fluka_File")
+
+if __name__ == "__main__":
+    test_T032_custom_G4()

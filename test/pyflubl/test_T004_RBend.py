@@ -24,3 +24,6 @@ def test_T004_rbend() :
     m.AddRBend(name="rb1", length=2, angle=_np.pi/4, beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
     m.Write("T004_RBend")
+
+if __name__ == "__main__":
+    test_T004_rbend()

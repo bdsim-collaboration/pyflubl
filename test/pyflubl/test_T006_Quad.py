@@ -39,3 +39,6 @@ def test_T006_quad_offsetX() :
 
 def test_T006_quad_offsetY() :
     quad_basic(offsetY=50, fileName="T006_Quad_offsetY")
+
+if __name__ == "__main__":
+    test_T006_quad()

@@ -37,3 +37,6 @@ def test_T110_ring_rbend() :
     m.Write("T110_Ring_RBend")
 
     return m
+
+if __name__ == "__main__":
+    test_T110_ring_rbend()

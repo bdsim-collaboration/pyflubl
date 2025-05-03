@@ -36,3 +36,6 @@ def test_T111_ring_sbend() :
     m.Write("T111_Ring_SBend")
 
     return m
+
+if __name__ == "__main__":
+    test_T111_ring_sbend()

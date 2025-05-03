@@ -32,3 +32,6 @@ def test_T023_shield() :
     m.Write("T023_shield")
 
     return m
+
+if __name__ == "__main__":
+    test_T023_shield()

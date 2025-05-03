@@ -29,3 +29,6 @@ def test_T017_target() :
     m.Write("T017_target")
 
     return m
+
+if __name__ == "__main__":
+    test_T017_target()

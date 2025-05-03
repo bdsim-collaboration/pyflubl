@@ -28,3 +28,6 @@ def test_T024_dump() :
     m.Write("T024_dump")
 
     return m
+
+if __name__ == "__main__":
+    test_T024_dump()

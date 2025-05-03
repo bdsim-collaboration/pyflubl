@@ -30,3 +30,6 @@ def test_T018_rcol() :
     m.Write("T018_RCol")
 
     return m
+
+if __name__ == "__main__":
+    test_T018_rcol()
