@@ -30,7 +30,7 @@ class Usrdump(_FlukaDataFile):
         self.source_data = []
 
     def read_structure(self, fd, iEventHeaderToRead=10000):
-        print("read_header")
+        # print("read_header")
 
         # start of file
         fd.seek(0)
@@ -56,7 +56,7 @@ class Usrdump(_FlukaDataFile):
 
                 # print(ndum, mdum, jdum, edum, wdum)
                 if ndum < 0:
-                    print(iRecord, file_pos, "read source")
+                    # print(iRecord, file_pos, "read source")
                     self.event_seek.append(file_pos)
                     if iEvent > iEventHeaderToRead:
                         break
@@ -70,7 +70,7 @@ class Usrdump(_FlukaDataFile):
         self.event_seek.append(100000000000)
 
     def read_event(self, ievent=0):
-        print("read_event")
+        # print("read_event")
         # clear event data
         self.track_data.clear()
         self.energy_data.clear()
@@ -87,7 +87,7 @@ class Usrdump(_FlukaDataFile):
         # read header
         while True:
             if self.fd.tell() == self.event_seek[ievent + 1]:
-                print("next event reached", self.fd.tell())
+                # print("next event reached", self.fd.tell())
                 break
 
             # read file record
