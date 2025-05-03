@@ -2123,7 +2123,7 @@ class Machine(object) :
         geometryFile = self._GetDictVariable(element, "geometryFile", "None")
 
     def _CalculateDipoleFieldStrength(self, momentum, rho):
-        return 3.3356*momentum / (rho/1000.)
+        return 3.3333*momentum / (rho/1000.)
 
     def _CalculateQuadrupoleFieldStrength(self, momentum, k1):
         return 0
