@@ -26,14 +26,14 @@ def test_T110_ring_rbend() :
 
     for i in range(0,n,1):
         m.AddDrift(name="d10-"+str(i), length=0.5,
-                   beampipeMaterial="TUNGSTEN",
-                   beampipeRadius=30, beampipeThickness=5)
+                   beampipeMaterial="TUNGSTEN")
         m.AddQuadrupole(name="q_"+str(i), length=0.25, k1=0.5)
         m.AddSamplerPlane(name="s1_"+str(i), length=1e-6)
         m.AddDrift(name="d11-"+str(i), length=0.5,
-                   beampipeMaterial="TUNGSTEN",
-                   beampipeRadius=30, beampipeThickness=5)
+                   beampipeMaterial="TUNGSTEN")
         m.AddRBend(name="rb_"+str(i), length=0.5, angle=bendangle)
 
     m.CheckModel()
     m.Write("T110_Ring_RBend")
+
+    return m
