@@ -1147,7 +1147,7 @@ class Machine(object) :
         # calculate field strength
         rho = length/(2*_np.sin(angle/2.))
         #print("rho ", rho)
-        b_field = self._CalculateDipoleFieldStrength(self.beam.energy, rho)
+        b_field = self._CalculateDipoleFieldStrength(self.beam1.momentum, rho)
         #print("b_field ",b_field)
 
         # bookkeeping info for element
@@ -1241,7 +1241,7 @@ class Machine(object) :
         # calculate field strength
         rho = length/(2*_np.sin(angle/2.))
         #print("rho ", rho)
-        b_field = self._CalculateDipoleFieldStrength(self.beam.energy, rho)
+        b_field = self._CalculateDipoleFieldStrength(self.beam1.momentum, rho)
         #print("b_field ",b_field)
 
         # bookkeeping info for element

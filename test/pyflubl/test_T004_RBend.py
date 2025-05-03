@@ -7,10 +7,13 @@ def test_T004_rbend() :
     d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    b = _pfbl.Fluka.Beam(energy=1,energySpread=0.01,particleType='ELECTRON')
-    b.AddBeamPosition(0,0,0,0,0)
-    b.AddBeamAxes(1,0,0,0,0,1)
-    m.AddBeam(b)
+    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0.01, sdum="ELECTRON")
+    bp = _pfbl.Fluka.Beampos(xCentre=0, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
+    ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
+                              zxCosine=0, zyCosine=0, zzCosine=1)
+    m.AddBeam1(b)
+    m.AddBeampos(bp)
+    m.AddBeamaxes(ba)
 
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
