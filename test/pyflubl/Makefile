@@ -1,2 +1,2 @@
 clean :
-	rm -rf *json *gdml *inp ./run*/*
+	rm -rf *json *gdml *inp ./run*/* *~
