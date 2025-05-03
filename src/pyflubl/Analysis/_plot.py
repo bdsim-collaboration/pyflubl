@@ -15,8 +15,9 @@ def plot(data):
 
 def plot_usrdump(ud):
     for t in ud.track_data :
-        _plt.plot([t[0],t[3]],
-                  [t[2],t[5]],"+")
+        _plt.plot([10*t[2],10*t[5]], [10*t[0],10*t[3]])
+        #_plt.plot([t[0],t[3]],
+        #          [t[2],t[5]],"+")
 
     #_plt.show()
 
@@ -42,8 +43,6 @@ def plot_machine(machine) :
 
         x, y, z = [1000*v for v in m.midint[eidx]]
         xr, yr, zr  = _matrix2tbxyz(_np.array(m.midrotationint[eidx]))
-
-        print(z,y,z,xr,yr,zr)
 
         length  = e.length
         width = 250
@@ -76,6 +75,34 @@ def plot_machine(machine) :
         _plt.ylabel("y/mm")
 
         ###########################################
+        _plt.tight_layout()
+
+def plot_machine_xz(machine) :
+    m = machine
+
+    for eidx in range(0,len(m.sequence),1) :
+        ename  = m.sequence[eidx]
+        e = m.elements[ename]
+
+        x, y, z = [1000*v for v in m.midint[eidx]]
+        vp = _np.array(m.midrotationint[eidx]) @ _np.array([0,0,1])
+
+        yr1 = _np.arctan2(vp[0], vp[2])
+
+        xr, yr, zr = _matrix2tbxyz(_np.array(m.midrotationint[eidx]))
+
+        length  = e.length
+        width = 250
+
+        ###########################################
+        ax = _plt.subplot(1,1,1)
+        _plt.plot(z,x,"+")
+        bounding_box = _makeBoundingRect([z,x], [length*1000, width], yr1)
+        ax.add_patch(bounding_box)
+
+        _plt.xlabel("z/mm")
+        _plt.ylabel("x/mm")
+
         _plt.tight_layout()
 
 def _makeBoundingRect(centre, size, angle) :
