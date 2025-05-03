@@ -13,11 +13,16 @@ def plot(data):
     elif type(data) == Usrdump :
         plot_usrdump(data)
 
-def plot_usrdump(ud):
-    for t in ud.track_data :
-        _plt.plot([10*t[2],10*t[5]], [10*t[0],10*t[3]])
-        #_plt.plot([t[0],t[3]],
-        #          [t[2],t[5]],"+")
+def plot_usrdump(ud, projection = "xz", linewidth=1):
+    if projection == "xz":
+        for t in ud.track_data :
+            _plt.plot([10*t[2],10*t[5]], [10*t[0],10*t[3]],
+                      color=(0.5, 0.5, 0.5),
+                      linewidth=linewidth)
+
+    if projection == "":
+        for t in ud.track_data :
+            _plt.plot([10*t[2],10*t[5]], [10*t[0],10*t[3]],linewidth=linewidth)
 
     #_plt.show()
 
@@ -96,7 +101,7 @@ def plot_machine_xz(machine) :
 
         ###########################################
         ax = _plt.subplot(1,1,1)
-        _plt.plot(z,x,"+")
+        _plt.plot(z,x,"+", color=(0,0,1.0))
         bounding_box = _makeBoundingRect([z,x], [length*1000, width], yr1)
         ax.add_patch(bounding_box)
 
@@ -113,5 +118,6 @@ def _makeBoundingRect(centre, size, angle) :
     ll = cen - rr @ size/2
 
     return  _patches.Rectangle(ll, size[0], size[1],
-                               angle=angle / _np.pi * 180, fill=False)
+                               angle=angle / _np.pi * 180, fill=False,
+                               color=(1.0,0,0))
 
