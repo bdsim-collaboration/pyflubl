@@ -1173,7 +1173,7 @@ class Machine(object) :
                              sdum = mgnname)
         self.AddMgnfield(mgnfield)
 
-        mgncreat = _Mgncreat(fieldType=2, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+        mgncreat = _Mgncreat(fieldType=_Mgncreat.DIPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
         self.AddMgncreat(mgncreat)
 
         # add magnetic field to assimat
@@ -1267,7 +1267,7 @@ class Machine(object) :
                              sdum = mgnname)
         self.AddMgnfield(mgnfield)
 
-        mgncreat = _Mgncreat(fieldType=2, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+        mgncreat = _Mgncreat(fieldType=_Mgncreat.DIPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
         self.AddMgncreat(mgncreat)
 
         # add magnetic field to assimat
