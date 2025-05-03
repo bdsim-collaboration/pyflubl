@@ -1133,8 +1133,51 @@ class Machine(object) :
                                                         g4registry)
         self._AddBookkeepingTransformation(name, rotation, translation)
 
-        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "rbend")
+        ret_dict = self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+                                                    rotation, translation, "rbend")
+
+        if not flukaConvert:
+            return ret_dict
+
+        # calculate field strength
+        rho = length/(2*_np.sin(angle/2.))
+        #print("rho ", rho)
+        b_field = self._CalculateDipoleFieldStrength(self.beam.energy, rho)
+        #print("b_field ",b_field)
+
+        # bookkeeping info for element
+        bki = self.elementBookkeeping[element.name]
+
+        # make field transform
+        translation = bki['translation']
+        rotation = _matrix2tbxyz(_np.array(bki['rotation']))
+        rdi = _rotoTranslationFromTra2("TM"+format(self.flukamgncount, "03"),[rotation, translation])
+        if len(rdi) > 0 :
+            self.flukaregistry.addRotoTranslation(rdi)
+
+
+        # find vacuum region
+        vacuum_index = bki['physicalVolumes'].index(vacphysical.name)
+        vacuum_region = bki['flukaRegions'][vacuum_index]
+        # print("vacuum region", vacuum_region)
+
+        # make and assign field to region(s)
+        mgnname = "MG"+format(self.flukamgncount, "03")
+        mgnfield = _Mgnfield(strength=-b_field,rotDefini=rdi.name, applyRegion=0,
+                             regionFrom=vacuum_region, regionTo=None, regionStep=None,
+                             sdum = mgnname)
+        self.AddMgnfield(mgnfield)
+
+        mgncreat = _Mgncreat(fieldType=2, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+        self.AddMgncreat(mgncreat)
+
+        # add magnetic field to assimat
+        self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
+
+        # increment mgn count
+        self.flukamgncount += 1
+
+        return ret_dict
 
     def MakeFlukaSBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
@@ -1184,7 +1227,7 @@ class Machine(object) :
 
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
 
-        ret_dict =  self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+        ret_dict = self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                                      rotation, translation, "sbend")
 
         if not flukaConvert:
@@ -1192,9 +1235,9 @@ class Machine(object) :
 
         # calculate field strength
         rho = length/(2*_np.sin(angle/2.))
-        print("rho ", rho)
+        #print("rho ", rho)
         b_field = self._CalculateDipoleFieldStrength(self.beam.energy, rho)
-        print("b_field ",b_field)
+        #print("b_field ",b_field)
 
         # bookkeeping info for element
         bki = self.elementBookkeeping[element.name]
@@ -1210,7 +1253,7 @@ class Machine(object) :
         # find vacuum region
         vacuum_index = bki['physicalVolumes'].index(vacphysical.name)
         vacuum_region = bki['flukaRegions'][vacuum_index]
-        print("vacuum region", vacuum_region)
+        # print("vacuum region", vacuum_region)
 
         # make and assign field to region(s)
         mgnname = "MG"+format(self.flukamgncount, "03")
