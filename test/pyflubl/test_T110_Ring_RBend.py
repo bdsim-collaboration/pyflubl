@@ -21,7 +21,7 @@ def test_T110_ring_rbend() :
     s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
-    n = 5
+    n = 10
     bendangle = 2.*_np.pi/n
 
     for i in range(0,n,1):
