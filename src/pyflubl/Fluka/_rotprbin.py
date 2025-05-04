@@ -11,7 +11,7 @@ class Rotprbin(_BaseCard):
                  usrbinStart=None,
                  usrbinEnd=None,
                  usrbinStep =None,
-                 sdum = "",
+                 sdum = None,
                  correctionFactors=0) :
         super().__init__()
 

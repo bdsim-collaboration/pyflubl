@@ -22,6 +22,7 @@ from pyg4ometry.transformation import tbxyz2axisangle as _tbxyz2axisangle
 from .Options import Options as _Options
 from .Fluka import Mgnfield as _Mgnfield
 from .Fluka import Mgncreat as _Mgncreat
+from .Fluka import Rotprbin as _Rotprbin
 
 pyflublcategories = [
     'drift',
@@ -338,6 +339,7 @@ class Machine(object) :
         self.flukaregistry = _pyg4.fluka.FlukaRegistry()
         self.flukanamecount = 0
         self.flukamgncount = 0     # number of magnetic field ROT-DEF placements
+        self.flukabincount = 0
 
         # title/global/defaults/beam/scorers etc
         self.beam = None
@@ -683,9 +685,38 @@ class Machine(object) :
     def AddUsrbin(self, usrbin):
         self.usrbin.append(usrbin)
 
-    def AddUsrbinToElement(self, element, usrbin, scaleUsrbinToElement = False):
-        # element object or name
-        pass
+    def AddUsrbinToElement(self, element, usrbin = None, scaleUsrbinToElement = False):
+
+        # get element name
+        if type(element) is str :
+            element_name = element
+        else :
+            element_name = element.name
+
+        # element index
+        element_idx = list(self.elements.keys()).index(element_name)
+
+        # get transformation
+        element_rot = _matrix2tbxyz(_np.linalg.inv(self.midrotationint[element_idx]))
+        element_translation = -_np.linalg.inv(self.midrotationint[element_idx]) @ self.midint[element_idx]*1000
+
+        # make rotdefi
+        transformation_name = "TB"+format(self.flukabincount, "03")
+        rdi = _rotoTranslationFromTra2(transformation_name,[element_rot, element_translation])
+        if len(rdi) > 0 :
+            self.flukaregistry.addRotoTranslation(rdi)
+
+        # add ROTPRBIN
+        rotprbin = _Rotprbin(storagePrecision=0,
+                             rotDefi=transformation_name,
+                             usrbinStart=usrbin.name)
+        self.AddRotprbin(rotprbin)
+
+        # add USRBIN
+        self.AddUsrbin(usrbin)
+
+        # increment counter for element added usrbin
+        self.flukabincount += 1
 
     def AddUserdump(self, userdump):
         self.userdump.append(userdump)

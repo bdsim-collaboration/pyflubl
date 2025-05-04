@@ -103,6 +103,8 @@ class Usrbin(_BaseCard):
 
         super().__init__()
 
+        self.name = sdum
+
         if binning == self.CARTESIAN or binning == self.CARTESIAN_STEP :
             self.card = _Card("USRBIN",
                               binning, particle, lun,
