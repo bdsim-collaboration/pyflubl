@@ -25,3 +25,5 @@ def test_T002_drift_cut() :
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.Write("T002_Drift_Cut")
 
+if __name__ == "__main__":
+    test_T002_drift_cut()

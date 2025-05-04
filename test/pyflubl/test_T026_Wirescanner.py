@@ -35,3 +35,6 @@ def test_T026_wirescanner() :
     m.Write("T026_Wirescanner")
 
     return m
+
+if __name__ == "__main__":
+    test_T026_wirescanner()

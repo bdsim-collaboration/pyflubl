@@ -20,6 +20,8 @@ from pyg4ometry.transformation import tbxyz2matrix as _tbxyz2matrix
 from pyg4ometry.transformation import tbxyz2axisangle as _tbxyz2axisangle
 
 from .Options import Options as _Options
+from .Fluka import Mgnfield as _Mgnfield
+from .Fluka import Mgncreat as _Mgncreat
 
 pyflublcategories = [
     'drift',
@@ -335,15 +337,23 @@ class Machine(object) :
         self.g4registry = _pyg4.geant4.Registry()
         self.flukaregistry = _pyg4.fluka.FlukaRegistry()
         self.flukanamecount = 0
+        self.flukamgncount = 0     # number of magnetic field ROT-DEF placements
 
         # title/global/defaults/beam/scorers etc
+        self.beam = None
+        self.beam1 = None
+        self.beampos = None
+        self.beamaxes = None
+        self.defaults = None
+        self.elcfield = None
         self.title = None
         self.fglobal = None
-        self.defaults = None
-        self.beam = None
+        self.mgnfield = []
+        self.mgncreat = []
+        self.mgndata = []
         self.randomiz = None
         self.start = None
-        self.userdump = None
+        self.userdump = []
 
         # element to book-keeping-dict information
         self.elementBookkeeping = _defaultdict()
@@ -626,17 +636,35 @@ class Machine(object) :
         e = Element(name=name, category="sampler_plane", length = length, **kwargs)
         self.Append(e)
 
-    def AddTitle(self, title):
-        self.title = title
+    def AddBeam(self, beam):
+        self.beam = beam
 
-    def AddGlobal(self, fglobal):
-        self.fglobal = fglobal
+    def AddBeam1(self, beam1):
+        self.beam1 = beam1
+
+    def AddBeampos(self, beampos):
+        self.beampos = beampos
+
+    def AddBeamaxes(self, beamaxes):
+        self.beamaxes = beamaxes
 
     def AddDefaults(self, defaults):
         self.defaults = defaults
 
-    def AddBeam(self, beam):
-        self.beam = beam
+    def AddElcfield(self, elcfield):
+        self.elcfield = elcfield
+
+    def AddGlobal(self, fglobal):
+        self.fglobal = fglobal
+
+    def AddMgnfield(self, mgnfield):
+        self.mgnfield.append(mgnfield)
+
+    def AddMgncreat(self, mgncreat):
+        self.mgncreat.append(mgncreat)
+
+    def AddMgndata(self, mgndata):
+        self.mgndata.append(mgndata)
 
     def AddRandomiz(self, randomiz):
         self.randomiz = randomiz
@@ -644,8 +672,11 @@ class Machine(object) :
     def AddStart(self, start):
         self.start = start
 
+    def AddTitle(self, title):
+        self.title = title
+
     def AddUserdump(self, userdump):
-        self.userdump = userdump
+        self.userdump.append(userdump)
 
     def _MakeBookkeepingInfo(self):
 
@@ -688,20 +719,35 @@ class Machine(object) :
         geant4GDMLFileName = filename+".gdml"
         bookkeepignFileName = filename+".json"
 
-        if self.title:
-            self.title.AddRegistry(freg)
-        if self.fglobal:
-            self.fglobal.AddRegistry(freg)
-        if self.defaults :
-            self.defaults.AddRegistry(freg)
         if self.beam :
             self.beam.AddRegistry(freg)
+        if self.beam1 :
+            self.beam1.AddRegistry(freg)
+        if self.beampos :
+            self.beampos.AddRegistry(freg)
+        if self.beamaxes :
+            self.beamaxes.AddRegistry(freg)
+        if self.defaults :
+            self.defaults.AddRegistry(freg)
+        if self.elcfield :
+            self.elcfield.AddRegistry(freg)
+        if self.fglobal:
+            self.fglobal.AddRegistry(freg)
+        if len(self.mgnfield) > 0 :
+            for mf in self.mgnfield:
+                mf.AddRegistry(freg)
+        if len(self.mgncreat) > 0 :
+            for mc in self.mgncreat:
+                mc.AddRegistry(freg)
         if self.randomiz :
             self.randomiz.AddRegistry(freg)
         if self.start :
             self.start.AddRegistry(freg)
-        if self.userdump :
-            self.userdump.AddRegistry(freg)
+        if self.title:
+            self.title.AddRegistry(freg)
+        if len(self.userdump) > 0 :
+            for ud in self.userdump:
+                ud.AddRegistry(freg)
 
         fw = _pyg4.fluka.Writer()
         fw.addDetector(self.flukaregistry)
@@ -880,6 +926,14 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
+    def _AddBookkeepingTransformation(self, name, rotation, translation):
+        # make bookkeeping information
+        if name not in self.elementBookkeeping :
+            self.elementBookkeeping[name] = {}
+
+        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
+        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
     def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
                                   convertMaterials = False):
         # convert materials
@@ -917,15 +971,12 @@ class Machine(object) :
         except KeyError:
             pass
 
-        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
-        self.elementBookkeeping[name]['translation'] = translation.tolist()
-
         # make transformed mesh for overlaps
         outerMesh = self._MakePlacedMeshFromPV(containerPV)
         return {"placedmesh": outerMesh}
 
 
-    def _MakeFlukaComponentCommonFluka(self, name, regionNames, rotation, translation, category) :
+    def _MakeFlukaComponentCommonFluka(self, name, regionNames, category) :
 
         # make bookkeeping information
         if name not in self.elementBookkeeping :
@@ -933,8 +984,7 @@ class Machine(object) :
 
         self.elementBookkeeping[name]['flukaRegions'] = regionNames
         self.elementBookkeeping[name]['category'] = category
-        self.elementBookkeeping[name]['rotation'] = rotation.tolist()
-        self.elementBookkeeping[name]['translation'] = translation.tolist()
+
 
     def MakeFlukaBeamPipe(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
@@ -971,6 +1021,8 @@ class Machine(object) :
         bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
 
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
                                               rotation, translation, "drift")
@@ -1033,6 +1085,8 @@ class Machine(object) :
         vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,vacuumMaterial,name+"_cav_lv",g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_vac_pv",bpouterlogical,g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
         rotation = rotation @ _tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, -_np.pi / 2, 0])
 
         return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
@@ -1076,16 +1130,60 @@ class Machine(object) :
                                                     g4registry)
 
         # make beampipe
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
                                                         name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
-        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "rbend")
+        ret_dict = self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+                                                    rotation, translation, "rbend")
+
+        if not flukaConvert:
+            return ret_dict
+
+        # calculate field strength
+        rho = length/(2*_np.sin(angle/2.))
+        #print("rho ", rho)
+        b_field = self._CalculateDipoleFieldStrength(self.beam1.momentum, rho)
+        #print("b_field ",b_field)
+
+        # bookkeeping info for element
+        bki = self.elementBookkeeping[element.name]
+
+        # make field transform
+        translation = bki['translation']
+        rotation = _matrix2tbxyz(_np.array(bki['rotation']))
+        rdi = _rotoTranslationFromTra2("TM"+format(self.flukamgncount, "03"),[rotation, translation])
+        if len(rdi) > 0 :
+            self.flukaregistry.addRotoTranslation(rdi)
+
+
+        # find vacuum region
+        vacuum_index = bki['physicalVolumes'].index(vacphysical.name)
+        vacuum_region = bki['flukaRegions'][vacuum_index]
+        # print("vacuum region", vacuum_region)
+
+        # make and assign field to region(s)
+        mgnname = "MG"+format(self.flukamgncount, "03")
+        mgnfield = _Mgnfield(strength=-b_field,rotDefini=rdi.name, applyRegion=0,
+                             regionFrom=vacuum_region, regionTo=None, regionStep=None,
+                             sdum = mgnname)
+        self.AddMgnfield(mgnfield)
+
+        mgncreat = _Mgncreat(fieldType=_Mgncreat.DIPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+        self.AddMgncreat(mgncreat)
+
+        # add magnetic field to assimat
+        self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
+
+        # increment mgn count
+        self.flukamgncount += 1
+
+        return ret_dict
 
     def MakeFlukaSBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
@@ -1122,31 +1220,66 @@ class Machine(object) :
         elementCopy.length= dz/1000.0
         elementCopy['e1'] = angle/2
         elementCopy['e2'] = angle/2
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",elementCopy,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",elementCopy,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],
                                                         [0,0,0],
                                                         beampipelogical,
-                                                        name+"bp_pv",
+                                                        name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
 
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
 
-        ret_dict =  self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+        ret_dict = self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                                      rotation, translation, "sbend")
 
-        # make field
-        rho = length/(2*_np.sin(angle/2.))
-        b_field = self._CalculateDipoleFieldStrength(self.beam.energy, rho)
+        if not flukaConvert:
+            return ret_dict
+
+        # calculate field strength
+        rho = length/angle
+
+        #print("rho ", rho)
+        b_field = self._CalculateDipoleFieldStrength(self.beam1.momentum, rho)
+        #print("b_field ",b_field)
+
+        # bookkeeping info for element
+        bki = self.elementBookkeeping[element.name]
 
         # make field transform
+        translation = bki['translation']
+        rotation = _matrix2tbxyz(_np.array(bki['rotation']))
+        rdi = _rotoTranslationFromTra2("TM"+format(self.flukamgncount, "03"),[rotation, translation])
+        if len(rdi) > 0 :
+            self.flukaregistry.addRotoTranslation(rdi)
 
-        # assign field to region(s)
 
+        # find vacuum region
+        vacuum_index = bki['physicalVolumes'].index(vacphysical.name)
+        vacuum_region = bki['flukaRegions'][vacuum_index]
+        # print("vacuum region", vacuum_region)
 
+        # make and assign field to region(s)
+        mgnname = "MG"+format(self.flukamgncount, "03")
+        mgnfield = _Mgnfield(strength=-b_field,rotDefini=rdi.name, applyRegion=0,
+                             regionFrom=vacuum_region, regionTo=None, regionStep=None,
+                             sdum = mgnname)
+        self.AddMgnfield(mgnfield)
+
+        mgncreat = _Mgncreat(fieldType=_Mgncreat.DIPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+        self.AddMgncreat(mgncreat)
+
+        # add magnetic field to assimat
+        self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
+
+        # increment mgn count
+        self.flukamgncount += 1
 
         return ret_dict
+
     def MakeFlukaQuadrupole(self, name, element,
                             rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                             translation = _np.array([0,0,0]),
@@ -1176,16 +1309,63 @@ class Machine(object) :
                                                       g4registry)
 
         # make beampipe
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
-                                                        name+"bp_pv",
+                                                        name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
 
-        return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "quad")
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
+        ret_dict = self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
+                                                    rotation, translation, "quad")
+
+        if not flukaConvert:
+            return ret_dict
+
+        return ret_dict
+
+        # calculate field strength
+        #rho = quadlength/(2*_np.sin(angle/2.))
+        #print("rho ", rho)
+        #b_field = self._CalculateDipoleFieldStrength(self.beam1.momentum, rho)
+        #print("b_field ",b_field)
+        b_field = 0.0
+
+        # bookkeeping info for element
+        bki = self.elementBookkeeping[element.name]
+
+        # make field transform
+        translation = bki['translation']
+        rotation = _matrix2tbxyz(_np.array(bki['rotation']))
+        rdi = _rotoTranslationFromTra2("TM"+format(self.flukamgncount, "03"),[rotation, translation])
+        if len(rdi) > 0 :
+            self.flukaregistry.addRotoTranslation(rdi)
+
+        # find vacuum region
+        vacuum_index = bki['physicalVolumes'].index(vacphysical.name)
+        vacuum_region = bki['flukaRegions'][vacuum_index]
+        # print("vacuum region", vacuum_region)
+
+        # make and assign field to region(s)
+        mgnname = "MG"+format(self.flukamgncount, "03")
+        mgnfield = _Mgnfield(strength=-b_field,rotDefini=rdi.name, applyRegion=0,
+                             regionFrom=vacuum_region, regionTo=None, regionStep=None,
+                             sdum = mgnname)
+        self.AddMgnfield(mgnfield)
+
+        mgncreat = _Mgncreat(fieldType=_Mgncreat.QUADRUPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+        self.AddMgncreat(mgncreat)
+
+        # add magnetic field to assimat
+        self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
+
+        # increment mgn count
+        self.flukamgncount += 1
+
+        return ret_dict
 
 
     def MakeFlukaTarget(self, name, element,
@@ -1238,6 +1418,8 @@ class Machine(object) :
                                                      name+"_taget_pv",
                                                      outerlogical,
                                                      g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "target")
@@ -1294,6 +1476,8 @@ class Machine(object) :
                                                                 outerlogical,
                                                                 g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "rcol")
 
@@ -1349,6 +1533,8 @@ class Machine(object) :
                                                                 name+"_rcol_pv",
                                                                 outerlogical,
                                                                 g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "ecol")
@@ -1438,8 +1624,7 @@ class Machine(object) :
             # TODO complete tilted RCol and zero gap
             pass
 
-
-
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "jcol")
@@ -1485,11 +1670,11 @@ class Machine(object) :
                                                       g4registry)
 
         # make beampipe
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
-                                                        name+"bp_pv",
+                                                        name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
 
@@ -1508,6 +1693,7 @@ class Machine(object) :
                                                      outerlogical,
                                                      g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "shield")
@@ -1564,6 +1750,8 @@ class Machine(object) :
                                                      outerlogical,
                                                      g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "dump")
 
@@ -1608,11 +1796,11 @@ class Machine(object) :
                                                       g4registry)
 
         # make beampipe
-        beampipelogical, vaclogical = self._MakeGeant4BeamPipe(name+"bp",element,g4registry)
+        beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
         beampipephysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                         [0,0,0],
                                                         beampipelogical,
-                                                        name+"bp_pv",
+                                                        name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
 
@@ -1623,9 +1811,10 @@ class Machine(object) :
                                                     [wireOffsetX,wireOffsetY,wireOffsetZ],
                                                     wirelogical,
                                                     name+"_wire_pv",
-                                                    vaclogical,
+                                                    vacphysical.logicalVolume,
                                                     g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "wirescanner")
@@ -1656,6 +1845,8 @@ class Machine(object) :
                                                       self.worldLogical,
                                                       g4registry)
 
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap")
 
@@ -1680,6 +1871,8 @@ class Machine(object) :
                                                       name+"_pv",
                                                       self.worldLogical,
                                                       g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, "gap",
@@ -1737,7 +1930,9 @@ class Machine(object) :
 
         m.scale(10,10,10)
 
-        self._MakeFlukaComponentCommonFluka(name, regionNamesTransferred, rotation, translation, element.category)
+        self._AddBookkeepingTransformation(name, rotation, translation)
+
+        self._MakeFlukaComponentCommonFluka(name, regionNamesTransferred, element.category)
 
         return {"placedmesh": m}
 
@@ -1788,6 +1983,8 @@ class Machine(object) :
                                                       name+"_pv",
                                                       self.worldLogical,
                                                       g4registry)
+
+        self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,samplerlogical, samplerphysical, flukaConvert,
                                               rotation, translation, "sampler")
@@ -1866,7 +2063,7 @@ class Machine(object) :
         vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,vacuumMaterial,name+"_cav_lv",g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],vaclogical,name+"_vac_pv",bplogical,g4registry)
 
-        return [bplogical, vaclogical]
+        return [bplogical, vacphysical]
 
     def _MakeFlukaMaterials(self, materials = []):
         for g4material in materials :
@@ -1908,7 +2105,7 @@ class Machine(object) :
 
     def _FixElementFaces(self, view = True):
 
-        print("_FixElementFaces>")
+        # print("_FixElementFaces>")
         if view :
             v = _pyg4.visualisation.VtkViewerNew()
             v.addAxes(2500)
@@ -1962,7 +2159,7 @@ class Machine(object) :
             v.buildPipelinesAppend()
             v.view()
 
-        print("FixElementFaces<")
+        # print("FixElementFaces<")
 
     def _MakeOffsetAndTiltTransforms(self, element, rotation, translation):
         offsetX = self._GetDictVariable(element,"offsetX",0)
@@ -1978,7 +2175,7 @@ class Machine(object) :
         geometryFile = self._GetDictVariable(element, "geometryFile", "None")
 
     def _CalculateDipoleFieldStrength(self, momentum, rho):
-        return 3.3356*momentum / rho
+        return 3.3356409519815204*momentum / (rho/1000.)
 
     def _CalculateQuadrupoleFieldStrength(self, momentum, k1):
         return 0
