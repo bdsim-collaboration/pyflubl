@@ -351,8 +351,10 @@ class Machine(object) :
         self.mgnfield = []
         self.mgncreat = []
         self.mgndata = []
+        self.rotprbin = []
         self.randomiz = None
         self.start = None
+        self.usrbin = []
         self.userdump = []
 
         # element to book-keeping-dict information
@@ -666,6 +668,9 @@ class Machine(object) :
     def AddMgndata(self, mgndata):
         self.mgndata.append(mgndata)
 
+    def AddRotprbin(self, rotprbin):
+        self.rotprbin.append(rotprbin)
+
     def AddRandomiz(self, randomiz):
         self.randomiz = randomiz
 
@@ -674,6 +679,13 @@ class Machine(object) :
 
     def AddTitle(self, title):
         self.title = title
+
+    def AddUsrbin(self, usrbin):
+        self.usrbin.append(usrbin)
+
+    def AddUsrbinToElement(self, element, usrbin, scaleUsrbinToElement = False):
+        # element object or name
+        pass
 
     def AddUserdump(self, userdump):
         self.userdump.append(userdump)
@@ -739,12 +751,18 @@ class Machine(object) :
         if len(self.mgncreat) > 0 :
             for mc in self.mgncreat:
                 mc.AddRegistry(freg)
+        if len(self.rotprbin) > 0 :
+            for pr in self.rotprbin:
+                pr.AddRegistry(freg)
         if self.randomiz :
             self.randomiz.AddRegistry(freg)
         if self.start :
             self.start.AddRegistry(freg)
         if self.title:
             self.title.AddRegistry(freg)
+        if len(self.usrbin) > 0 :
+            for ub in self.usrbin:
+                ub.AddRegistry(freg)
         if len(self.userdump) > 0 :
             for ud in self.userdump:
                 ud.AddRegistry(freg)
