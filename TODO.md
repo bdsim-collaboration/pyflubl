@@ -52,3 +52,19 @@
 34. ~~element~~
 35. ~~marker~~ impossible
 36. ct
+
+## Fluka scoring cards
+
+1. usrtrack (single dif $d\phi / dE$)
+2. usrcoll
+3. usrbdx (double diff $d\phi / dEd\Omega$)
+4. usrbin (spatial distribution)
+5. usryield 
+6. score
+7. resnucle
+8. detect
+9. eventbin
+10. rotprbin
+11. tcquench
+12. userdump
+13. auxscore
