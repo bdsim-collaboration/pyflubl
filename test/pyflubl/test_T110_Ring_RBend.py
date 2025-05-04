@@ -12,7 +12,7 @@ def test_T110_ring_rbend() :
     #b.AddBeamAxes(1,0,0,0,0,1)
     #m.AddBeam(b)
 
-    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0.01, sdum="ELECTRON")
+    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0, sdum="ELECTRON")
     bp = _pfbl.Fluka.Beampos(xCentre=0, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
     ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
                               zxCosine=0, zyCosine=0, zzCosine=1)
@@ -29,7 +29,7 @@ def test_T110_ring_rbend() :
     s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
-    n = 10
+    n = 15
     bendangle = 2.*_np.pi/n
 
     for i in range(0,n,1):

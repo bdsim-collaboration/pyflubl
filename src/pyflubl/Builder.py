@@ -1240,7 +1240,8 @@ class Machine(object) :
             return ret_dict
 
         # calculate field strength
-        rho = length/(2*_np.sin(angle/2.))
+        rho = length/angle
+
         #print("rho ", rho)
         b_field = self._CalculateDipoleFieldStrength(self.beam1.momentum, rho)
         #print("b_field ",b_field)
@@ -1323,6 +1324,8 @@ class Machine(object) :
 
         if not flukaConvert:
             return ret_dict
+
+        return ret_dict
 
         # calculate field strength
         #rho = quadlength/(2*_np.sin(angle/2.))
@@ -2172,7 +2175,7 @@ class Machine(object) :
         geometryFile = self._GetDictVariable(element, "geometryFile", "None")
 
     def _CalculateDipoleFieldStrength(self, momentum, rho):
-        return 3.3333*momentum / (rho/1000.)
+        return 3.3356409519815204*momentum / (rho/1000.)
 
     def _CalculateQuadrupoleFieldStrength(self, momentum, k1):
         return 0
