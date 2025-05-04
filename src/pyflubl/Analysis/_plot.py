@@ -26,7 +26,7 @@ def plot_usrdump(ud, projection = "xz", linewidth=1):
 
     #_plt.show()
 
-def plot_usrbin(ub, detector_idx = 0, projection = 0):
+def plot_usrbin(ub, detector_idx = 0, projection = 0, cmap = "Reds"):
     if type(projection) == int:
         if projection == 0 :
             str_projection = ""
@@ -35,9 +35,13 @@ def plot_usrbin(ub, detector_idx = 0, projection = 0):
         elif projection == 2 :
             str_projection = ""
 
-    detector_projection = ub.detector[detector_idx].data.sum(projection)
+    detector = ub.detector[detector_idx]
+    detector_projection = detector.data.sum(projection)
 
-    _plt.imshow(_np.log10(detector_projection))
+    # TODO the extend depends on the projection
+    _plt.imshow(detector_projection, extent=[detector.e3low*10, detector.e3high*10,
+                                             detector.e1high*10, detector.e1low*10],
+                cmap=cmap)
 
 def plot_machine(machine) :
     m = machine
