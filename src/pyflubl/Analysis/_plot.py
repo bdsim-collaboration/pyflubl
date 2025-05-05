@@ -6,6 +6,7 @@ from pyg4ometry.transformation import matrix2tbxyz as _matrix2tbxyz
 
 from matplotlib import pyplot as _plt
 from matplotlib import patches as _patches
+import matplotlib.transforms as _transforms
 
 def plot(data):
     if type(data) == Usrbin :
@@ -26,7 +27,10 @@ def plot_usrdump(ud, projection = "xz", linewidth=1):
 
     #_plt.show()
 
-def plot_usrbin(ub, detector_idx = 0, projection = 0, cmap = "Reds"):
+def plot_usrbin(ub, detector_idx = 0, projection = 0, cmap = "Greens",
+                rotmatrix = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
+                translation = _np.array([0,0,0]),
+                bookkeeping = None ):
     if type(projection) == int:
         if projection == 0 :
             str_projection = ""
@@ -35,12 +39,23 @@ def plot_usrbin(ub, detector_idx = 0, projection = 0, cmap = "Reds"):
         elif projection == 2 :
             str_projection = ""
 
+    if bookkeeping :
+        rotmatrix = bookkeeping['usrbinnumber_usrbininfo'][detector_idx]["rotation"]
+        translation = bookkeeping['usrbinnumber_usrbininfo'][detector_idx]["translation"]
+
+    vp = _np.array(rotmatrix) @ _np.array([0, 0, 1])
+    yr = _np.arctan2(vp[0], vp[2])
+
+    ax = _plt.gca()
+    trans = _transforms.Affine2D().rotate_deg(yr/_np.pi*180).translate(translation[2], translation[0]) + ax.transData
+
     detector = ub.detector[detector_idx]
     detector_projection = detector.data.sum(projection)
 
     # TODO the extend depends on the projection
     _plt.imshow(detector_projection, extent=[detector.e3low*10, detector.e3high*10,
                                              detector.e1high*10, detector.e1low*10],
+                transform=trans,
                 cmap=cmap)
 
 def plot_machine(machine) :
