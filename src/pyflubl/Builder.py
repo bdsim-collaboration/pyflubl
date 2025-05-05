@@ -368,6 +368,7 @@ class Machine(object) :
         self.regionname_regionnumber = {}
         self.volume_regionname = {}
         self.regionname_volume = {}
+        self.usrbinnumber_usrbininfo = {}
 
         self.verbose = True
 
@@ -682,8 +683,14 @@ class Machine(object) :
     def AddTitle(self, title):
         self.title = title
 
-    def AddUsrbin(self, usrbin):
+    def AddUsrbin(self, usrbin, rotmat = None, translation = None):
         self.usrbin.append(usrbin)
+
+        # Add bookkeeping information
+        self._AddBookkeepingUsrbin(self.flukabincount, usrbin.name, rotmat, translation)
+
+        # increment counter for added usrbin
+        self.flukabincount += 1
 
     def AddUsrbinToElement(self, element, usrbin = None, scaleUsrbinToElement = False):
 
@@ -697,12 +704,16 @@ class Machine(object) :
         element_idx = list(self.elements.keys()).index(element_name)
 
         # get transformation
-        element_rot = _matrix2tbxyz(_np.linalg.inv(self.midrotationint[element_idx]))
-        element_translation = -_np.linalg.inv(self.midrotationint[element_idx]) @ self.midint[element_idx]*1000
+        element_rotmat = self.midrotationint[element_idx]
+        element_rotmat_inv = _np.linalg.inv(element_rotmat)
+
+        element_rot_inv = _matrix2tbxyz(element_rotmat_inv)
+        element_translation = self.midint[element_idx]*1000
+        element_translation_inv = - element_rotmat_inv @ element_translation
 
         # make rotdefi
         transformation_name = "TB"+format(self.flukabincount, "03")
-        rdi = _rotoTranslationFromTra2(transformation_name,[element_rot, element_translation])
+        rdi = _rotoTranslationFromTra2(transformation_name,[element_rot_inv, element_translation_inv])
         if len(rdi) > 0 :
             self.flukaregistry.addRotoTranslation(rdi)
 
@@ -713,10 +724,7 @@ class Machine(object) :
         self.AddRotprbin(rotprbin)
 
         # add USRBIN
-        self.AddUsrbin(usrbin)
-
-        # increment counter for element added usrbin
-        self.flukabincount += 1
+        self.AddUsrbin(usrbin, element_rotmat, element_translation)
 
     def AddUserdump(self, userdump):
         self.userdump.append(userdump)
@@ -743,6 +751,7 @@ class Machine(object) :
         jsonDumpDict["elements"] = self.elementBookkeeping
         jsonDumpDict["regionname_regionnumber"] = self.regionname_regionnumber
         jsonDumpDict["regionnumber_regionname"] = self.regionnumber_regionname
+        jsonDumpDict["usrbinnumber_usrbininfo"] = self.usrbinnumber_usrbininfo
 
         if not pretty :
             with open(fileName, "w") as f:
@@ -982,6 +991,9 @@ class Machine(object) :
 
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
+
+    def _AddBookkeepingUsrbin(self, usrbinnumber, usrbinname, rotation = None, translation = None):
+        self.usrbinnumber_usrbininfo[usrbinnumber] = {"name":usrbinname, "rotation":rotation.tolist(), "translation":translation.tolist()}
 
     def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
                                   convertMaterials = False):
