@@ -742,13 +742,13 @@ class Machine(object) :
             self.regionname_volume[self.flukaregistry.regionDict[r].name] = self.flukaregistry.regionDict[r].comment
 
 
-    def _WriteBookkeepingInfo(self, fileName="output.json", pretty=True):
+    def _WriteBookkeepingInfo(self, fileName="output.json", pretty=False):
 
         if not self.finished :
             self._makeBookkeepingInfo()
 
-        jsonDumpDict = _defaultdict()
-        jsonDumpDict["elements"] = self.elementBookkeeping
+        jsonDumpDict = {}
+        jsonDumpDict["elements"] = dict(self.elementBookkeeping)
         jsonDumpDict["regionname_regionnumber"] = self.regionname_regionnumber
         jsonDumpDict["regionnumber_regionname"] = self.regionnumber_regionname
         jsonDumpDict["usrbinnumber_usrbininfo"] = self.usrbinnumber_usrbininfo
