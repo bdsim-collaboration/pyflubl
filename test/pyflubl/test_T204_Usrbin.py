@@ -71,10 +71,18 @@ def test_T204_Usrbin_element():
 
     eb1 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
                              particle="ALL-PART",lun=-24,
-                             xmax=50, ymax=50, zmax=50, sdum="temp",
+                             xmax=50, ymax=50, zmax=50, sdum="eb1",
                              xmin=-50, ymin=-50, zmin=-50,
                              nxbin=101, nybin=101, nzbin=101)
     m.AddUsrbinToElement("d2", eb1)
+
+    eb2 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
+                             particle="ALL-PART",lun=-24,
+                             xmax=50, ymax=50, zmax=50, sdum="eb2",
+                             xmin=-50, ymin=-50, zmin=-50,
+                             nxbin=101, nybin=101, nzbin=101)
+    m.AddUsrbinToElement("d4", eb2)
+
     m.Write("T204_Usrbin_element")
 
     return m
