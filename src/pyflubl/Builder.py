@@ -683,7 +683,7 @@ class Machine(object) :
     def AddTitle(self, title):
         self.title = title
 
-    def AddUsrbin(self, usrbin, rotmat = None, translation = None):
+    def AddUsrbin(self, usrbin, rotmat = _np.array([[1,0,0],[0,1,0],[0,0,1]]), translation = _np.array([0,0,0])):
         self.usrbin.append(usrbin)
 
         # Add bookkeeping information
