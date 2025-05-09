@@ -22,6 +22,7 @@ from pyg4ometry.transformation import tbxyz2axisangle as _tbxyz2axisangle
 from .Options import Options as _Options
 from .Fluka import Mgnfield as _Mgnfield
 from .Fluka import Mgncreat as _Mgncreat
+from .Fluka import Rotprbin as _Rotprbin
 
 pyflublcategories = [
     'drift',
@@ -338,6 +339,7 @@ class Machine(object) :
         self.flukaregistry = _pyg4.fluka.FlukaRegistry()
         self.flukanamecount = 0
         self.flukamgncount = 0     # number of magnetic field ROT-DEF placements
+        self.flukabincount = 0
 
         # title/global/defaults/beam/scorers etc
         self.beam = None
@@ -351,8 +353,10 @@ class Machine(object) :
         self.mgnfield = []
         self.mgncreat = []
         self.mgndata = []
+        self.rotprbin = []
         self.randomiz = None
         self.start = None
+        self.usrbin = []
         self.userdump = []
 
         # element to book-keeping-dict information
@@ -364,6 +368,7 @@ class Machine(object) :
         self.regionname_regionnumber = {}
         self.volume_regionname = {}
         self.regionname_volume = {}
+        self.usrbinnumber_usrbininfo = {}
 
         self.verbose = True
 
@@ -666,6 +671,9 @@ class Machine(object) :
     def AddMgndata(self, mgndata):
         self.mgndata.append(mgndata)
 
+    def AddRotprbin(self, rotprbin):
+        self.rotprbin.append(rotprbin)
+
     def AddRandomiz(self, randomiz):
         self.randomiz = randomiz
 
@@ -674,6 +682,49 @@ class Machine(object) :
 
     def AddTitle(self, title):
         self.title = title
+
+    def AddUsrbin(self, usrbin, rotmat = _np.array([[1,0,0],[0,1,0],[0,0,1]]), translation = _np.array([0,0,0])):
+        self.usrbin.append(usrbin)
+
+        # Add bookkeeping information
+        self._AddBookkeepingUsrbin(self.flukabincount, usrbin.name, rotmat, translation)
+
+        # increment counter for added usrbin
+        self.flukabincount += 1
+
+    def AddUsrbinToElement(self, element, usrbin = None, scaleUsrbinToElement = False):
+
+        # get element name
+        if type(element) is str :
+            element_name = element
+        else :
+            element_name = element.name
+
+        # element index
+        element_idx = list(self.elements.keys()).index(element_name)
+
+        # get transformation
+        element_rotmat = self.midrotationint[element_idx]
+        element_rotmat_inv = _np.linalg.inv(element_rotmat)
+
+        element_rot_inv = _matrix2tbxyz(element_rotmat_inv)
+        element_translation = self.midint[element_idx]*1000
+        element_translation_inv = - element_rotmat_inv @ element_translation
+
+        # make rotdefi
+        transformation_name = "TB"+format(self.flukabincount, "03")
+        rdi = _rotoTranslationFromTra2(transformation_name,[element_rot_inv, element_translation_inv])
+        if len(rdi) > 0 :
+            self.flukaregistry.addRotoTranslation(rdi)
+
+        # add ROTPRBIN
+        rotprbin = _Rotprbin(storagePrecision=0,
+                             rotDefi=transformation_name,
+                             usrbinStart=usrbin.name)
+        self.AddRotprbin(rotprbin)
+
+        # add USRBIN
+        self.AddUsrbin(usrbin, element_rotmat, element_translation)
 
     def AddUserdump(self, userdump):
         self.userdump.append(userdump)
@@ -691,15 +742,16 @@ class Machine(object) :
             self.regionname_volume[self.flukaregistry.regionDict[r].name] = self.flukaregistry.regionDict[r].comment
 
 
-    def _WriteBookkeepingInfo(self, fileName="output.json", pretty=True):
+    def _WriteBookkeepingInfo(self, fileName="output.json", pretty=False):
 
         if not self.finished :
             self._makeBookkeepingInfo()
 
-        jsonDumpDict = _defaultdict()
-        jsonDumpDict["elements"] = self.elementBookkeeping
+        jsonDumpDict = {}
+        jsonDumpDict["elements"] = dict(self.elementBookkeeping)
         jsonDumpDict["regionname_regionnumber"] = self.regionname_regionnumber
         jsonDumpDict["regionnumber_regionname"] = self.regionnumber_regionname
+        jsonDumpDict["usrbinnumber_usrbininfo"] = self.usrbinnumber_usrbininfo
 
         if not pretty :
             with open(fileName, "w") as f:
@@ -739,12 +791,18 @@ class Machine(object) :
         if len(self.mgncreat) > 0 :
             for mc in self.mgncreat:
                 mc.AddRegistry(freg)
+        if len(self.rotprbin) > 0 :
+            for pr in self.rotprbin:
+                pr.AddRegistry(freg)
         if self.randomiz :
             self.randomiz.AddRegistry(freg)
         if self.start :
             self.start.AddRegistry(freg)
         if self.title:
             self.title.AddRegistry(freg)
+        if len(self.usrbin) > 0 :
+            for ub in self.usrbin:
+                ub.AddRegistry(freg)
         if len(self.userdump) > 0 :
             for ud in self.userdump:
                 ud.AddRegistry(freg)
@@ -933,6 +991,9 @@ class Machine(object) :
 
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
+
+    def _AddBookkeepingUsrbin(self, usrbinnumber, usrbinname, rotation = None, translation = None):
+        self.usrbinnumber_usrbininfo[usrbinnumber] = {"name":usrbinname, "rotation":rotation.tolist(), "translation":translation.tolist()}
 
     def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
                                   convertMaterials = False):
