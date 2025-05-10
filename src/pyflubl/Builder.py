@@ -355,6 +355,7 @@ class Machine(object) :
         self.mgndata = []
         self.rotprbin = []
         self.randomiz = None
+        self.source = None
         self.start = None
         self.usrbin = []
         self.userdump = []
@@ -678,6 +679,9 @@ class Machine(object) :
     def AddRandomiz(self, randomiz):
         self.randomiz = randomiz
 
+    def AddSource(self,source):
+        self.source = source
+
     def AddStart(self, start):
         self.start = start
 
@@ -767,7 +771,7 @@ class Machine(object) :
             with open(fileName, 'w') as f:
                 f.write(pretty_json_str)
 
-    def Write(self, filename):
+    def Write(self, filename, prettyJSON = False):
 
         freg = self.MakeFlukaModel()
 
@@ -800,6 +804,8 @@ class Machine(object) :
                 pr.AddRegistry(freg)
         if self.randomiz :
             self.randomiz.AddRegistry(freg)
+        if self.source :
+            self.source.AddRegistry(freg)
         if self.start :
             self.start.AddRegistry(freg)
         if self.title:
@@ -821,7 +827,7 @@ class Machine(object) :
         gw.addDetector(self.g4registry)
         gw.write(geant4GDMLFileName)
 
-        self._WriteBookkeepingInfo(bookkeepignFileName)
+        self._WriteBookkeepingInfo(bookkeepignFileName, pretty=prettyJSON)
 
     def CheckModel(self):
         print('CheckModel')
