@@ -360,6 +360,7 @@ class Machine(object) :
         self.usrbin = []
         self.userdump = []
         self.usricall = None
+        self.usrocall = None
 
         # element to book-keeping-dict information
         self.elementBookkeeping = _defaultdict()
@@ -737,6 +738,9 @@ class Machine(object) :
     def AddUsricall(self, usricall):
         self.usricall = usricall
 
+    def AddUsrocall(self, usrocall):
+        self.usrocall = usrocall
+
     def _MakeBookkeepingInfo(self):
 
         self.finished = True
@@ -818,6 +822,8 @@ class Machine(object) :
                 ud.AddRegistry(freg)
         if self.usricall :
             self.usricall.AddRegistry(freg)
+        if self.usrocall :
+            self.usrocall.AddRegistry(freg)
 
         fw = _pyg4.fluka.Writer()
         fw.addDetector(self.flukaregistry)

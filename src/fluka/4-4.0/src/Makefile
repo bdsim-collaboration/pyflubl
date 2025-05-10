@@ -5,15 +5,17 @@ FFF=$(FLUKA_BIN)/fff
 LFLUKA=$(FLUKA_BIN)/lfluka
 CXX=g++
 RM=rm
+ROOT_LIB = "-L/tmp/root/lib -lCore -lImt -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lROOTVecOps -lTree -lTreePlayer -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lMultiProc -lROOTDataFrame"
+ROOT_INC := $(shell root-config --cflags)
 
 %.o : %.cxx
-	$(CXX) -c $<
+	$(CXX) -I../include $(ROOT_INC) -c $<
 
 %.o : %.f
 	$(FFF) $<
 
-fluka: usrini.o usrini_c.o source.o mgdraw.o
-	$(LFLUKA) -m fluka usrini.o usrini_c.o source.o mgdraw.o
+fluka: usrini.o usrini_c.o source.o mgdraw.o usreou.o usrout.o usrout_c.o
+	$(LFLUKA) $(ROOT_LIB) -m fluka usrini.o usrini_c.o source.o mgdraw.o usreou.o usrout.o usrout_c.o
 
 clean:
 	$(RM) -rf *.o fluka

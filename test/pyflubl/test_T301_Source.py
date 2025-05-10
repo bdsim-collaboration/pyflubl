@@ -18,7 +18,7 @@ def test_T301_Source() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(1000)
+    s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
