@@ -1,28 +1,29 @@
 #include <fstream>
 #include <iostream>
 #include "global_cxx.h"
-#include <nlohmann/json.hpp>
 
 TFile *outputFile = nullptr;
 TTree *eventTree = nullptr;
 SamplerData *samplers = nullptr;
+json *bookkeeping = nullptr;
 
 int iEvt = 0;
-
-using json = nlohmann::json;
 
 extern "C" {
     void usrini_c_();  // Fortran 77 adds underscore
 }
 
 void loadBookkeeping();
+void dumpBookkeeping();
 void openRootFile();
 void createEventTree();
+
 
 void usrini_c_() {
     std::cout << "usrini_c_" << std::endl;
 
     loadBookkeeping();
+    dumpBookkeeping();
     openRootFile();
     createEventTree();
 }
@@ -33,7 +34,18 @@ void loadBookkeeping() {
     if(!f) {
         std::cerr << "Could not open JSON file." << std::endl;
     }
-    json data = json::parse(f);
+    bookkeeping = new json();
+    f >> *bookkeeping;
+
+    //std::cout << (*bookkeeping).dump(4) << std::endl;
+}
+
+void dumpBookkeeping() {
+    std::cout << "dumpBookkeeping>" << std::endl;
+
+    for (auto& [key, value] : (*bookkeeping).items()) {
+        std::cout << "Bookkeeping key: " << key <<  std::endl;
+    }
 }
 
 void openRootFile() {
