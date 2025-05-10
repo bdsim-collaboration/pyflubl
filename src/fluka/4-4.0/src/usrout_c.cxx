@@ -15,6 +15,10 @@ void usrout_c_() {
 }
 
 void closeRootFile() {
+
+    eventTree->Write();
+
     std::cout << "closeRootFile>" << std::endl;
-    outputFile->Close();
+    if(outputFile)
+        outputFile->Close();
 }
