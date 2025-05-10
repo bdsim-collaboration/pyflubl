@@ -6,9 +6,10 @@
 using json = nlohmann::json;
 
 // Global pointers
+extern json *bookkeeping;
+
 extern TFile* outputFile;
 extern TTree* eventTree;
 extern SamplerData *samplers;
-extern json *bookkeeping;
 
 extern int iEvt;

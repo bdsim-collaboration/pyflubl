@@ -44,7 +44,7 @@ void dumpBookkeeping() {
     std::cout << "dumpBookkeeping>" << std::endl;
 
     for (auto& [key, value] : (*bookkeeping).items()) {
-        std::cout << "Bookkeeping key: " << key <<  std::endl;
+        std::cout << "Bookkeeping key: " << key << std::endl;
     }
 }
 
