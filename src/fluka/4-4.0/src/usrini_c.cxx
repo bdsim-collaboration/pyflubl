@@ -3,20 +3,28 @@
 
 TFile *outputFile = nullptr;
 TTree *eventTree = nullptr;
+SamplerData *samplers = nullptr;
+
 int iEvt = 0;
 
 extern "C" {
     void usrini_c_();  // Fortran 77 adds underscore
 }
 
+void loadBookkeeping();
 void openRootFile();
 void createEventTree();
 
 void usrini_c_() {
     std::cout << "usrini_c_" << std::endl;
 
+    loadBookkeeping();
     openRootFile();
     createEventTree();
+}
+
+void loadBookkeeping() {
+    std::cout << "loadBookkeeping>" << std::endl;
 }
 
 void openRootFile() {
