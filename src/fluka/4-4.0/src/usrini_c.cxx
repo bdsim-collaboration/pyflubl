@@ -58,7 +58,7 @@ void createEventTree() {
     eventTree = new TTree("event","event");
 
     // number of samplers
-    auto nsampler = (*bookkeeping)["samplernames"].size();
+    auto nsampler = (*bookkeeping)["samplernames_samplernumber"].size();
     std::cout << "createEventTree> nsampler=" << nsampler << std::endl;
 
     // create sampler data structures array
@@ -66,8 +66,8 @@ void createEventTree() {
 
     // loop over sampler names and allocate data structure
     int idx = 0;
-    for (const auto& samplername : (*bookkeeping)["samplernames"]) {
-        std::cout << samplername << std::endl;
+    for (const auto& [samplername, samplernumber] : (*bookkeeping)["samplernames_samplernumber"].items()) {
+        std::cout << samplername<< std::endl;
         samplers[idx] = new SamplerData();
         samplers[idx]->SetBranchAddresses(eventTree, samplername);
         samplers[idx]->Flush();

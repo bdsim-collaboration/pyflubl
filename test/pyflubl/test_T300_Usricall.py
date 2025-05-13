@@ -7,7 +7,7 @@ def test_T300_Usricall() :
     d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0.1, sdum="ELECTRON")
+    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0.0, sdum="ELECTRON")
     bp = _pfbl.Fluka.Beampos(xCentre=0, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
     ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
                               zxCosine=0, zyCosine=0, zzCosine=1)
@@ -31,21 +31,21 @@ def test_T300_Usricall() :
     m.AddUserdump(ud)
 
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSamplerPlane(name="s1", length=1e-6)
+    m.AddSamplerPlane(name="s1", length=10e-6)
     m.AddSBendSplit(name="sb1", length=2, angle=_np.pi/4, nsplit=10)
-    m.AddSamplerPlane(name="s2", length=1e-6)
+    m.AddSamplerPlane(name="s2", length=10e-6)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSBendSplit(name="sb2", length=2, angle=-_np.pi/4, nsplit=10)
-    m.AddSamplerPlane(name="s3", length=1e-6)
+    m.AddSamplerPlane(name="s3", length=10e-6)
     m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSBendSplit(name="sb3", length=2, angle=-_np.pi/4, nsplit=10)
-    m.AddSamplerPlane(name="s4", length=1e-6)
+    m.AddSamplerPlane(name="s4", length=10e-6)
     m.AddDrift(name="d4", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSBendSplit(name="sb4", length=2, angle=_np.pi/4, nsplit=10)
-    m.AddSamplerPlane(name="s5", length=1e-6)
+    m.AddSamplerPlane(name="s5", length=10e-6)
     m.AddDrift(name="d5", length=1, beampipeMaterial = "TUNGSTEN")
 
-    m.Write("T300_Usricall", prettyJSON=True)
+    m.Write("T300_Usricall", prettyJSON=False)
     return m
 
 if __name__ == "__main__":

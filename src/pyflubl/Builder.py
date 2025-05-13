@@ -373,7 +373,7 @@ class Machine(object) :
         self.volume_regionname = {}
         self.regionname_volume = {}
         self.usrbinnumber_usrbininfo = {}
-        self.samplernames= []
+        self.samplernames_samplernumber= {}
 
         self.verbose = True
 
@@ -647,7 +647,7 @@ class Machine(object) :
         self.Append(e)
 
         # Add bookkeeping information
-        self.samplernames.append(name)
+        self.samplernames_samplernumber[name] = len(self.samplernames_samplernumber)
 
     def AddBeam(self, beam):
         self.beam = beam
@@ -770,7 +770,7 @@ class Machine(object) :
 
         jsonDumpDict = {}
         jsonDumpDict["elements"] = dict(self.elementBookkeeping)
-        jsonDumpDict["samplernames"] = self.samplernames
+        jsonDumpDict["samplernames_samplernumber"] = self.samplernames_samplernumber
         jsonDumpDict["regionname_regionnumber"] = self.regionname_regionnumber
         jsonDumpDict["regionnumber_regionname"] = self.regionnumber_regionname
         jsonDumpDict["regionnumber_element"] = self.regionnumber_element
