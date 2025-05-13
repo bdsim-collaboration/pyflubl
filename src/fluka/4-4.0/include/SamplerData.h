@@ -12,10 +12,10 @@ class SamplerData {
         ~SamplerData() {}
 
         void SetBranchAddresses(TTree *t, std::string samplerName) {
-            t->Branch((samplerName+"_n").c_str(), &n,"n/I");
-            t->Branch((samplerName+"_x").c_str(), x ,"x[n]/D");
-            t->Branch((samplerName+"_y").c_str(), y, "y[n]/D");
-            t->Branch((samplerName+"_z").c_str(), &z, "z/D");
+            t->Branch((samplerName+".n").c_str(), &n,"n/I");
+            t->Branch((samplerName+".x").c_str(), x ,"x[n]/D");
+            t->Branch((samplerName+".y").c_str(), y, "y[n]/D");
+            t->Branch((samplerName+".z").c_str(), &z, "z/D");
         }
 
         void SetBranchAddresses1(TTree *t, std::string samplerName) {
