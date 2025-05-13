@@ -368,6 +368,7 @@ class Machine(object) :
         # persistent book keeping
         self.nameRegion = {}
         self.regionnumber_regionname = {}
+        self.regionnumber_element = {}
         self.regionname_regionnumber = {}
         self.volume_regionname = {}
         self.regionname_volume = {}
@@ -757,6 +758,10 @@ class Machine(object) :
             self.volume_regionname[self.flukaregistry.regionDict[r].comment] = self.flukaregistry.regionDict[r].name
             self.regionname_volume[self.flukaregistry.regionDict[r].name] = self.flukaregistry.regionDict[r].comment
 
+            # loop over all elements and find reference to the region in an element
+            for element_name, element_info in self.elementBookkeeping.items() :
+                if self.flukaregistry.regionDict[r].name in element_info['flukaRegions'] :
+                    self.regionnumber_element[i+1] = element_name
 
     def _WriteBookkeepingInfo(self, fileName="output.json", pretty=False):
 
@@ -768,6 +773,7 @@ class Machine(object) :
         jsonDumpDict["samplernames"] = self.samplernames
         jsonDumpDict["regionname_regionnumber"] = self.regionname_regionnumber
         jsonDumpDict["regionnumber_regionname"] = self.regionnumber_regionname
+        jsonDumpDict["regionnumber_element"] = self.regionnumber_element
         jsonDumpDict["usrbinnumber_usrbininfo"] = self.usrbinnumber_usrbininfo
 
         if not pretty :
