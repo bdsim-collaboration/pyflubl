@@ -27,6 +27,9 @@ def test_T300_Usricall() :
     uoc = _pfbl.Fluka.Usrocall()
     m.AddUsrocall(uoc)
 
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSamplerPlane(name="s1", length=1e-6)
     m.AddSBendSplit(name="sb1", length=2, angle=_np.pi/4, nsplit=10)

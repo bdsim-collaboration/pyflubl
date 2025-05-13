@@ -4,7 +4,7 @@
 
 TFile *outputFile = nullptr;
 TTree *eventTree = nullptr;
-SamplerData *samplers = nullptr;
+SamplerData **samplers = nullptr;
 json *bookkeeping = nullptr;
 
 int iEvt = 0;
@@ -44,7 +44,7 @@ void dumpBookkeeping() {
     std::cout << "dumpBookkeeping>" << std::endl;
 
     for (auto& [key, value] : (*bookkeeping).items()) {
-        std::cout << "Bookkeeping key: " << key << std::endl;
+        std::cout << "dumpBookkeeping> key=" << key << std::endl;
     }
 }
 
@@ -56,6 +56,23 @@ void openRootFile() {
 void createEventTree() {
     std::cout << "createEventTree>" << std::endl;
     eventTree = new TTree("event","event");
+
+    // number of samplers
+    auto nsampler = (*bookkeeping)["samplernames"].size();
+    std::cout << "createEventTree> nsampler=" << nsampler << std::endl;
+
+    // create sampler data structures array
+    samplers = new SamplerData*[nsampler];
+
+    // loop over sampler names and allocate data structure
+    int idx = 0;
+    for (const auto& samplername : (*bookkeeping)["samplernames"]) {
+        std::cout << samplername << std::endl;
+        samplers[idx] = new SamplerData();
+        samplers[idx]->SetBranchAddresses(eventTree, samplername);
+        samplers[idx]->Flush();
+        idx++;
+    }
 
     eventTree->Branch("eventnr", &iEvt, "eventnr/I");
 }

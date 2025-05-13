@@ -10,6 +10,6 @@ extern json *bookkeeping;
 
 extern TFile* outputFile;
 extern TTree* eventTree;
-extern SamplerData *samplers;
+extern SamplerData **samplers;
 
 extern int iEvt;

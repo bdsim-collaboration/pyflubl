@@ -1,17 +1,64 @@
+#include <vector>
+
+#define NSAMPLERMAX 20000
 
 class SamplerData {
     public :
         SamplerData() {
-            nparticle = 0;
-        };
-        ~SamplerData() {};
+            n = 0;
+            z = 0;
+        }
 
-        int nparticle;
-        double x;
-        double y;
+        ~SamplerData() {}
+
+        void SetBranchAddresses(TTree *t, std::string samplerName) {
+            t->Branch((samplerName+"_n").c_str(), &n,"n/I");
+            t->Branch((samplerName+"_x").c_str(), x ,"x[n]/D");
+            t->Branch((samplerName+"_y").c_str(), y, "y[n]/D");
+            t->Branch((samplerName+"_z").c_str(), &z, "z/D");
+        }
+
+        void SetBranchAddresses1(TTree *t, std::string samplerName) {
+            t->Branch(samplerName.c_str(), this, "n/I:energy[n]/D:x[n]/D:y[n]/D:z/D");
+        }
+
+        void Flush() {
+            n = 0;
+            z = 0;
+        }
+
+        void Fill(double energyIn, double xIn, double yIn, double zIn,
+                  double xpIn, double ypIn, double zpIn, double pIn, double TIn) {
+            if(n>=NSAMPLERMAX)
+                return;
+
+            energy[n] = energyIn;
+            x[n] = xIn;
+            y[n] = yIn;
+            z = zIn;
+            xp[n] = xpIn;
+            yp[n] = ypIn;
+            zp[n] = zpIn;
+            p[n] = pIn;
+            T[n] = TIn;
+
+            n++;
+        }
+
+        int n;
+
+        double energy[NSAMPLERMAX];
+
+        double x[NSAMPLERMAX];
+        double y[NSAMPLERMAX];
         double z;
 
-        double xp;
-        double yp;
-        double zp;
+        double xp[NSAMPLERMAX];
+        double yp[NSAMPLERMAX];
+        double zp[NSAMPLERMAX];
+
+        double p[NSAMPLERMAX];
+        double T[NSAMPLERMAX];
+
+        int   partID[NSAMPLERMAX];
 };
