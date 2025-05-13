@@ -45,7 +45,7 @@ def test_T300_Usricall() :
     m.AddSamplerPlane(name="s5", length=1e-6)
     m.AddDrift(name="d5", length=1, beampipeMaterial = "TUNGSTEN")
 
-    m.Write("T300_Usricall", prettyJSON=False)
+    m.Write("T300_Usricall", prettyJSON=True)
     return m
 
 if __name__ == "__main__":
