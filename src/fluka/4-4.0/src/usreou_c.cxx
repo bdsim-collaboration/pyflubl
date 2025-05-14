@@ -13,7 +13,7 @@ void usreou_c_() {
 
     // loop over samplers and flush
     int idx = 0;
-    for (const auto& samplername : (*bookkeeping)["samplernames"]) {
+    for (const auto& samplername : (*bookkeeping)["samplernames_samplernumber"]) {
         samplers[idx]->Flush();
         idx++;
     }
