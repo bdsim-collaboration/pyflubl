@@ -10,6 +10,17 @@ extern "C" {
     void mgdraw_bxdraw_c_(int *mreg, int *newreg, double *x, double *y, double *z);
 }
 
+std::string element_loopup(int reg_number) {
+
+    // black hole and air
+    if(reg_number <= 2 ) {
+        return std::string("");
+    }
+
+    auto element_name = std::string((*bookkeeping)["regionnumber_element"][std::to_string(reg_number)]);
+    return element_name;
+}
+
 int sampler_lookup(int reg_number) {
 
     // black hole and air
@@ -26,7 +37,10 @@ int sampler_lookup(int reg_number) {
         return sampler_number;
     }
     return -1;
+}
 
+void localcoord_lookup(int reg_number, double *global, double *local) {
+    auto element_name = element_loopup(reg_number);
 }
 
 void mgdraw_bxdraw_c_(int *mreg, int *newreg, double *x, double *y, double *z) {

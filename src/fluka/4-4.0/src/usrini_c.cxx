@@ -4,7 +4,9 @@
 
 TFile *outputFile = nullptr;
 TTree *eventTree = nullptr;
+std::map<std::string, ElementData> *elementMap = nullptr;
 SamplerData **samplers = nullptr;
+ElossData *eloss = nullptr;
 json *bookkeeping = nullptr;
 
 int iEvt = 0;
@@ -15,6 +17,7 @@ extern "C" {
 
 void loadBookkeeping();
 void dumpBookkeeping();
+void cacheTransformations();
 void openRootFile();
 void createEventTree();
 
@@ -24,13 +27,14 @@ void usrini_c_() {
 
     loadBookkeeping();
     dumpBookkeeping();
+    cacheTransformations();
     openRootFile();
     createEventTree();
 }
 
 void loadBookkeeping() {
     std::cout << "loadBookkeeping>" << std::endl;
-    std::ifstream f("/tmp/pyflubl/test/pyflubl/run_T300_Usricall/T300_Usricall.json");
+    std::ifstream f("/tmp/pyflubl/test/pyflubl/run_IPAC_2025/IPAC_2025.json");
     if(!f) {
         std::cerr << "Could not open JSON file." << std::endl;
     }
@@ -46,6 +50,10 @@ void dumpBookkeeping() {
     for (auto& [key, value] : (*bookkeeping).items()) {
         std::cout << "dumpBookkeeping> key=" << key << std::endl;
     }
+}
+
+void cacheTransformations() {
+    // loop over elements and make ElementData for later usage
 }
 
 void openRootFile() {
@@ -74,5 +82,7 @@ void createEventTree() {
         idx++;
     }
 
-    eventTree->Branch("eventnr", &iEvt, "eventnr/I");
+    // make eloss
+    eloss = new ElossData();
+    eloss->SetBranchAddresses(eventTree);
 }
