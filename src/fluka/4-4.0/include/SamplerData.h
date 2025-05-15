@@ -13,9 +13,13 @@ class SamplerData {
 
         void SetBranchAddresses(TTree *t, std::string samplerName) {
             t->Branch((samplerName+".n").c_str(), &n,"n/I");
+            t->Branch((samplerName+".energy").c_str(), &energy, "energy[n]/D");
             t->Branch((samplerName+".x").c_str(), x ,"x[n]/D");
             t->Branch((samplerName+".y").c_str(), y, "y[n]/D");
             t->Branch((samplerName+".z").c_str(), &z, "z/D");
+            t->Branch((samplerName+".xp").c_str(), xp ,"x[n]/D");
+            t->Branch((samplerName+".yp").c_str(), yp, "y[n]/D");
+            t->Branch((samplerName+".zp").c_str(), zp, "z[n]/D");
         }
 
         void SetBranchAddresses1(TTree *t, std::string samplerName) {

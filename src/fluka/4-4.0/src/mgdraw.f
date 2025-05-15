@@ -101,12 +101,11 @@
 *======================================================================*
 *                                                                      *
       ENTRY BXDRAW ( ICODE, MREG, NEWREG, XSCO, YSCO, ZSCO )
-      CALL GEON2R(MREG, reg_name_from, IERR)
-      CALL GEON2R(NEWREG, reg_name_to, IERR)
+
 *      WRITE(*,*) "PYFLUBL-MGDRAW>", ICODE, MREG, NEWREG, XSCO, YSCO, ZSCO, JTRACK
 *      WRITE(*,*) CXTRCK, CYTRCK, CZTRCK
 
-      call mgdraw_bxdraw_c(MREG, NEWREG, XSCO, YSCO, ZSCO)
+      call mgdraw_bxdraw_c(MREG, NEWREG, XSCO, YSCO, ZSCO, CXTRCK, CYTRCK, CZTRCK, ETRACK)
       RETURN
 *
 *======================================================================*

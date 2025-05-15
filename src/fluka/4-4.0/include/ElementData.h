@@ -49,6 +49,19 @@ class ElementData {
             z = posprime(2);
         }
 
+        void transformDirection(double x, double y, double z,
+                                double &xp, double &yp, double &zp) {
+            TVectorD dir = TVectorD(3);
+            dir(0) = x;
+            dir(1) = y;
+            dir(2) = z;
+
+            TVectorD posprime = matrix * dir;
+            xp = posprime(0);
+            yp = posprime(1);
+            zp = posprime(2);
+        }
+
         std::string name;
         TVectorD translation = TVectorD(3);
         TMatrixD matrix = TMatrixD(3,3);

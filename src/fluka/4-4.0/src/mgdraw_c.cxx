@@ -7,7 +7,8 @@
 using json = nlohmann::json;
 
 extern "C" {
-    void mgdraw_bxdraw_c_(int *mreg, int *newreg, double *x, double *y, double *z);
+    void mgdraw_bxdraw_c_(int *mreg, int *newreg, double *X, double *Y, double *Z,
+                          double *Xdc, double *Ydc, double *Zdc, double *etot);
 }
 
 std::string element_loopup(int reg_number) {
@@ -42,17 +43,30 @@ void localcoord_lookup(int reg_number, double *global, double *local) {
     auto element_name = element_loopup(reg_number);
 }
 
-void mgdraw_bxdraw_c_(int *mreg, int *newreg, double *X, double *Y, double *Z) {
-    std::cout << "mgdraw_bxdraw_c_> " << *mreg << " " << *newreg << " " << *X << " " << *Y << " " << *Z << std::endl;
+void mgdraw_bxdraw_c_(int *mreg, int *newreg,
+                      double *X, double *Y, double *Z,
+                      double *Xdc, double *Ydc, double *Zdc,
+                      double *etot) {
+    std::cout << "mgdraw_bxdraw_c_> " << *mreg << " " << *newreg << " "
+                                      << *X << " " << *Y << " " << *Z << " "
+                                      << *Xdc << " " << *Ydc << " " << *Zdc << " "
+                                      << *etot << std::endl;
 
     double x, y, z;
+    double xdc, ydc, zdc;
+    double xp, yp, zp;
 
     auto element_name = element_loopup(*newreg);
 
     (*elementMap)[element_name].transform(*X, *Y, *Z, x, y, z);
+    (*elementMap)[element_name].transformDirection(*Xdc, *Ydc, *Zdc, xdc, ydc, zdc);
+
+    xp = (*Xdc)/(*Zdc);
+    yp = (*Ydc)/(*Zdc);
+    zp = 0;
 
     auto isampler = sampler_lookup(*newreg);
     if (isampler >= 0) {
-        samplers[isampler]->Fill(0, x, y, z, 0, 0, 0, 0, 0);
+        samplers[isampler]->Fill(*etot, x, y, z, xp, yp, zp, 0, 0);
     }
 }
