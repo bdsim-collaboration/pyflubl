@@ -43,6 +43,19 @@ def test_IPAC_2025() :
                          customRegions="OUTER SHIELD BEAM TARGET")
     m.AddSamplerPlane(name="s2", length=10e-6)
     m.AddDrift(name="d3", length=0.5, beampipeMaterial = "TUNGSTEN")
-    m.Write("IPAC_2025")
+    
+    eb1 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
+                             particle="ALL-PART",lun=-24,
+                             xmax=150, ymax=150, zmax=150, sdum="eb1",
+                             xmin=-150, ymin=-150, zmin=-150,
+                             nxbin=201, nybin=201, nzbin=201)
+    m.AddUsrbinToElement("c1", eb1)
 
+
+    m.Write("IPAC_2025", prettyJSON=False)
+
+    
     return m
+
+if __name__ == "__main__":
+    test_IPAC_2025()
