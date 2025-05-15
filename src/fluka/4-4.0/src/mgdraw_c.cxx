@@ -10,7 +10,7 @@ extern "C" {
     void mgdraw_bxdraw_c_(int *mreg, int *newreg,
                           double *X, double *Y, double *Z,
                           double *Xdc, double *Ydc, double *Zdc,
-                          double *etot, int *partID);
+                          double *etot, double *T, int *partID);
 }
 
 std::string element_loopup(int reg_number) {
@@ -48,11 +48,13 @@ void localcoord_lookup(int reg_number, double *global, double *local) {
 void mgdraw_bxdraw_c_(int *mreg, int *newreg,
                       double *X, double *Y, double *Z,
                       double *Xdc, double *Ydc, double *Zdc,
-                      double *etot, int *partID) {
+                      double *etot, double *T,
+                      int *partID) {
     std::cout << "mgdraw_bxdraw_c_> " << *mreg << " " << *newreg << " "
                                       << *X << " " << *Y << " " << *Z << " "
                                       << *Xdc << " " << *Ydc << " " << *Zdc << " "
-                                      << *etot << " " << partID << std::endl;
+                                      << *etot << " " <<  " " << *T << " "
+                                      << *partID << std::endl;
 
     double x, y, z;
     double xdc, ydc, zdc;
@@ -69,6 +71,6 @@ void mgdraw_bxdraw_c_(int *mreg, int *newreg,
 
     auto isampler = sampler_lookup(*newreg);
     if (isampler >= 0) {
-        samplers[isampler]->Fill(*etot, x, y, z, xp, yp, zp, 0, *partID);
+        samplers[isampler]->Fill(*etot, x, y, z, xp, yp, zp, *T, *partID);
     }
 }
