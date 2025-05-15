@@ -18,5 +18,7 @@ void usreou_c_() {
         idx++;
     }
 
+    eloss->Flush();
+
     iEvt += 1;
 }
