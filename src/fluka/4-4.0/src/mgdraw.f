@@ -105,7 +105,7 @@
 *      WRITE(*,*) "PYFLUBL-MGDRAW>", ICODE, MREG, NEWREG, XSCO, YSCO, ZSCO, JTRACK
 *      WRITE(*,*) CXTRCK, CYTRCK, CZTRCK
 
-      call mgdraw_bxdraw_c(MREG, NEWREG, XSCO, YSCO, ZSCO, CXTRCK, CYTRCK, CZTRCK, ETRACK)
+      call mgdraw_bxdraw_c(MREG, NEWREG, XSCO, YSCO, ZSCO, CXTRCK, CYTRCK, CZTRCK, ETRACK, JTRACK)
       RETURN
 *
 *======================================================================*

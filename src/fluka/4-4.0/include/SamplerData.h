@@ -20,6 +20,8 @@ class SamplerData {
             t->Branch((samplerName+".xp").c_str(), xp ,"x[n]/D");
             t->Branch((samplerName+".yp").c_str(), yp, "y[n]/D");
             t->Branch((samplerName+".zp").c_str(), zp, "z[n]/D");
+            t->Branch((samplerName+".T").c_str(), T, "T[n]/D");
+            t->Branch((samplerName+".partID").c_str(), partID, "partID[n]/I");
         }
 
         void SetBranchAddresses1(TTree *t, std::string samplerName) {
@@ -32,7 +34,7 @@ class SamplerData {
         }
 
         void Fill(double energyIn, double xIn, double yIn, double zIn,
-                  double xpIn, double ypIn, double zpIn, double pIn, double TIn) {
+                  double xpIn, double ypIn, double zpIn, double TIn, int partIDIn) {
             if(n>=NSAMPLERMAX)
                 return;
 
@@ -43,8 +45,8 @@ class SamplerData {
             xp[n] = xpIn;
             yp[n] = ypIn;
             zp[n] = zpIn;
-            p[n] = pIn;
             T[n] = TIn;
+            partID[n] = partIDIn;
 
             n++;
         }
@@ -61,7 +63,6 @@ class SamplerData {
         double yp[NSAMPLERMAX];
         double zp[NSAMPLERMAX];
 
-        double p[NSAMPLERMAX];
         double T[NSAMPLERMAX];
 
         int   partID[NSAMPLERMAX];
