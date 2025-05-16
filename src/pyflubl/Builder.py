@@ -753,6 +753,7 @@ class Machine(object) :
         # loop over elements and put S location
         for i, e in enumerate(self.elements):
             self.elementBookkeeping[e]["S"] = self.lenint[i]
+            self.elementBookkeeping[e]["length"] = self.elements[e].length
 
         # region number to name
         for i, r in enumerate(self.flukaregistry.regionDict) :

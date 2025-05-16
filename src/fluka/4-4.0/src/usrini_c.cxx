@@ -63,6 +63,7 @@ void createElementData() {
         std::cout << "createElementData> " << elementname << std::endl;
 
         auto S_json = elementinfo["S"];
+        auto length_json = elementinfo["length"];
         auto rotation_json = elementinfo["rotation"];
         auto translation_json = elementinfo["translation"];
 
@@ -83,8 +84,9 @@ void createElementData() {
         double m33 = rotation_json[2][2];
 
         double S = S_json;
+        double length = length_json;
 
-        auto e = ElementData(elementname, S,
+        auto e = ElementData(elementname, S, length,
                              x,y,z,
                              m11, m12, m13,
                              m21, m22, m23,
