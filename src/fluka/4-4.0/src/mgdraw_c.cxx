@@ -11,6 +11,9 @@ extern "C" {
                           double *X, double *Y, double *Z,
                           double *Xdc, double *Ydc, double *Zdc,
                           double *etot, double *T, int *partID);
+    void mgdraw_endraw_c_(int *mreg,
+                          double *X, double *Y, double *Z,
+                          double *E);
 }
 
 std::string element_loopup(int reg_number) {
@@ -74,5 +77,18 @@ void mgdraw_bxdraw_c_(int *mreg, int *newreg,
     auto isampler = sampler_lookup(*newreg);
     if (isampler >= 0) {
         samplers[isampler]->Fill(*etot, x, y, z, xp, yp, zp, *T, *partID);
+    }
+}
+
+void mgdraw_endraw_c_(int *mreg, double *X, double *Y, double *Z, double *E) {
+#ifdef DEBUG
+    std::cout << "mgdraw_endraw_c_" << " " << *mreg << " " << *X << " " << *Y << " " << *Z << " "
+              << *E << std::endl;
+#endif
+
+    auto element_name = element_loopup(*mreg);
+
+    if(element_name != "") {
+        eloss->Fill(*E, (*elementMap)[element_name].transformS(*X, *Y, *Z));
     }
 }

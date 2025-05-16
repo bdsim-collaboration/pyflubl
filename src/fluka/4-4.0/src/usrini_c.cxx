@@ -62,6 +62,7 @@ void createElementData() {
     for (const auto& [elementname, elementinfo] : (*bookkeeping)["elements"].items()) {
         std::cout << "createElementData> " << elementname << std::endl;
 
+        auto S_json = elementinfo["S"];
         auto rotation_json = elementinfo["rotation"];
         auto translation_json = elementinfo["translation"];
 
@@ -81,7 +82,9 @@ void createElementData() {
         double m32 = rotation_json[2][1];
         double m33 = rotation_json[2][2];
 
-        auto e = ElementData(elementname,
+        double S = S_json;
+
+        auto e = ElementData(elementname, S,
                              x,y,z,
                              m11, m12, m13,
                              m21, m22, m23,

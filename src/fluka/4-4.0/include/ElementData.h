@@ -8,12 +8,13 @@ class ElementData {
 
         ElementData(std::string name) {}
 
-        ElementData(std::string nameIn,
+        ElementData(std::string nameIn, double SIn,
                     double x, double y, double z,
                     double m11, double m12, double m13,
                     double m21, double m22, double m23,
                     double m31, double m32, double m33) {
             name = nameIn;
+            S = SIn*100; // S in meters so multiply 100 to cm
             matrix(0,0) = m11;
             matrix(0,1) = m12;
             matrix(0,2) = m13;
@@ -24,7 +25,7 @@ class ElementData {
             matrix(2,1) = m32;
             matrix(2,2) = m33;
 
-            translation(0) = x/10;
+            translation(0) = x/10; // x,y,z in mm so divide 10 to cm
             translation(1) = y/10;
             translation(2) = z/10;
 
@@ -62,7 +63,14 @@ class ElementData {
             zp = posprime(2);
         }
 
+        double transformS(double X, double Y, double Z) {
+            double x,y,z;
+            transform(X,Y,Z,x,y,z);
+            return S+z;
+        }
+
         std::string name;
+        double S;
         TVectorD translation = TVectorD(3);
         TMatrixD matrix = TMatrixD(3,3);
         TMatrixD matrix_inv = TMatrixD(3,3);
