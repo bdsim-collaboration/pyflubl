@@ -1,7 +1,5 @@
 #include <vector>
 
-#define NSAMPLERMAX 20000
-
 class SamplerData {
     public :
         SamplerData() {
@@ -13,57 +11,60 @@ class SamplerData {
 
         void SetBranchAddresses(TTree *t, std::string samplerName) {
             t->Branch((samplerName+".n").c_str(), &n,"n/I");
-            t->Branch((samplerName+".energy").c_str(), &energy, "energy[n]/D");
-            t->Branch((samplerName+".x").c_str(), x ,"x[n]/D");
-            t->Branch((samplerName+".y").c_str(), y, "y[n]/D");
+            t->Branch((samplerName+".energy").c_str(), &energy);
+            t->Branch((samplerName+".x").c_str(), &x );
+            t->Branch((samplerName+".y").c_str(), &y);
             t->Branch((samplerName+".z").c_str(), &z, "z/D");
-            t->Branch((samplerName+".xp").c_str(), xp ,"x[n]/D");
-            t->Branch((samplerName+".yp").c_str(), yp, "y[n]/D");
-            t->Branch((samplerName+".zp").c_str(), zp, "z[n]/D");
-            t->Branch((samplerName+".T").c_str(), T, "T[n]/D");
-            t->Branch((samplerName+".partID").c_str(), partID, "partID[n]/I");
-        }
-
-        void SetBranchAddresses1(TTree *t, std::string samplerName) {
-            t->Branch(samplerName.c_str(), this, "n/I:energy[n]/D:x[n]/D:y[n]/D:z/D");
+            t->Branch((samplerName+".xp").c_str(), &xp);
+            t->Branch((samplerName+".yp").c_str(), &yp);
+            t->Branch((samplerName+".zp").c_str(), &zp);
+            t->Branch((samplerName+".T").c_str(), &T);
+            t->Branch((samplerName+".partID").c_str(), &partID);
         }
 
         void Flush() {
             n = 0;
             z = 0;
+
+            energy.clear();
+            x.clear();
+            y.clear();
+            xp.clear();
+            yp.clear();
+            zp.clear();
+            T.clear();
+            partID.clear();
         }
 
         void Fill(double energyIn, double xIn, double yIn, double zIn,
                   double xpIn, double ypIn, double zpIn, double TIn, int partIDIn) {
-            if(n>=NSAMPLERMAX)
-                return;
 
-            energy[n] = energyIn;
-            x[n] = xIn;
-            y[n] = yIn;
+            energy.push_back(energyIn);
+            x.push_back(xIn);
+            y.push_back(yIn);
             z = zIn;
-            xp[n] = xpIn;
-            yp[n] = ypIn;
-            zp[n] = zpIn;
-            T[n] = TIn;
-            partID[n] = partIDIn;
+            xp.push_back(xpIn);
+            yp.push_back(ypIn);
+            zp.push_back(zpIn);
+            T.push_back(TIn);
+            partID.push_back(partIDIn);
 
             n++;
         }
 
         int n;
 
-        double energy[NSAMPLERMAX];
+        std::vector<double> energy;
 
-        double x[NSAMPLERMAX];
-        double y[NSAMPLERMAX];
+        std::vector<double> x;
+        std::vector<double> y;
         double z;
 
-        double xp[NSAMPLERMAX];
-        double yp[NSAMPLERMAX];
-        double zp[NSAMPLERMAX];
+        std::vector<double> xp;
+        std::vector<double> yp;
+        std::vector<double> zp;
 
-        double T[NSAMPLERMAX];
+        std::vector<double> T;
 
-        int   partID[NSAMPLERMAX];
+        std::vector<int>    partID;
 };

@@ -50,11 +50,13 @@ void mgdraw_bxdraw_c_(int *mreg, int *newreg,
                       double *Xdc, double *Ydc, double *Zdc,
                       double *etot, double *T,
                       int *partID) {
+#ifdef DEBUG
     std::cout << "mgdraw_bxdraw_c_> " << *mreg << " " << *newreg << " "
                                       << *X << " " << *Y << " " << *Z << " "
                                       << *Xdc << " " << *Ydc << " " << *Zdc << " "
                                       << *etot << " " <<  " " << *T << " "
                                       << *partID << std::endl;
+#endif
 
     double x, y, z;
     double xdc, ydc, zdc;

@@ -1,6 +1,6 @@
       SUBROUTINE USREOU ()
 
-      WRITE(*,*) "PYFLUBL-USREOU>"
+*      WRITE(*,*) "PYFLUBL-USREOU>"
 
       call usreou_c()
 

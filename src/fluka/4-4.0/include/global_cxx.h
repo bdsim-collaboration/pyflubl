@@ -17,3 +17,5 @@ extern SamplerData **samplers;
 extern ElossData *eloss;
 
 extern int iEvt;
+
+// #define DEBUG 1

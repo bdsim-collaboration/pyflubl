@@ -6,7 +6,9 @@ extern "C" {
 }
 
 void usreou_c_() {
-    std::cout << "usreou_c_" << std::endl;
+#ifdef DEBUG
+    std::cout << "usreou_c_> neloss=" << eloss->n << std::endl;
+#endif
 
     // fill output
     eventTree->Fill();
