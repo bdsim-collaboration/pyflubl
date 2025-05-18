@@ -11,4 +11,5 @@ old
 *.json
 run_*
 *.pickle
-
+*.pdf
+*.mac

@@ -355,9 +355,12 @@ class Machine(object) :
         self.mgndata = []
         self.rotprbin = []
         self.randomiz = None
+        self.source = None
         self.start = None
         self.usrbin = []
         self.userdump = []
+        self.usricall = None
+        self.usrocall = None
 
         # element to book-keeping-dict information
         self.elementBookkeeping = _defaultdict()
@@ -365,10 +368,12 @@ class Machine(object) :
         # persistent book keeping
         self.nameRegion = {}
         self.regionnumber_regionname = {}
+        self.regionnumber_element = {}
         self.regionname_regionnumber = {}
         self.volume_regionname = {}
         self.regionname_volume = {}
         self.usrbinnumber_usrbininfo = {}
+        self.samplernames_samplernumber= {}
 
         self.verbose = True
 
@@ -641,6 +646,9 @@ class Machine(object) :
         e = Element(name=name, category="sampler_plane", length = length, **kwargs)
         self.Append(e)
 
+        # Add bookkeeping information
+        self.samplernames_samplernumber[name] = len(self.samplernames_samplernumber)
+
     def AddBeam(self, beam):
         self.beam = beam
 
@@ -676,6 +684,9 @@ class Machine(object) :
 
     def AddRandomiz(self, randomiz):
         self.randomiz = randomiz
+
+    def AddSource(self,source):
+        self.source = source
 
     def AddStart(self, start):
         self.start = start
@@ -729,9 +740,21 @@ class Machine(object) :
     def AddUserdump(self, userdump):
         self.userdump.append(userdump)
 
+    def AddUsricall(self, usricall):
+        self.usricall = usricall
+
+    def AddUsrocall(self, usrocall):
+        self.usrocall = usrocall
+
     def _MakeBookkeepingInfo(self):
 
         self.finished = True
+
+        # loop over elements and put S location
+        for i, e in enumerate(self.elements):
+            self.elementBookkeeping[e]["S"] = self.lenint[i]
+            self.elementBookkeeping[e]["length"] = self.elements[e].length
+
         # region number to name
         for i, r in enumerate(self.flukaregistry.regionDict) :
 
@@ -741,6 +764,10 @@ class Machine(object) :
             self.volume_regionname[self.flukaregistry.regionDict[r].comment] = self.flukaregistry.regionDict[r].name
             self.regionname_volume[self.flukaregistry.regionDict[r].name] = self.flukaregistry.regionDict[r].comment
 
+            # loop over all elements and find reference to the region in an element
+            for element_name, element_info in self.elementBookkeeping.items() :
+                if self.flukaregistry.regionDict[r].name in element_info['flukaRegions'] :
+                    self.regionnumber_element[i+1] = element_name
 
     def _WriteBookkeepingInfo(self, fileName="output.json", pretty=False):
 
@@ -749,8 +776,10 @@ class Machine(object) :
 
         jsonDumpDict = {}
         jsonDumpDict["elements"] = dict(self.elementBookkeeping)
+        jsonDumpDict["samplernames_samplernumber"] = self.samplernames_samplernumber
         jsonDumpDict["regionname_regionnumber"] = self.regionname_regionnumber
         jsonDumpDict["regionnumber_regionname"] = self.regionnumber_regionname
+        jsonDumpDict["regionnumber_element"] = self.regionnumber_element
         jsonDumpDict["usrbinnumber_usrbininfo"] = self.usrbinnumber_usrbininfo
 
         if not pretty :
@@ -763,7 +792,7 @@ class Machine(object) :
             with open(fileName, 'w') as f:
                 f.write(pretty_json_str)
 
-    def Write(self, filename):
+    def Write(self, filename, prettyJSON = False):
 
         freg = self.MakeFlukaModel()
 
@@ -796,6 +825,8 @@ class Machine(object) :
                 pr.AddRegistry(freg)
         if self.randomiz :
             self.randomiz.AddRegistry(freg)
+        if self.source :
+            self.source.AddRegistry(freg)
         if self.start :
             self.start.AddRegistry(freg)
         if self.title:
@@ -806,6 +837,10 @@ class Machine(object) :
         if len(self.userdump) > 0 :
             for ud in self.userdump:
                 ud.AddRegistry(freg)
+        if self.usricall :
+            self.usricall.AddRegistry(freg)
+        if self.usrocall :
+            self.usrocall.AddRegistry(freg)
 
         fw = _pyg4.fluka.Writer()
         fw.addDetector(self.flukaregistry)
@@ -815,7 +850,7 @@ class Machine(object) :
         gw.addDetector(self.g4registry)
         gw.write(geant4GDMLFileName)
 
-        self._WriteBookkeepingInfo(bookkeepignFileName)
+        self._WriteBookkeepingInfo(bookkeepignFileName, pretty=prettyJSON)
 
     def CheckModel(self):
         print('CheckModel')

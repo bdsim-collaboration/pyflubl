@@ -1,8 +1,7 @@
 import pyflubl as _pfbl
-import pyg4ometry as _pyg4
 import numpy as _np
 
-def test_IPAC_2025() :
+def test_T300_Usricall() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -16,7 +15,6 @@ def test_IPAC_2025() :
     m.AddBeampos(bp)
     m.AddBeamaxes(ba)
 
-    
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
@@ -31,31 +29,24 @@ def test_IPAC_2025() :
 
     ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
     m.AddUserdump(ud)
-    
+
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSBendSplit(name="b1", length=1, angle=_np.pi/8)
-    m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSBendSplit(name="b2", length=1, angle=-_np.pi/8)
     m.AddSamplerPlane(name="s1", length=10e-6)
-    m.AddCustomFlukaFile(name="c1", length=1,
-                         geometryFile="./geometryInput/test_T032_Custom_Fluka_Gap.inp",
-                         customOuterBodies="outer",
-                         customRegions="OUTER SHIELD BEAM TARGET")
+    m.AddSBendSplit(name="sb1", length=2, angle=_np.pi/4, nsplit=10)
     m.AddSamplerPlane(name="s2", length=10e-6)
-    m.AddDrift(name="d3", length=0.5, beampipeMaterial = "TUNGSTEN")
-    
-    eb1 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
-                             particle="ALL-PART",lun=-24,
-                             xmax=150, ymax=150, zmax=150, sdum="eb1",
-                             xmin=-150, ymin=-150, zmin=-150,
-                             nxbin=201, nybin=201, nzbin=201)
-    m.AddUsrbinToElement("c1", eb1)
+    m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
+    m.AddSBendSplit(name="sb2", length=2, angle=-_np.pi/4, nsplit=10)
+    m.AddSamplerPlane(name="s3", length=10e-6)
+    m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
+    m.AddSBendSplit(name="sb3", length=2, angle=-_np.pi/4, nsplit=10)
+    m.AddSamplerPlane(name="s4", length=10e-6)
+    m.AddDrift(name="d4", length=1, beampipeMaterial = "TUNGSTEN")
+    m.AddSBendSplit(name="sb4", length=2, angle=_np.pi/4, nsplit=10)
+    m.AddSamplerPlane(name="s5", length=10e-6)
+    m.AddDrift(name="d5", length=1, beampipeMaterial = "TUNGSTEN")
 
-
-    m.Write("IPAC_2025", prettyJSON=False)
-
-    
+    m.Write("T300_Usricall", prettyJSON=False)
     return m
 
 if __name__ == "__main__":
-    test_IPAC_2025()
+    test_T300_Usricall()

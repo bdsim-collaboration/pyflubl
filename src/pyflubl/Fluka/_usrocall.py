@@ -1,7 +1,7 @@
 from pyg4ometry.fluka.card import Card as _Card
 from ._BaseCard import BaseCard as _BaseCard
 
-class Usricall(_BaseCard):
+class Usrocall(_BaseCard):
     def __init__(self,
                  what1 = None,
                  what2 = None,
@@ -12,7 +12,7 @@ class Usricall(_BaseCard):
                  sdum = None):
         super().__init__()
 
-        self.card = _Card("USRICALL",
+        self.card = _Card("USROCALL",
                           what1, what2, what3,
                           what4, what5, what6,
                           sdum)

@@ -1,6 +1,7 @@
 from ._usrbin import *
 from ._usrdump import *
 import numpy as _np
+from matplotlib.colors import LogNorm as _LogNorm
 
 from pyg4ometry.transformation import matrix2tbxyz as _matrix2tbxyz
 
@@ -54,7 +55,8 @@ def plot_usrbin(ub, detector_idx = 0, projection = 0, cmap = "Greens",
 
     # TODO the extend depends on the projection
     _plt.imshow(detector_projection, extent=[detector.e3low*10, detector.e3high*10,
-                                             detector.e1high*10, detector.e1low*10],
+                detector.e1high*10, detector.e1low*10],
+                norm=_LogNorm(),
                 transform=trans,
                 cmap=cmap)
 

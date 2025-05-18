@@ -90,3 +90,4 @@ def test_T204_Usrbin_element():
 
 if __name__ == "__main__":
     test_T204_Usrbin()
+    test_T204_Usrbin_element()
