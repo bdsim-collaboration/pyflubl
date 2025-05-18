@@ -466,7 +466,8 @@ class Machine(object) :
         self._CheckElementKwargs(kwargs,
                                  self._beampipe_allowed_keys + \
                                  self._outer_allowed_keys + \
-                                 self._rbend_allowed_keys)
+                                 self._rbend_allowed_keys + \
+                                 self._tiltshift_allowed_keys)
         e = Element(name=name, category="rbend", length=length, **kwargs)
         self.Append(e)
 
@@ -474,7 +475,8 @@ class Machine(object) :
         self._CheckElementKwargs(kwargs,
                                  self._beampipe_allowed_keys + \
                                  self._outer_allowed_keys + \
-                                 self._sbend_allowed_keys)
+                                 self._sbend_allowed_keys + \
+                                 self._tiltshift_allowed_keys)
         e = Element(name=name, category="sbend", length = length, **kwargs)
         self.Append(e)
 
@@ -2328,14 +2330,16 @@ class Machine(object) :
 Machine.AddDrift.__doc__ =  """allowed kwargs: """ + \
                             " ".join(Machine._beampipe_allowed_keys) +\
                             " " + " ".join(Machine._outer_allowed_keys)
-Machine.AddRBend.__doc__ =  ("""allowed kwargs: """ + \
+Machine.AddRBend.__doc__ =  """allowed kwargs: """ + \
                             " ".join(Machine._beampipe_allowed_keys) + \
-                            " " + " ".join(Machine._outer_allowed_keys) +
-                             " " + " ".join(Machine._rbend_allowed_keys))
+                            " " + " ".join(Machine._outer_allowed_keys) + \
+                            " " + " ".join(Machine._rbend_allowed_keys) + \
+                            " " + " ".join(Machine._tiltshift_allowed_keys)
 Machine.AddSBend.__doc__ =  """allowed kwargs: """ + \
                             " ".join(Machine._beampipe_allowed_keys) + \
                             " " + " ".join(Machine._outer_allowed_keys) + \
-                            " " + " ".join(Machine._sbend_allowed_keys)
+                            " " + " ".join(Machine._sbend_allowed_keys) + \
+                            " " + " ".join(Machine._tiltshift_allowed_keys)
 Machine.AddQuadrupole.__doc__ = """allowed kwargs """ + \
                                 " ".join(Machine._beampipe_allowed_keys) + \
                                 " " + " ".join(Machine._outer_allowed_keys) + \
