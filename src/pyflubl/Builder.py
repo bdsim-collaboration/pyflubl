@@ -2198,6 +2198,29 @@ class Machine(object) :
         return self._MakeFlukaComponentCommonG4(name,samplerlogical, samplerphysical, flukaConvert,
                                               rotation, translation, geomtranslation, "sampler")
 
+    def View(self) :
+        v = _pyg4.visualisation.VtkViewerNew()
+
+        for iElement in range(0,len(self.elements)) :
+            elementName = list(self.elements.keys())[iElement]
+            e = self.elements[elementName]
+            r = list(self.midrotationint)[iElement]
+            t = list(self.midint)[iElement]
+            gt = list(self.midgeomint)[iElement]
+
+            m = self.ElementFactory(e, r, t, gt, False, False)["placedmesh"]
+
+            v.addMesh(elementName, m)
+            v.addInstance(elementName,
+                          _np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+                          _np.array([0,0,0]),
+                          elementName)
+            v.addVisOptions(elementName,
+                            _pyg4.visualisation.VisualisationOptions(representation="wireframe", colour=[1, 1, 1]))
+
+        v.buildPipelinesAppend()
+        v.view()
+
     def _MakeGeant4GenericTrap(self, name,
                                length = 500, xhalfwidth = 50, yhalfwidth = 50,
                                e1=0, e2=0,
