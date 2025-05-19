@@ -59,10 +59,10 @@ def test_T005_sbend_tilt() :
 
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddSBend(name="sb1", length=1, angle=_np.pi/8, tilt=_np.pi/2)
+    m.AddSBend(name="sb1", length=1, angle=_np.pi/4, tilt=_np.pi/2)
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSBend(name="sb2", length=1, angle=_np.pi/8, tilt=_np.pi/2)
+    m.AddSBend(name="sb2", length=1, angle=_np.pi/4, tilt=_np.pi/2)
     m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
 
 
