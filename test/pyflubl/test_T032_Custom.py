@@ -146,3 +146,6 @@ def test_T032_custom_Fluka_File() :
 
 if __name__ == "__main__":
     test_T032_custom_G4()
+    test_T032_custom_G4_File()
+    test_T032_custom_Fluka()
+    test_T032_custom_Fluka_File()

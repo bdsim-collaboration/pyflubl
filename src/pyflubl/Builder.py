@@ -46,47 +46,101 @@ def _CalculateElementTransformation(e):
             e.category == "gap" or \
             e.category == "customG4" or \
             e.category == "customFluka" :
+
         rotation = _np.array([[1,0,0],
                               [0,1,0],
                               [0,0,1]])
+
         midrotation = rotation
         endrotation = rotation
-        delta = _np.array([0,0,e.length])
-        middelta = delta/2
-        enddelta = delta
-        return [midrotation, endrotation, delta]
+        enddelta = _np.array([0,0,e.length])
+        middelta = enddelta/2
+
+        return [midrotation, endrotation, middelta, enddelta, middelta, enddelta]
     elif e.category == "rbend":
         a = e['angle']
         l = e.length
+        rho = l/(2*_np.sin(a/2.0))
+
+        t = 0
+        if 'tilt' in e :
+            t = e['tilt']
+
+        tilt = _np.array([[ _np.cos(t), -_np.sin(t), 0],
+                          [ _np.sin(t),  _np.cos(t), 0],
+                          [ 0         ,           0, 1]])
+
         midrotation = _np.array([[ _np.cos(a/2), 0, -_np.sin(a/2)],
                                  [          0, 1,          0],
                                  [_np.sin(a/2), 0, _np.cos(a/2)]])
         endrotation = _np.array([[ _np.cos(a), 0, -_np.sin(a)],
                                  [          0, 1,          0],
                                  [_np.sin(a), 0, _np.cos(a)]])
-        delta = _np.array([0,0,l])
-        return [midrotation, endrotation, delta]
+
+        midrotation = tilt @ midrotation @ _np.linalg.inv(tilt)
+        endrotation = tilt @ endrotation @ _np.linalg.inv(tilt)
+
+        middelta = _np.array([rho*(_np.cos(a/2.) - 1),0,rho*_np.sin(a/2.)])
+        enddelta = _np.array([rho*(_np.cos(a) - 1),0,rho*_np.sin(a)])
+
+        endgeomdelta = l * _np.array([-_np.sin(a/2),0,_np.cos(a/2)])
+        midgeomdelta = endgeomdelta/2.0
+
+        middelta = tilt @ middelta
+        enddelta = tilt @ enddelta
+
+        midgeomdelta = tilt @ midgeomdelta
+        endgeomdelta = tilt @ endgeomdelta
+
+        return [midrotation, endrotation, middelta, enddelta, midgeomdelta, endgeomdelta]
     elif e.category == "sbend":
         a = e['angle']
         l = e.length
-        dz = 2*l/a*_np.sin(a/2)
+        rho = l/a
+
+        t = 0
+        if 'tilt' in e:
+            t = e['tilt']
+
+        tilt = _np.array([[_np.cos(t), -_np.sin(t), 0],
+                          [_np.sin(t), _np.cos(t), 0],
+                          [0, 0, 1]])
+
         midrotation = _np.array([[ _np.cos(a/2), 0, -_np.sin(a/2)],
                                  [          0, 1,          0],
                                  [_np.sin(a/2), 0, _np.cos(a/2)]])
         endrotation = _np.array([[ _np.cos(a), 0, -_np.sin(a)],
                                  [          0, 1,          0],
                                  [_np.sin(a), 0, _np.cos(a)]])
-        delta = _np.array([0,0,dz])
-        return [midrotation, endrotation, delta]
+
+        midrotation = tilt @ midrotation @ _np.linalg.inv(tilt)
+        endrotation = tilt @ endrotation @ _np.linalg.inv(tilt)
+
+        middelta = _np.array([rho*(_np.cos(a/2) - 1),0,rho*_np.sin(a/2)])
+        enddelta = _np.array([rho*(_np.cos(a) - 1),0,rho*_np.sin(a)])
+
+        endgeomdelta = 2*(l/a)*_np.sin(a/2) * _np.array([-_np.sin(a/2),0,_np.cos(a/2)])
+        midgeomdelta = endgeomdelta/2.0
+
+        middelta = tilt @ middelta
+        enddelta = tilt @ enddelta
+
+        midgeomdelta = tilt @ midgeomdelta
+        endgeomdelta = tilt @ endgeomdelta
+
+        return [midrotation, endrotation, middelta, enddelta, midgeomdelta, endgeomdelta]
     elif e.category == "sampler_plane":
         rotation = _np.array([[1,0,0],
                               [0,1,0],
                               [0,0,1]])
+
         midrotation = rotation
         endrotation = rotation
-        delta = _np.array([0,0,e.length])
 
-        return [midrotation, endrotation, delta]
+        enddelta = _np.array([0,0,e.length])
+        middelta = enddelta/2.0
+
+        return [midrotation, endrotation, middelta, enddelta, middelta, enddelta]
 
 class ElementBase(_MutableMapping):
     """
@@ -327,8 +381,10 @@ class Machine(object) :
         self.lenint    = [] # array of length upto a sequence element
         self.midrotationint = [] # rotation compounded
         self.endrotationint = [] # rotation compounded
-        self.endint = [] # end point tranformed
         self.midint = [] # mid point transformed
+        self.endint = [] # end point tranformed
+        self.midgeomint = [] # mid point along chord
+        self.endgeomint = [] # end point along chord
         self.length = 0
         self.maxx = 0.0
         self.maxy = 0.0
@@ -431,18 +487,22 @@ class Machine(object) :
             self.length += item.length
             self.lenint.append(self.length)
 
-            [midrotation, endrotation, delta] = _CalculateElementTransformation(item)
+            [midrotation, endrotation, middelta, enddelta, midgeomdelta, endgeomdelta] = _CalculateElementTransformation(item)
 
             if len(self.midrotationint) == 0 :
                 self.midrotationint.append(midrotation)
                 self.endrotationint.append(endrotation)
-                self.midint.append(delta/2)
-                self.endint.append(delta)
+                self.midint.append(middelta)
+                self.endint.append(enddelta)
+                self.midgeomint.append(midgeomdelta)
+                self.endgeomint.append(endgeomdelta)
             else :
+                self.midgeomint.append(self.endrotationint[-1] @ midgeomdelta + self.endgeomint[-1])
+                self.endgeomint.append(self.endrotationint[-1] @ endgeomdelta + self.endgeomint[-1])
+                self.midint.append(self.endrotationint[-1] @ middelta + self.endint[-1])
+                self.endint.append(self.endrotationint[-1] @ enddelta + self.endint[-1])
                 self.midrotationint.append(midrotation @ self.endrotationint[-1])
                 self.endrotationint.append(endrotation @ self.endrotationint[-1])
-                self.midint.append(self.endint[-1] + self.midrotationint[-1] @ delta/2)
-                self.endint.append(self.endint[-1] + self.midrotationint[-1] @ delta)
 
     def AddElement(self, item):
 
@@ -887,82 +947,114 @@ class Machine(object) :
             pass
 
         # loop over elements in sequence
-        for s,r,t in zip(self.sequence,self.midrotationint, self.midint) :
+        for s,r,t, gt in zip(self.sequence,self.midrotationint, self.midint, self.midgeomint) :
             e = self.elements[s]
-            self.ElementFactory(e,r,t)
+            self.ElementFactory(e, r, t, gt)
 
         # make book keeping info
         self._MakeBookkeepingInfo()
 
         return self.flukaregistry
 
-    def ElementFactory(self, e, r, t,
+    def ElementFactory(self, e, r, t, gt,
                        g4add = True,
                        fc = True):
         if e.category == "drift":
             return self.MakeFlukaBeamPipe1(name=e.name, element=e,
-                                           rotation=r, translation=t * 1000,
+                                           rotation=r,
+                                           translation=t * 1000,
+                                           geomtranslation=gt * 1000,
                                            geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "rbend":
             return self.MakeFlukaRBend(name=e.name, element=e,
-                                       rotation=r, translation=t * 1000,
-                                        geant4RegistryAdd=g4add, flukaConvert=fc)
+                                       rotation=r,
+                                       translation=t * 1000,
+                                       geomtranslation=gt * 1000,
+                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "sbend":
             return self.MakeFlukaSBend(name=e.name, element=e,
-                                       rotation=r, translation=t * 1000,
-                                        geant4RegistryAdd=g4add, flukaConvert=fc)
+                                       rotation=r,
+                                       translation=t * 1000,
+                                       geomtranslation=gt * 1000,
+                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "quadrupole":
             return self.MakeFlukaQuadrupole(name=e.name, element=e,
-                                            rotation=r, translation=t * 1000,
+                                            rotation=r,
+                                            translation=t * 1000,
+                                            geomtranslation=gt * 1000,
                                             geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "target" :
             return self.MakeFlukaTarget(name=e.name, element=e,
-                                        rotation=r, translation=t * 1000,
+                                        rotation=r,
+                                        translation=t * 1000,
+                                        geomtranslation=gt * 1000,
                                         geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "rcol" :
             return self.MakeFlukaRCol(name=e.name, element=e,
-                                      rotation=r, translation=t * 1000,
+                                      rotation=r,
+                                      translation=t * 1000,
+                                      geomtranslation=gt * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "ecol" :
             return self.MakeFlukaECol(name=e.name, element=e,
-                                      rotation=r, translation=t * 1000,
+                                      rotation=r,
+                                      translation=t * 1000,
+                                      geomtranslation=t * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "jcol" :
             return self.MakeFlukaJCol(name=e.name, element=e,
-                                      rotation=r, translation=t * 1000,
+                                      rotation=r,
+                                      translation=t * 1000,
+                                      geomtranslation=t * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "shield" :
             return self.MakeFlukaShield(name=e.name, element=e,
-                                        rotation=r, translation=t * 1000,
+                                        rotation=r,
+                                        translation=t * 1000,
+                                        geomtranslation=t *1000,
                                         geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "dump" :
             return self.MakeFlukaDump(name=e.name, element=e,
-                                      rotation=r, translation=t * 1000,
+                                      rotation=r,
+                                      translation=t * 1000,
+                                      geomtranslation=t * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "wirescanner" :
             return self.MakeFlukaWireScanner(name=e.name, element=e,
-                                             rotation=r, translation=t * 1000,
+                                             rotation=r,
+                                             translation=t * 1000,
+                                             geomtranslation=t * 1000,
                                              geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "gap" :
             return self.MakeFlukaGap(name=e.name, element=e,
-                                     rotation=r, translation=t * 1000,
+                                     rotation=r,
+                                     translation=t * 1000,
+                                     geomtranslation=t * 1000,
                                      geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "customG4":
             return self.MakeFlukaCustomG4(name=e.name, element=e,
-                                          rotation=r, translation=t * 1000,
+                                          rotation=r,
+                                          translation=t * 1000,
+                                          geomtranslation=t * 1000,
                                           geant4RegistryAdd=g4add, flukaConvert=fc,
                                           convertMaterials=e.convertMaterials)
         elif e.category == "customFluka":
             return self.MakeFlukaCustomFluka(name=e.name, element=e,
-                                             rotation=r, translation=t * 1000,
+                                             rotation=r,
+                                             translation=t * 1000,
+                                             geomtranslation=t * 1000,
                                              flukaBuild=fc)
         elif e.category == "sampler_plane":
             return self.MakeFlukaSampler(name=e.name, element=e,
-                                         rotation=r, translation=t * 1000,
+                                         rotation=r,
+                                         translation=t * 1000,
+                                         geomtranslation=gt * 1000,
                                          geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "lattice_instance":
             return self.MakeFlukaLatticeInstance(name=e.name, element=e,
-                                                 rotation=r, translation=t * 1000,
+                                                 rotation=r,
+                                                 translation=t * 1000,
+                                                 geomtranslation=gt * 1000,
                                                  geant4RegistryAdd=g4add, flukaConvert=fc)
         else :
             print("ElementFactory not implemented")
@@ -1021,18 +1113,20 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
-    def _AddBookkeepingTransformation(self, name, rotation, translation):
+    def _AddBookkeepingTransformation(self, name, rotation, translation, geomtranslation = _np.array([0,0,0])):
         # make bookkeeping information
         if name not in self.elementBookkeeping :
             self.elementBookkeeping[name] = {}
 
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
+        self.elementBookkeeping[name]['geomtranslation'] = geomtranslation.tolist()
 
     def _AddBookkeepingUsrbin(self, usrbinnumber, usrbinname, rotation = None, translation = None):
         self.usrbinnumber_usrbininfo[usrbinnumber] = {"name":usrbinname, "rotation":rotation.tolist(), "translation":translation.tolist()}
 
-    def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert, rotation, translation, category,
+    def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert,
+                                    rotation, translation, geomtranslation, category,
                                   convertMaterials = False):
         # convert materials
         if convertMaterials:
@@ -1044,7 +1138,7 @@ class Machine(object) :
         if flukaConvert:
             flukaouterregion, self.flukanamecount = _geant4PhysicalVolume2Fluka(containerPV,
                                                                                 mtra=rotation,
-                                                                                tra=translation,
+                                                                                tra=geomtranslation,
                                                                                 flukaRegistry=self.flukaregistry,
                                                                                 flukaNameCount=self.flukanamecount,
                                                                                 bakeTransforms=self.bakeTransforms)
@@ -1087,6 +1181,7 @@ class Machine(object) :
     def MakeFlukaBeamPipe(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                           translation = _np.array([0,0,0]),
+                          geomtranslation = _np.array([0,0,0]),
                           outer=None,
                           geant4RegistryAdd = False,
                           flukaConvert = True):
@@ -1120,14 +1215,15 @@ class Machine(object) :
         bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
 
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
-                                              rotation, translation, "drift")
+                                              rotation, geomtranslation, "drift")
 
     def MakeFlukaBeamPipe1(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                           translation = _np.array([0,0,0]),
+                          geomtranslation = _np.array([0,0,0]),
                           geant4RegistryAdd = False,
                           flukaConvert = True):
 
@@ -1158,7 +1254,7 @@ class Machine(object) :
         bpoutersolid    = self._MakeGeant4GenericTrap(name,length, outerHorizontalSize/2, outerVerticalSize/2, -e1, e2, g4registry)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,outerMaterial,name+"_outer_lv",g4registry)
         bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,-_np.pi/2,0]))),
-                                                      translation,
+                                                      geomtranslation,
                                                       bpouterlogical,
                                                       name+"_outer_pv",
                                                       self.worldLogical,
@@ -1183,12 +1279,12 @@ class Machine(object) :
         vaclogical  = _pyg4.geant4.LogicalVolume(vacsolid,vacuumMaterial,name+"_cav_lv",g4registry)
         vacphysical  = _pyg4.geant4.PhysicalVolume([0,-_np.pi/2,-_np.pi/2],[0,0,0],vaclogical,name+"_vac_pv",bpouterlogical,g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         rotation = rotation @ _tbxyz2matrix([0, 0, -_np.pi / 2]) @ _tbxyz2matrix([0, -_np.pi / 2, 0])
 
         return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
-                                              rotation, translation, "drift")
+                                              rotation, translation, geomtranslation, "drift")
 
     def MakeFlukaRectangularStraightOuter(self, straight_x_size, straight_y_size, length, bp_outer_radius = 1, bp_inner_radius = 2, bp_material = "AIR", transform = _np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])):
         pass
@@ -1202,11 +1298,12 @@ class Machine(object) :
     def MakeFlukaRBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                        translation = _np.array([0,0,0]),
+                       geomtranslation = _np.array([0,0,0]),
                        geant4RegistryAdd = True,
                        flukaConvert = True) :
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        # rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
@@ -1222,7 +1319,7 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",outerHorizontalSize,outerVerticalSize, length, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz( _np.linalg.inv(rotation)),
-                                                    translation,
+                                                    geomtranslation,
                                                     outerlogical,name+"_outer_pv",
                                                     self.worldLogical,
                                                     g4registry)
@@ -1235,10 +1332,10 @@ class Machine(object) :
                                                         name+"_bp_pv",
                                                         outerlogical,
                                                         g4registry)
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         ret_dict = self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                                    rotation, translation, "rbend")
+                                                    rotation, translation, geomtranslation, "rbend")
 
         if not flukaConvert:
             return ret_dict
@@ -1286,12 +1383,16 @@ class Machine(object) :
     def MakeFlukaSBend(self, name, element,
                        rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                        translation = _np.array([0,0,0]),
+                       geomtranslation = _np.array([0,0,0]),
                        geant4RegistryAdd = False,
                        flukaConvert = True):
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+
+        # rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
+
+        length = 2 * (length / angle) * _np.sin(angle / 2)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1302,20 +1403,18 @@ class Machine(object) :
         # make fake geant4 materials for conversion
         outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
-        dz = 2*length/angle*_np.sin(angle/2)
-
         # make trap of correct size
-        outersolid    = self._MakeGeant4GenericTrap(name,dz, outerHorizontalSize/2, outerVerticalSize/2, -angle/2, angle/2, g4registry)
+        outersolid    = self._MakeGeant4GenericTrap(name,length, outerHorizontalSize/2, outerVerticalSize/2, -angle/2, angle/2, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
-                                                    translation,
+                                                    geomtranslation,
                                                     outerlogical,name+"_outer_pv",
                                                     self.worldLogical,
                                                     g4registry)
 
         # make beampipe
         elementCopy = _copy.deepcopy(element)
-        elementCopy.length= dz/1000.0
+        elementCopy.length= length/1000.0
         elementCopy['e1'] = angle/2
         elementCopy['e2'] = angle/2
         beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",elementCopy,g4registry)
@@ -1327,12 +1426,12 @@ class Machine(object) :
                                                         g4registry)
 
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
 
         ret_dict = self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                                     rotation, translation, "sbend")
+                                                     rotation, translation, geomtranslation,"sbend")
 
         if not flukaConvert:
             return ret_dict
@@ -1381,11 +1480,12 @@ class Machine(object) :
     def MakeFlukaQuadrupole(self, name, element,
                             rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                             translation = _np.array([0,0,0]),
+                            geomtranslation = _np.array([0,0,0]),
                             geant4RegistryAdd = False,
                             flukaConvert = True):
 
         quadlength = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1400,7 +1500,7 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,quadlength,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
+                                                      geomtranslation,
                                                       outerlogical,
                                                       name+"_pv",
                                                       self.worldLogical,
@@ -1415,10 +1515,10 @@ class Machine(object) :
                                                         outerlogical,
                                                         g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         ret_dict = self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                                    rotation, translation, "quad")
+                                                    rotation, translation, geomtranslation,"quad")
 
         if not flukaConvert:
             return ret_dict
@@ -1469,11 +1569,12 @@ class Machine(object) :
     def MakeFlukaTarget(self, name, element,
                       rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                       translation = _np.array([0,0,0]),
+                      geomtranslation = _np.array([0,0,0]),
                       geant4RegistryAdd = False,
                       flukaConvert = True):
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1496,11 +1597,11 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+                                                    geomtranslation,
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
         if apertureType == "rectangle":
             targetsolid = _pyg4.geant4.solid.Box(name+"_target_solid",horizontalWidth, verticalWidth,length,g4registry)
@@ -1520,16 +1621,17 @@ class Machine(object) :
         self._AddBookkeepingTransformation(name, rotation, translation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "target")
+                                              rotation, translation, geomtranslation,"target")
 
     def MakeFlukaRCol(self, name, element,
                       rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                       translation = _np.array([0,0,0]),
+                      geomtranslation = _np.array([0,0,0]),
                       geant4RegistryAdd = False,
                       flukaConvert = True):
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1552,7 +1654,7 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
+                                                      geomtranslation,
                                                       outerlogical,
                                                       name+"_pv",
                                                       self.worldLogical,
@@ -1574,19 +1676,20 @@ class Machine(object) :
                                                                 outerlogical,
                                                                 g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "rcol")
+                                              rotation, translation, geomtranslation, "rcol")
 
     def MakeFlukaECol(self, name, element,
                       rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                       translation = _np.array([0,0,0]),
+                      geomtranslation = _np.array([0,0,0]),
                       geant4RegistryAdd = False,
                       flukaConvert = True):
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1610,7 +1713,7 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
+                                                      geomtranslation,
                                                       outerlogical,
                                                       name+"_pv",
                                                       self.worldLogical,
@@ -1632,20 +1735,21 @@ class Machine(object) :
                                                                 outerlogical,
                                                                 g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "ecol")
+                                              rotation, translation, geomtranslation,"ecol")
 
 
     def MakeFlukaJCol(self, name, element,
                       rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                       translation = _np.array([0,0,0]),
+                      geomtranslation = _np.array([0,0,0]),
                       geant4RegistryAdd = False,
                       flukaConvert = True):
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1674,11 +1778,11 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+                                                    geomtranslation,
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
         # default left size
         leftwidth = horizontalWidth / 2 - xsize / 2
@@ -1722,20 +1826,21 @@ class Machine(object) :
             # TODO complete tilted RCol and zero gap
             pass
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "jcol")
+                                              rotation, translation, geomtranslation, "jcol")
 
 
     def MakeFlukaShield(self, name, element,
                         rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                         translation = _np.array([0,0,0]),
+                        geomtranslation = _np.array([0,0,0]),
                         geant4RegistryAdd = False,
                         flukaConvert = True):
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1761,11 +1866,11 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+                                                    geomtranslation,
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
         # make beampipe
         beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
@@ -1791,20 +1896,21 @@ class Machine(object) :
                                                      outerlogical,
                                                      g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "shield")
+                                              rotation, translation, geomtranslation,"shield")
 
 
     def MakeFlukaDump(self, name, element,
                       rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                       translation = _np.array([0,0,0]),
+                      geomtranslation = _np.array([0,0,0]),
                       geant4RegistryAdd = False,
                       flukaConvert = True):
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1827,11 +1933,11 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+                                                    geomtranslation,
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
         if apertureType == "rectangle":
             targetsolid = _pyg4.geant4.solid.Box(name+"_target_solid",horizontalWidth, verticalWidth,length,g4registry)
@@ -1848,20 +1954,21 @@ class Machine(object) :
                                                      outerlogical,
                                                      g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "dump")
+                                              rotation, translation, geomtranslation,"dump")
 
 
     def MakeFlukaWireScanner(self, name, element,
                             rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                             translation = _np.array([0,0,0]),
+                            geomtranslation = _np.array([0,0,0]),
                             geant4RegistryAdd = False,
                             flukaConvert = True):
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1887,11 +1994,11 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+                                                    geomtranslation,
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
         # make beampipe
         beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
@@ -1912,14 +2019,15 @@ class Machine(object) :
                                                     vacphysical.logicalVolume,
                                                     g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "wirescanner")
+                                              rotation, translation, geomtranslation,"wirescanner")
 
     def MakeFlukaGap(self, name, element,
                      rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                      translation = _np.array([0,0,0]),
+                     geomtranslation = _np.array([0,0,0]),
                      geant4RegistryAdd = False,
                      flukaConvert = True):
 
@@ -1937,20 +2045,21 @@ class Machine(object) :
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid", 500, 500, length, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid, outerMaterial, name+"_lv", g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+                                                    geomtranslation,
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "gap")
+                                              rotation, translation, geomtranslation,"gap")
 
     def MakeFlukaCustomG4(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                           translation = _np.array([0,0,0]),
+                          geomtranslation = _np.array([0,0,0]),
                           geant4RegistryAdd = False,
                           flukaConvert = True,
                           convertMaterials= False):
@@ -1964,21 +2073,22 @@ class Machine(object) :
         # make box of correct size
         outerlogical  = element.containerLV
         outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+                                                    geomtranslation,
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
-                                              rotation, translation, "gap",
+                                              rotation, translation, geomtranslation,"gap",
                                               convertMaterials=convertMaterials)
 
     def MakeFlukaCustomFluka(self, name, element,
                              rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                              translation = _np.array([0,0,0]),
+                             geomtranslation = _np.array([0,0,0]),
                              flukaBuild = True):
 
         regionNamesTransferred = []
@@ -2059,12 +2169,13 @@ class Machine(object) :
     def MakeFlukaSampler(self, name, element,
                          rotation = _np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]]),
                          translation = _np.array([0,0,0]),
+                         geomtranslation = _np.array([0,0,0]),
                          geant4RegistryAdd = False,
                          flukaConvert = True):
 
 
         samplerLength = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+        rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
         samplerMaterialName = self._GetDictVariable(element,"samplerMaterial","AIR")
         samplerDiameter = self._GetDictVariable(element,"samplerDiameter",2000)
         g4registry = self._GetRegistry(geant4RegistryAdd)
@@ -2076,16 +2187,16 @@ class Machine(object) :
         samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplerDiameter,samplerDiameter,samplerLength,g4registry)
         samplerlogical  = _pyg4.geant4.LogicalVolume(samplersolid,samplerMaterial,name+"_lv",g4registry)
         samplerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      translation,
+                                                      geomtranslation,
                                                       samplerlogical,
                                                       name+"_pv",
                                                       self.worldLogical,
                                                       g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, translation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,samplerlogical, samplerphysical, flukaConvert,
-                                              rotation, translation, "sampler")
+                                              rotation, translation, geomtranslation, "sampler")
 
     def _MakeGeant4GenericTrap(self, name,
                                length = 500, xhalfwidth = 50, yhalfwidth = 50,
@@ -2213,8 +2324,9 @@ class Machine(object) :
             e = self.elements[elementName]
             r = list(self.midrotationint)[iElement]
             t = list(self.midint)[iElement]
+            gt = list(self.midgeomint)[iElement]
 
-            m = self.ElementFactory(e, r, t, False, False)["placedmesh"]
+            m = self.ElementFactory(e, r, t, gt, False, False)["placedmesh"]
 
             if view :
                 v.addMesh(elementName, m)
@@ -2230,7 +2342,8 @@ class Machine(object) :
                 je = self.elements[jElementName]
                 jr = list(self.midrotationint)[jElement]
                 jt = list(self.midint)[jElement]
-                jm = self.ElementFactory(je, jr, jt, False, False)["placedmesh"]
+                jgt = list(self.midgeomint)[jElement]
+                jm = self.ElementFactory(je, jr, jt, jgt,False, False)["placedmesh"]
 
                 # check for intersection
                 jinter = jm.intersect(m)
@@ -2316,9 +2429,9 @@ class Machine(object) :
             v = _pyg4.visualisation.VtkViewerNew()
             v.addAxes(2500)
 
-            for s, r, t in zip(self.sequence, self.midrotationint, self.midint):
+            for s, r, t, gt in zip(self.sequence, self.midrotationint, self.midint, self.midgeomint):
                 e = self.elements[s]
-                m = self.ElementFactory(e, r, t, False, False)["placedmesh"]
+                m = self.ElementFactory(e, r, t, gt,False, False)["placedmesh"]
                 v.addMesh(e.name,m)
                 v.addInstance(e.name,_np.array([[1,0,0],[0,1,0],[0,0,1]]), _np.array([0,0,0]),e.name)
                 v.addVisOptions(e.name, _pyg4.visualisation.VisualisationOptions(representation="surface"))
