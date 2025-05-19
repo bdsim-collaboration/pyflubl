@@ -34,11 +34,11 @@ def test_T111_ring_sbend() :
 
     for i in range(0,n,1):
         m.AddDrift(name="d1-"+str(i), length=0.5,
-                   beampipeMaterial="TUNGSTEN")
+                   beampipeMaterial="TUNGSTEN", outerMaterial="WATER")
         m.AddSBendSplit(name="rb_"+str(i), length=0.5, angle=bendangle, nsplit=3)
         m.AddDrift(name="d2-"+str(i), length=0.5,
-                   beampipeMaterial="TUNGSTEN")
-        m.AddQuadrupole(name="q_"+str(i), length=0.25, k1=0.5)
+                   beampipeMaterial="TUNGSTEN", outerMaterial="WATER")
+        m.AddQuadrupole(name="q_"+str(i), length=0.25, k1=0.5, outerMaterial="HELIUM")
         m.AddSamplerPlane(name="s1_"+str(i), length=1e-6)
 
     m.Write("T111_Ring_SBend")
