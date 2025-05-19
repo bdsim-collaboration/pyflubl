@@ -940,7 +940,7 @@ class Machine(object) :
         self.MakeGeant4InitialGeometry(worldsize=[2*xmax*10, 2*ymax*10, 2*zmax*10])
 
         # fix faces of elements
-        self._FixElementFaces(view=False)
+        # self._FixElementFaces(view=False)
 
         # make lattice prototypes
         for prototype in self.prototypes :
@@ -1164,7 +1164,7 @@ class Machine(object) :
             pass
 
         # make transformed mesh for overlaps
-        outerMesh = self._MakePlacedMeshFromPV(containerPV)
+        outerMesh = self._MakePlacedMesh(containerPV, rotation, geomtranslation)
         return {"placedmesh": outerMesh}
 
 
@@ -1201,18 +1201,24 @@ class Machine(object) :
                                                   0,beampipeRadius+beampipeThickness+self.lengthsafety,length,
                                                   0, _np.pi*2, g4registry)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,g4material,name+"_outer_lv",g4registry)
-        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                                    translation,
-                                                                    bpouterlogical,
-                                                                    name+"_outer_pv",
-                                                                    self.worldLogical,g4registry)
+        bpouterphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                      [0,0,0],
+                                                      bpouterlogical,
+                                                      name+"_outer_pv",
+                                                      self.worldLogical,g4registry)
 
         # make actual beampipe
         bpsolid = _pyg4.geant4.solid.CutTubs(name+"_bp_solid",
-                                             beampipeRadius, beampipeRadius+beampipeThickness, length,
+                                             beampipeRadius,
+                                             beampipeRadius+beampipeThickness,
+                                             length,
                                              0, _np.pi*2, [0,0,-1],[0,0,1],g4registry)
         bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
-        bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],[0,0,0],bplogical,name+"_bp_pv",bpouterlogical,g4registry)
+        bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                  [0,0,0],
+                                                  bplogical,
+                                                  name+"_bp_pv",
+                                                  bpouterlogical,g4registry)
 
 
         self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
@@ -1253,8 +1259,8 @@ class Machine(object) :
         # make tubs of outer size
         bpoutersolid    = self._MakeGeant4GenericTrap(name,length, outerHorizontalSize/2, outerVerticalSize/2, -e1, e2, g4registry)
         bpouterlogical  = _pyg4.geant4.LogicalVolume(bpoutersolid,outerMaterial,name+"_outer_lv",g4registry)
-        bpouterphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,-_np.pi/2,0]))),
-                                                      geomtranslation,
+        bpouterphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                      [0,0,0],
                                                       bpouterlogical,
                                                       name+"_outer_pv",
                                                       self.worldLogical,
@@ -1318,8 +1324,8 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_outer_solid",outerHorizontalSize,outerVerticalSize, length, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz( _np.linalg.inv(rotation)),
-                                                    geomtranslation,
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
                                                     outerlogical,name+"_outer_pv",
                                                     self.worldLogical,
                                                     g4registry)
@@ -1406,8 +1412,8 @@ class Machine(object) :
         # make trap of correct size
         outersolid    = self._MakeGeant4GenericTrap(name,length, outerHorizontalSize/2, outerVerticalSize/2, -angle/2, angle/2, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_tbxyz2matrix([_np.pi/2,0,0]) @ _np.linalg.inv(_tbxyz2matrix([0,-_np.pi/2,0]) @ rotation)),
-                                                    geomtranslation,
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
                                                     outerlogical,name+"_outer_pv",
                                                     self.worldLogical,
                                                     g4registry)
@@ -1499,12 +1505,12 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,quadlength,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      geomtranslation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
         # make beampipe
         beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",element,g4registry)
@@ -1596,8 +1602,8 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                    geomtranslation,
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
                                                     outerlogical,
                                                     name+"_pv",
                                                     self.worldLogical,
@@ -1653,12 +1659,12 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      geomtranslation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
         collimatorsolid1 = _pyg4.geant4.solid.Box(name+"_rcol1_solid",horizontalWidth,verticalWidth,length,g4registry)
         collimatorsolid2 = _pyg4.geant4.solid.Box(name+"_rcol2_solid",xsize,ysize,length,g4registry)
@@ -1712,12 +1718,12 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      geomtranslation,
-                                                      outerlogical,
-                                                      name+"_pv",
-                                                      self.worldLogical,
-                                                      g4registry)
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
+                                                    outerlogical,
+                                                    name+"_pv",
+                                                    self.worldLogical,
+                                                    g4registry)
 
         collimatorsolid1 = _pyg4.geant4.solid.Box(name+"_rcol1_solid",horizontalWidth,verticalWidth,length,g4registry)
         collimatorsolid2 = _pyg4.geant4.solid.EllipticalTube(name+"_rcol2_solid",xsize,ysize,length,g4registry)
@@ -1777,8 +1783,8 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                    geomtranslation,
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
                                                     outerlogical,
                                                     name+"_pv",
                                                     self.worldLogical,
@@ -1865,8 +1871,8 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                    geomtranslation,
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
                                                     outerlogical,
                                                     name+"_pv",
                                                     self.worldLogical,
@@ -1932,8 +1938,8 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                    geomtranslation,
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
                                                     outerlogical,
                                                     name+"_pv",
                                                     self.worldLogical,
@@ -1993,8 +1999,8 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid",outerHorizontalSize,outerVerticalSize,length,g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_lv",g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                    geomtranslation,
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
                                                     outerlogical,
                                                     name+"_pv",
                                                     self.worldLogical,
@@ -2044,8 +2050,8 @@ class Machine(object) :
         # make box of correct size
         outersolid    = _pyg4.geant4.solid.Box(name+"_solid", 500, 500, length, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid, outerMaterial, name+"_lv", g4registry)
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                    geomtranslation,
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
                                                     outerlogical,
                                                     name+"_pv",
                                                     self.worldLogical,
@@ -2072,8 +2078,8 @@ class Machine(object) :
 
         # make box of correct size
         outerlogical  = element.containerLV
-        outerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                    geomtranslation,
+        outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                    [0,0,0],
                                                     outerlogical,
                                                     name+"_pv",
                                                     self.worldLogical,
@@ -2186,8 +2192,8 @@ class Machine(object) :
         # make box of correct size
         samplersolid    = _pyg4.geant4.solid.Box(name+"_solid",samplerDiameter,samplerDiameter,samplerLength,g4registry)
         samplerlogical  = _pyg4.geant4.LogicalVolume(samplersolid,samplerMaterial,name+"_lv",g4registry)
-        samplerphysical = _pyg4.geant4.PhysicalVolume(_matrix2tbxyz(_np.linalg.inv(rotation)),
-                                                      geomtranslation,
+        samplerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                      [0,0,0],
                                                       samplerlogical,
                                                       name+"_pv",
                                                       self.worldLogical,
@@ -2212,7 +2218,7 @@ class Machine(object) :
 
             v.addMesh(elementName, m)
             v.addInstance(elementName,
-                          _np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+                          _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                           _np.array([0,0,0]),
                           elementName)
             v.addVisOptions(elementName,
@@ -2324,13 +2330,12 @@ class Machine(object) :
 
         return g4registry
 
-    def _MakePlacedMeshFromPV(self, physVol):
-        rotation = physVol.rotation.eval()
-        translation = physVol.position.eval()
+    def _MakePlacedMesh(self, physVol, rotation, translation):
+
         mesh = physVol.logicalVolume.solid.mesh()
 
-        aa = _tbxyz2axisangle(rotation)
-        mesh.rotate(aa[0], aa[1] / _np.pi * 180.0)
+        aa = _tbxyz2axisangle(_matrix2tbxyz(rotation))
+        mesh.rotate(aa[0], -aa[1] / _np.pi * 180.0)
         mesh.translate([translation[0], translation[1], translation[2]])
 
         return mesh
