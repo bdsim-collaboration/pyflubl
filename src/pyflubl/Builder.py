@@ -346,6 +346,7 @@ class Line(list) :
         for item in self:
             s += str(item) #uses elements __repr__ function
         return s
+
 class Machine(object) :
 
     _outer_allowed_keys = ["outerHorizontalSize", "outerVerticalSize","outerMaterial"]
@@ -511,6 +512,7 @@ class Machine(object) :
             raise TypeError(msg)
 
         self.Append(item)
+
     def AddSplit(self):
         pass
 
