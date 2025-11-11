@@ -1,6 +1,9 @@
 import pyflubl as _pfbl
+import os as _os
 
 def make_T026_wirescanner() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -31,7 +34,7 @@ def make_T026_wirescanner() :
                beampipeRadius=30, beampipeThickness=5)
     m.AddSamplerPlane(name="s3", length=1e-6)
 
-    m.Write("T026_Wirescanner")
+    m.Write(this_dir+"/T026_Wirescanner")
 
     return m
 

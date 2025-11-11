@@ -4,6 +4,8 @@ import numpy as _np
 import os as _os
 
 def make_T032_custom_G4() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -37,7 +39,7 @@ def make_T032_custom_G4() :
     m.AddDrift(name="d2", length=1)
     m.AddCustomG4(name="c1", length=1, customLV = outerlogical, convertMaterials=False)
     m.AddSamplerPlane(name="s1", length=1e-6)
-    m.Write("T032_Custom_G4")
+    m.Write(this_dir+"/T032_Custom_G4")
 
     return m
 
@@ -72,7 +74,7 @@ def make_T032_custom_G4_File() :
     m.AddCustomG4File(name="c1", length=1, geometryFile=this_dir+"/geometryInput/test_T032_Custom_Pyg4.gdml", lvName="bl")
     m.AddSamplerPlane(name="s1", length=1e-6)
 
-    m.Write("T032_Custom_G4_File")
+    m.Write(this_dir+"/T032_Custom_G4_File")
 
     return m
 
@@ -119,7 +121,7 @@ def make_T032_custom_Fluka() :
     m.AddDrift(name="d3",length=1)
     m.AddSBendSplit(name="b2", length=2, angle=-_np.pi/8)
     m.AddDrift(name="d4", length=1)
-    m.Write("T032_Custom_Fluka")
+    m.Write(this_dir+"/T032_Custom_Fluka")
 
     return m
 
@@ -165,7 +167,7 @@ def make_T032_custom_Fluka_File() :
     m.AddDrift(name="d3",length=1)
     m.AddSBendSplit(name="b2", length=2, angle=-_np.pi/8)
     m.AddDrift(name="d4", length=1)
-    m.Write("T032_Custom_Fluka_File")
+    m.Write(this_dir+"/T032_Custom_Fluka_File")
 
     return m
 

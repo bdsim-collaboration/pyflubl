@@ -7,9 +7,12 @@ import pyg4ometry.fluka as _flu
 import pyg4ometry.visualisation as _vi
 import pyg4ometry.convert as _con
 import matplotlib.pyplot as _plt
+import os as _os
+
 from test_T100_Extrusion import test_T100_Extrusion  as _test_T100_Extrusion
 
 def test_T101_Extruder(vis=False, interactive=False, fluka=True, writeNISTMaterials=True) :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
     # g4 registry
     reg = _g4.Registry()
@@ -108,6 +111,6 @@ def test_T101_Extruder(vis=False, interactive=False, fluka=True, writeNISTMateri
 
         w = _flu.Writer()
         w.addDetector(freg)
-        w.write("T101_Extruder.inp")
+        w.write(this_dir+"/T101_Extruder.inp")
 
     return es

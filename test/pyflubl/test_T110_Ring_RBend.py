@@ -1,7 +1,10 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
 def make_T110_ring_rbend() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -42,7 +45,9 @@ def make_T110_ring_rbend() :
         m.AddRBend(name="rb_"+str(i), length=0.5, angle=bendangle)
 
     m.CheckModel()
-    m.Write("T110_Ring_RBend")
+
+    m.Write(this_dir+"/T110_Ring_RBend")
+
     return m
 
 def test_T110_ring_rbend() :

@@ -1,6 +1,9 @@
 import pyflubl as _pfbl
+import os as _os
 
 def make_T001_drift() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -38,7 +41,7 @@ def make_T001_drift() :
                beampipeRadius=100, beampipeThickness=20,
                outerMaterial="GOLD")
 
-    m.Write("T001_Drift")
+    m.Write(this_dir+"/T001_Drift")
 
     return m
 

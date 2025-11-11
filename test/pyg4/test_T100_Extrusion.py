@@ -5,8 +5,10 @@ import pyg4ometry.geant4 as _g4
 import pyg4ometry.gdml as _gd
 import pyg4ometry.visualisation as _vi
 import matplotlib.pyplot as _plt
+import os as _os
 
 def test_T100_Extrusion(vis = False, writeNISTMaterials=True) :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
     # g4 registry
     reg = _g4.Registry()
@@ -101,7 +103,7 @@ def test_T100_Extrusion(vis = False, writeNISTMaterials=True) :
     flukafilename = "T100_Extrusion.inp"
     w = _pyg4.fluka.Writer()
     w.addDetector(freg)
-    w.write(flukafilename)
+    w.write(this_dir+"/"+flukafilename)
 
     return [yokeCoordindates, coilCoordinates, beampipeInnerCoordinates, beampipeOuterCoordinates]
 

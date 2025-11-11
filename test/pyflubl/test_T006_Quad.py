@@ -1,7 +1,10 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
 def make_quad(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T006_Quad"):
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -26,7 +29,7 @@ def make_quad(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T006_Quad"):
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
 
-    m.Write(fileName)
+    m.Write(this_dir+"/"+fileName)
 
     return m
 

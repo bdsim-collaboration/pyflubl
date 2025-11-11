@@ -1,6 +1,9 @@
 import pyflubl as _pfbl
+import os as _os
 
-def test_T050_sampler() :
+def make_T050_sampler() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -37,7 +40,11 @@ def test_T050_sampler() :
                beampipeRadius=30, beampipeThickness=5)
     m.AddSamplerPlane(name="s4", length=1e-1, samplerDiameter=4000, samplerMaterial="CARBON")
 
-    m.Write("T050_Sampler")
+    m.Write(this_dir+"/T050_Sampler")
+
+    return m
+def test_T050_sampler() :
+    make_T050_sampler()
 
 if __name__ == "__main__":
     test_T050_sampler()

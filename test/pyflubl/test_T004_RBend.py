@@ -1,7 +1,10 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
 def make_T004_rbend() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -32,7 +35,7 @@ def make_T004_rbend() :
                beampipeRadius=30, beampipeThickness=5)
     m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
-    m.Write("T004_RBend")
+    m.Write(this_dir+"/T004_RBend")
 
     return m
 
@@ -40,6 +43,8 @@ def test_T004_rbend() :
     make_T004_rbend()
 
 def make_T004_rbend_tilt() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -71,7 +76,7 @@ def make_T004_rbend_tilt() :
     m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
 
-    m.Write("T004_RBend_tilt")
+    m.Write(this_dir+"/T004_RBend_tilt")
 
     return m
 

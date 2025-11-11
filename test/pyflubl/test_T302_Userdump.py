@@ -1,7 +1,10 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
-def test_T302_Userdump() :
+def make_T302_Userdump() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -45,7 +48,12 @@ def test_T302_Userdump() :
     m.AddSamplerPlane(name="s5", length=1e-6)
     m.AddDrift(name="d5", length=1, beampipeMaterial = "TUNGSTEN")
 
-    m.Write("T302_Userdump", prettyJSON=True)
+    m.Write(this_dir+"/T302_Userdump", prettyJSON=True)
+
+    return m
+
+def test_T302_Userdump() :
+    make_T302_Userdump()
 
 if __name__ == "__main__":
     test_T302_Userdump()

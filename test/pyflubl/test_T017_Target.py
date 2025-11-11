@@ -1,6 +1,9 @@
 import pyflubl as _pfbl
+import os as _os
 
 def make_T017_target() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -26,7 +29,7 @@ def make_T017_target() :
                 material="IRON", outerMaterial="VACUUM")
     m.AddSamplerPlane(name="s2", length=1e-6)
 
-    m.Write("T017_target")
+    m.Write(this_dir+"/T017_target")
 
     return m
 
