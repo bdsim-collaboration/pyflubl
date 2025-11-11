@@ -247,6 +247,7 @@ class Element(ElementBase):
         self.transform = transform
         self.geometry = geometry
 
+        # copy over kwargs
         for k, v in kwargs.items():
             self[k] = v
 
@@ -488,7 +489,12 @@ class Machine(object) :
             self.length += item.length
             self.lenint.append(self.length)
 
-            [midrotation, endrotation, middelta, enddelta, midgeomdelta, endgeomdelta] = _CalculateElementTransformation(item)
+            [midrotation,
+             endrotation,
+             middelta,
+             enddelta,
+             midgeomdelta,
+             endgeomdelta] = _CalculateElementTransformation(item)
 
             if len(self.midrotationint) == 0 :
                 self.midrotationint.append(midrotation)
