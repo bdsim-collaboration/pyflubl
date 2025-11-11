@@ -7,7 +7,7 @@ import pyg4ometry.visualisation as _vi
 import matplotlib.pyplot as _plt
 import os as _os
 
-def test_T100_Extrusion(vis = False, writeNISTMaterials=True) :
+def make_T100_Extrusion(vis = False, writeNISTMaterials=True) :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
     # g4 registry
@@ -107,7 +107,8 @@ def test_T100_Extrusion(vis = False, writeNISTMaterials=True) :
 
     return [yokeCoordindates, coilCoordinates, beampipeInnerCoordinates, beampipeOuterCoordinates]
 
-
+def test_T100_Extrusion(vis = False, writeNISTMaterials=True) :
+    make_T100_Extrusion(vis, writeNISTMaterials)
 
 
 

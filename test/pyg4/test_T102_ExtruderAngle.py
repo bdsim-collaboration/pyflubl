@@ -8,7 +8,7 @@ import pyg4ometry.visualisation as _vi
 import pyg4ometry.convert as _con
 import matplotlib.pyplot as _plt
 import os as _os
-from test_T100_Extrusion import test_T100_Extrusion  as _test_T100_Extrusion
+from test_T100_Extrusion import make_T100_Extrusion  as _make_T100_Extrusion
 
 def test_T102_ExtruderAngle(vis=False, interactive=False, fluka=True, writeNISTMaterials=True) :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -22,7 +22,7 @@ def test_T102_ExtruderAngle(vis=False, interactive=False, fluka=True, writeNISTM
     wz = _gd.Constant("wz", "1001", reg, True)
 
     [yokeCoordinates, coilCoordinates,
-     beampipeInnerCoordinates, beampipeOuterCoordinates] =  _test_T100_Extrusion(vis=False)
+     beampipeInnerCoordinates, beampipeOuterCoordinates] =  _make_T100_Extrusion(vis=False)
 
     # materials
     if writeNISTMaterials:
@@ -110,5 +110,3 @@ def test_T102_ExtruderAngle(vis=False, interactive=False, fluka=True, writeNISTM
         w = _flu.Writer()
         w.addDetector(freg)
         w.write(this_dir+"/T102_ExtruderAngle.inp")
-
-    return es
