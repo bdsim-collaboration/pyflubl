@@ -29,7 +29,5 @@ def test_T019_ecol() :
 
     m.Write("T019_ECol")
 
-    return m
-
 if __name__ == "__main__":
     test_T019_ecol()

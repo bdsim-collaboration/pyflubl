@@ -37,7 +37,5 @@ def test_T020_jcol() :
 
     m.Write("T020_JCol")
 
-    return m
-
 if __name__ == "__main__":
     test_T020_jcol()

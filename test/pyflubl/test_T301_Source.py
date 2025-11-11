@@ -43,7 +43,6 @@ def test_T301_Source() :
     m.AddDrift(name="d5", length=1, beampipeMaterial = "TUNGSTEN")
 
     m.Write("T301_Source")
-    return m
 
 if __name__ == "__main__":
     test_T301_Source()

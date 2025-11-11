@@ -46,7 +46,6 @@ def test_T300_Usricall() :
     m.AddDrift(name="d5", length=1, beampipeMaterial = "TUNGSTEN")
 
     m.Write("T300_Usricall", prettyJSON=False)
-    return m
 
 if __name__ == "__main__":
     test_T300_Usricall()

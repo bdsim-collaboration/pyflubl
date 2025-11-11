@@ -62,9 +62,6 @@ def test_T204_Usrbin() :
 
     m.Write("T204_Usrbin")
 
-    return m
-
-
 def test_T204_Usrbin_element():
 
     m = usrbin_basic()
@@ -84,8 +81,6 @@ def test_T204_Usrbin_element():
     m.AddUsrbinToElement("d4", eb2)
 
     m.Write("T204_Usrbin_element")
-
-    return m
 
 
 if __name__ == "__main__":

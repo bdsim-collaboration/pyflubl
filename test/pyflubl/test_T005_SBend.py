@@ -31,9 +31,6 @@ def test_T005_sbend() :
     m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
     m.Write("T005_SBend")
 
-    return m
-
-
 def test_T005_sbend_tilt() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
@@ -65,10 +62,7 @@ def test_T005_sbend_tilt() :
     m.AddSBend(name="sb2", length=1, angle=_np.pi/4, tilt=_np.pi/2)
     m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
 
-
     m.Write("T005_SBend_tilt")
-
-    return m
 
 def test_T005_sbend_split() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
@@ -102,8 +96,6 @@ def test_T005_sbend_split() :
 
     m.Write("T005_SBend_Split")
 
-    return m
-
 def test_T005_sbend_split_tilt() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
@@ -133,8 +125,6 @@ def test_T005_sbend_split_tilt() :
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
     m.Write("T005_SBend_Split_tilt")
-
-    return m
 
 if __name__ == "__main__":
     test_T005_sbend()

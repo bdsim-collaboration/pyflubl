@@ -41,7 +41,5 @@ def test_T001_drift() :
 
     m.Write("T001_Drift")
 
-    return m
-
 if __name__ == "__main__":
     test_T001_drift()

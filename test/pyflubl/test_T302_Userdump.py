@@ -46,7 +46,6 @@ def test_T302_Userdump() :
     m.AddDrift(name="d5", length=1, beampipeMaterial = "TUNGSTEN")
 
     m.Write("T302_Userdump", prettyJSON=True)
-    return m
 
 if __name__ == "__main__":
     test_T302_Userdump()

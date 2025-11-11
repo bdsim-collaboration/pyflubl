@@ -34,8 +34,6 @@ def test_T004_rbend() :
                beampipeRadius=30, beampipeThickness=5)
     m.Write("T004_RBend")
 
-    return m
-
 
 def test_T004_rbend_tilt() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
@@ -69,8 +67,6 @@ def test_T004_rbend_tilt() :
     m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
     m.Write("T004_RBend_tilt")
-
-    return m
 
 if __name__ == "__main__":
     test_T004_rbend()

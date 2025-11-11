@@ -351,7 +351,7 @@ class Machine(object) :
 
     _outer_allowed_keys = ["outerHorizontalSize", "outerVerticalSize","outerMaterial"]
     _beampipe_allowed_keys = ["vacuumMaterial", "beampipeMaterial","beampipeRadius", "beampipeThickness",
-                              "e1", "e2"]
+                              "e1", "e2", "n1", "n2"]
     _rbend_allowed_keys = ["angle"]
     _sbend_allowed_keys = ["angle"]
     _tiltshift_allowed_keys = ["offsetX", "offsetY", "tilt"]
