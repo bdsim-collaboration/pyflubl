@@ -1,6 +1,6 @@
 import pyflubl as _pfbl
 
-def test_T026_gap() :
+def make_T026_gap() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -25,7 +25,13 @@ def test_T026_gap() :
     m.AddDrift(name="d2", length=1,
                beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
+
     m.Write("T026_Gap")
+
+    return m
+
+def test_T026_gap() :
+    make_T026_gap()
 
 if __name__ == "__main__":
     test_T026_gap()

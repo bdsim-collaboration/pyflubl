@@ -1,6 +1,6 @@
 import pyflubl as _pfbl
 
-def test_T017_target() :
+def make_T017_target() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -27,6 +27,11 @@ def test_T017_target() :
     m.AddSamplerPlane(name="s2", length=1e-6)
 
     m.Write("T017_target")
+
+    return m
+
+def test_T017_target() :
+    make_T017_target()
 
 if __name__ == "__main__":
     test_T017_target()

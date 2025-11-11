@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import numpy as _np
 
-def test_T111_ring_sbend() :
+def make_T111_ring_sbend() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -42,6 +42,11 @@ def test_T111_ring_sbend() :
         m.AddSamplerPlane(name="s1_"+str(i), length=1e-6)
 
     m.Write("T111_Ring_SBend")
+
+    return m
+
+def test_T111_ring_sbend() :
+    make_T111_ring_sbend()
 
 if __name__ == "__main__":
     test_T111_ring_sbend()

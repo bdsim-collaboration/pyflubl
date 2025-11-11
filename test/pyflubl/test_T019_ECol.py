@@ -1,6 +1,6 @@
 import pyflubl as _pfbl
 
-def test_T019_ecol() :
+def make_T019_ecol() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -28,6 +28,9 @@ def test_T019_ecol() :
     m.AddDrift(name="d3", length=1)
 
     m.Write("T019_ECol")
+
+def test_T019_ecol() :
+    make_T019_ecol()
 
 if __name__ == "__main__":
     test_T019_ecol()

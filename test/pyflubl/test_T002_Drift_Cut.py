@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import numpy as _np
 
-def test_T002_drift_cut() :
+def make_T002_drift_cut() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -23,7 +23,13 @@ def test_T002_drift_cut() :
                beampipeRadius=30, beampipeThickness=5,
                e1=_np.pi/4, e2=_np.pi/4)
     m.AddSamplerPlane(name="s1", length=1e-6)
+
     m.Write("T002_Drift_Cut")
+
+    return m
+
+def test_T002_drift_cut() :
+    make_T002_drift_cut()
 
 if __name__ == "__main__":
     test_T002_drift_cut()

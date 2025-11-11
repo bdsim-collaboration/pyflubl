@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import numpy as _np
 
-def test_T110_ring_rbend() :
+def make_T110_ring_rbend() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -43,6 +43,11 @@ def test_T110_ring_rbend() :
 
     m.CheckModel()
     m.Write("T110_Ring_RBend")
+    return m
+
+def test_T110_ring_rbend() :
+    make_T110_ring_rbend()
+
 
 if __name__ == "__main__":
     test_T110_ring_rbend()

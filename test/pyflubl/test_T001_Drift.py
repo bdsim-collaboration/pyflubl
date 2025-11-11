@@ -1,6 +1,6 @@
 import pyflubl as _pfbl
 
-def test_T001_drift() :
+def make_T001_drift() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -38,8 +38,12 @@ def test_T001_drift() :
                beampipeRadius=100, beampipeThickness=20,
                outerMaterial="GOLD")
 
-
     m.Write("T001_Drift")
+
+    return m
+
+def test_T001_drift() :
+    make_T001_drift()
 
 if __name__ == "__main__":
     test_T001_drift()

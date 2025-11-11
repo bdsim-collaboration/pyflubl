@@ -1,6 +1,6 @@
 import pyflubl as _pfbl
 
-def test_T023_shield() :
+def make_T023_shield() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -29,7 +29,13 @@ def test_T023_shield() :
                 )
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1)
+
     m.Write("T023_shield")
+
+    return m
+
+def test_T023_shield() :
+    make_T023_shield()
 
 if __name__ == "__main__":
     test_T023_shield()

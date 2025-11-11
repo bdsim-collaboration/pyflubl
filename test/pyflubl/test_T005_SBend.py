@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import numpy as _np
 
-def test_T005_sbend() :
+def make_T005_sbend() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -31,7 +31,12 @@ def test_T005_sbend() :
     m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
     m.Write("T005_SBend")
 
-def test_T005_sbend_tilt() :
+    return m
+
+def test_T005_sbend() :
+    make_T005_sbend()
+
+def make_T005_sbend_tilt() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -64,7 +69,12 @@ def test_T005_sbend_tilt() :
 
     m.Write("T005_SBend_tilt")
 
-def test_T005_sbend_split() :
+    return m
+
+def test_T005_sbend_tilt() :
+    make_T005_sbend_tilt()
+
+def make_T005_sbend_split() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -96,7 +106,12 @@ def test_T005_sbend_split() :
 
     m.Write("T005_SBend_Split")
 
-def test_T005_sbend_split_tilt() :
+    return m
+
+def test_T005_sbend_split() :
+    make_T005_sbend_split()
+
+def make_T005_sbend_split_tilt() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -124,7 +139,13 @@ def test_T005_sbend_split_tilt() :
     m.AddSBendSplit(name="sb1", length=2, angle=_np.pi/4, tilt=_np.pi/2, nsplit=10)
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
+
     m.Write("T005_SBend_Split_tilt")
+
+    return m
+
+def test_T005_sbend_split_tilt() :
+    make_T005_sbend_split_tilt()
 
 if __name__ == "__main__":
     test_T005_sbend()

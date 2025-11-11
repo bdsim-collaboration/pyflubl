@@ -1,6 +1,6 @@
 import pyflubl as _pfbl
 
-def test_T018_rcol() :
+def make_T018_rcol() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -28,6 +28,11 @@ def test_T018_rcol() :
     m.AddDrift(name="d3", length=1)
 
     m.Write("T018_RCol")
+
+    return m
+
+def test_T018_rcol() :
+    make_T018_rcol()
 
 if __name__ == "__main__":
     test_T018_rcol()
