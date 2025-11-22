@@ -32,6 +32,8 @@ def make_T019_ecol() :
 
     m.Write(this_dir+"/T019_ECol")
 
+    return m
+
 def test_T019_ecol() :
     make_T019_ecol()
 
