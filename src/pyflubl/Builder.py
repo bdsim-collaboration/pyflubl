@@ -1222,17 +1222,17 @@ class Machine(object) :
                                              length,
                                              0, _np.pi*2, [0,0,-1],[0,0,1],g4registry)
         bplogical  = _pyg4.geant4.LogicalVolume(bpsolid,g4material,name+"_bp_lv",g4registry)
-        bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
-                                                  [0,0,0],
-                                                  bplogical,
-                                                  name+"_bp_pv",
-                                                  bpouterlogical,g4registry)
+        _bpphysical  = _pyg4.geant4.PhysicalVolume([0,0,0],
+                                                   [0,0,0],
+                                                   bplogical,
+                                                   name+"_bp_pv",
+                                                   bpouterlogical,g4registry)
 
 
         self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,bpouterlogical, bpouterphysical, flukaConvert,
-                                              rotation, geomtranslation, "drift")
+                                              rotation, translation, geomtranslation, "drift")
 
     def MakeFlukaBeamPipe1(self, name, element,
                           rotation = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
@@ -1645,7 +1645,7 @@ class Machine(object) :
                       flukaConvert = True):
 
         length = element.length*1000
-        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
+        rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -2065,7 +2065,7 @@ class Machine(object) :
                                                     self.worldLogical,
                                                     g4registry)
 
-        self._AddBookkeepingTransformation(name, rotation, geomtranslation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
 
         return self._MakeFlukaComponentCommonG4(name,outerlogical, outerphysical, flukaConvert,
                                               rotation, translation, geomtranslation,"gap")
