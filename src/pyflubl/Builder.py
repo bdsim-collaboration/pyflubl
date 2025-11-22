@@ -60,6 +60,11 @@ def _CalculateElementTransformation(e):
     elif e.category == "rbend":
         a = e['angle']
         l = e.length
+
+        if abs(a) < 1e-12:
+            print("rbend: angle close to zero setting to 1e-12")
+            a = 1e-12
+
         rho = l/(2*_np.sin(a/2.0))
 
         t = 0
@@ -96,6 +101,10 @@ def _CalculateElementTransformation(e):
     elif e.category == "sbend":
         a = e['angle']
         l = e.length
+
+        if abs(a) < 1e-12:
+            print("sbend: angle close to zero setting to 1e-12")
+            a = 1e-12
         rho = l/a
 
         t = 0
