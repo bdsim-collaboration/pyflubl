@@ -68,9 +68,9 @@ def plot_machine(machine) :
         e = m.elements[ename]
 
         x, y, z = [1000*v for v in m.midint[eidx]]
-        xg, yg, zg = [1000*v for v in m.midgeomint[eidx]]
-        xe, ye, ze = [1000*v for v in m.endint[eidx]]
-        xeg, yeg, zeg = [1000*v for v in m.endgeomint[eidx]]
+        _xg, _yg, _zg = [1000*v for v in m.midgeomint[eidx]]
+        _xe, _ye, _ze = [1000*v for v in m.endint[eidx]]
+        _xeg, _yeg, _zeg = [1000*v for v in m.endgeomint[eidx]]
 
         xr, yr, zr  = _matrix2tbxyz(_np.array(m.midrotationint[eidx]))
 

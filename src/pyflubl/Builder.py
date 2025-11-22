@@ -1007,50 +1007,50 @@ class Machine(object) :
             return self.MakeFlukaECol(name=e.name, element=e,
                                       rotation=r,
                                       translation=t * 1000,
-                                      geomtranslation=t * 1000,
+                                      geomtranslation=gt * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "jcol" :
             return self.MakeFlukaJCol(name=e.name, element=e,
                                       rotation=r,
                                       translation=t * 1000,
-                                      geomtranslation=t * 1000,
+                                      geomtranslation=gt * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "shield" :
             return self.MakeFlukaShield(name=e.name, element=e,
                                         rotation=r,
                                         translation=t * 1000,
-                                        geomtranslation=t *1000,
+                                        geomtranslation=gt *1000,
                                         geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "dump" :
             return self.MakeFlukaDump(name=e.name, element=e,
                                       rotation=r,
                                       translation=t * 1000,
-                                      geomtranslation=t * 1000,
+                                      geomtranslation=gt * 1000,
                                       geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "wirescanner" :
             return self.MakeFlukaWireScanner(name=e.name, element=e,
                                              rotation=r,
                                              translation=t * 1000,
-                                             geomtranslation=t * 1000,
+                                             geomtranslation=gt * 1000,
                                              geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "gap" :
             return self.MakeFlukaGap(name=e.name, element=e,
                                      rotation=r,
                                      translation=t * 1000,
-                                     geomtranslation=t * 1000,
+                                     geomtranslation=gt * 1000,
                                      geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "customG4":
             return self.MakeFlukaCustomG4(name=e.name, element=e,
                                           rotation=r,
                                           translation=t * 1000,
-                                          geomtranslation=t * 1000,
+                                          geomtranslation=gt * 1000,
                                           geant4RegistryAdd=g4add, flukaConvert=fc,
                                           convertMaterials=e.convertMaterials)
         elif e.category == "customFluka":
             return self.MakeFlukaCustomFluka(name=e.name, element=e,
                                              rotation=r,
                                              translation=t * 1000,
-                                             geomtranslation=t * 1000,
+                                             geomtranslation=gt * 1000,
                                              flukaBuild=fc)
         elif e.category == "sampler_plane":
             return self.MakeFlukaSampler(name=e.name, element=e,
