@@ -1,7 +1,8 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
-def usrbin_basic() :
+def make_usrbin() :
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -43,7 +44,9 @@ def usrbin_basic() :
 
 def test_T204_Usrbin() :
 
-    m = usrbin_basic()
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
+    m = make_usrbin()
 
     ub1 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
                              particle="ALL-PART",lun=-24,
@@ -60,14 +63,13 @@ def test_T204_Usrbin() :
 
     m.AddUsrbin(ub2)
 
-    m.Write("T204_Usrbin")
-
-    return m
-
+    m.Write(this_dir+"/T204_Usrbin")
 
 def test_T204_Usrbin_element():
 
-    m = usrbin_basic()
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
+    m = make_usrbin()
 
     eb1 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
                              particle="ALL-PART",lun=-24,
@@ -83,10 +85,7 @@ def test_T204_Usrbin_element():
                              nxbin=101, nybin=101, nzbin=101)
     m.AddUsrbinToElement("d4", eb2)
 
-    m.Write("T204_Usrbin_element")
-
-    return m
-
+    m.Write(this_dir+"/T204_Usrbin_element")
 
 if __name__ == "__main__":
     test_T204_Usrbin()

@@ -1,7 +1,10 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
-def test_T005_sbend() :
+def make_T005_sbend() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -25,16 +28,20 @@ def test_T005_sbend() :
     m.AddUserdump(ud)
 
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
-    #m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddSBend(name="sb1", length=0.2, angle=_np.pi/8)
-    #m.AddSamplerPlane(name="s2", length=1e-6)
+    m.AddSBend(name="sb1", length=1, angle=_np.pi/8)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
-    m.Write("T005_SBend")
+    m.AddSBend(name="sb2", length=1, angle=_np.pi / 8)
+    m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
+    m.Write(this_dir+"/T005_SBend")
 
     return m
 
+def test_T005_sbend() :
+    make_T005_sbend()
 
-def test_T005_sbend_tilt() :
+def make_T005_sbend_tilt() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -59,17 +66,22 @@ def test_T005_sbend_tilt() :
 
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddSBend(name="sb1", length=2, angle=_np.pi/4, tilt=_np.pi/2)
+    m.AddSBend(name="sb1", length=1, angle=_np.pi/4, tilt=_np.pi/2)
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSBend(name="sb2", length=2, angle=_np.pi/4, tilt=_np.pi/2)
+    m.AddSBend(name="sb2", length=1, angle=_np.pi/4, tilt=_np.pi/2)
+    m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
 
-
-    m.Write("T005_SBend_tilt")
+    m.Write(this_dir+"/T005_SBend_tilt")
 
     return m
 
-def test_T005_sbend_split() :
+def test_T005_sbend_tilt() :
+    make_T005_sbend_tilt()
+
+def make_T005_sbend_split() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -97,11 +109,18 @@ def test_T005_sbend_split() :
     m.AddSBendSplit(name="sb1", length=2, angle=_np.pi/4, nsplit=10)
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
-    m.Write("T005_SBend_Split")
+    m.AddSBendSplit(name="sb2", length=2, angle=-_np.pi/4, nsplit=10)
+
+    m.Write(this_dir+"/T005_SBend_Split")
 
     return m
 
-def test_T005_sbend_split_tilt() :
+def test_T005_sbend_split() :
+    make_T005_sbend_split()
+
+def make_T005_sbend_split_tilt() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -126,12 +145,16 @@ def test_T005_sbend_split_tilt() :
 
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
     m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddSBendSplit(name="sb1", length=2, angle=_np.pi/2, tilt=_np.pi/2, nsplit=3)
+    m.AddSBendSplit(name="sb1", length=2, angle=_np.pi/4, tilt=_np.pi/2, nsplit=10)
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
-    m.Write("T005_SBend_Split_tilt")
+
+    m.Write(this_dir+"/T005_SBend_Split_tilt")
 
     return m
+
+def test_T005_sbend_split_tilt() :
+    make_T005_sbend_split_tilt()
 
 if __name__ == "__main__":
     test_T005_sbend()

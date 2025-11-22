@@ -1,7 +1,10 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
-def quad_basic(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T006_Quad"):
+def make_quad(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T006_Quad"):
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -25,20 +28,23 @@ def quad_basic(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T006_Quad"):
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN",
                beampipeRadius=30, beampipeThickness=5)
-    m.Write(fileName)
+
+    m.Write(this_dir+"/"+fileName)
+
+    return m
 
 
 def test_T006_quad() :
-    quad_basic()
+    make_quad()
 
 def test_T006_quad_tilt() :
-    quad_basic(tilt=_np.pi/4, fileName="T006_Quad_tilt")
+    make_quad(tilt=_np.pi/4, fileName="T006_Quad_tilt")
 
 def test_T006_quad_offsetX() :
-    quad_basic(offsetX=50, fileName="T006_Quad_offsetX")
+    make_quad(offsetX=50, fileName="T006_Quad_offsetX")
 
 def test_T006_quad_offsetY() :
-    quad_basic(offsetY=50, fileName="T006_Quad_offsetY")
+    make_quad(offsetY=50, fileName="T006_Quad_offsetY")
 
 if __name__ == "__main__":
     test_T006_quad()

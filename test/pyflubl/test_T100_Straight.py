@@ -1,7 +1,10 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
-def test_T100_straight() :
+def make_T100_straight() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -25,7 +28,12 @@ def test_T100_straight() :
                    beampipeRadius=30, beampipeThickness=5)
         m.AddSamplerPlane(name="s1_"+str(i), length=1e-6)
 
-    m.Write("T100_Stright")
+    m.Write(this_dir+"/T100_Stright")
+
+    return m
+
+def test_T100_straight() :
+    make_T100_straight()
 
 if __name__ == "__main__":
     test_T100_straight()

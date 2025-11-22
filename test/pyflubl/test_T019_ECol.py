@@ -1,6 +1,9 @@
 import pyflubl as _pfbl
+import os as _os
 
-def test_T019_ecol() :
+def make_T019_ecol() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -27,9 +30,12 @@ def test_T019_ecol() :
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d3", length=1)
 
-    m.Write("T019_ECol")
+    m.Write(this_dir+"/T019_ECol")
 
     return m
+
+def test_T019_ecol() :
+    make_T019_ecol()
 
 if __name__ == "__main__":
     test_T019_ecol()

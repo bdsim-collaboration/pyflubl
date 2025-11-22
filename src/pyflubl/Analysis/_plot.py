@@ -68,6 +68,10 @@ def plot_machine(machine) :
         e = m.elements[ename]
 
         x, y, z = [1000*v for v in m.midint[eidx]]
+        _xg, _yg, _zg = [1000*v for v in m.midgeomint[eidx]]
+        _xe, _ye, _ze = [1000*v for v in m.endint[eidx]]
+        _xeg, _yeg, _zeg = [1000*v for v in m.endgeomint[eidx]]
+
         xr, yr, zr  = _matrix2tbxyz(_np.array(m.midrotationint[eidx]))
 
         length  = e.length
@@ -111,6 +115,10 @@ def plot_machine_xz(machine) :
         e = m.elements[ename]
 
         x, y, z = [1000*v for v in m.midint[eidx]]
+        xg, yg, zg = [1000*v for v in m.midgeomint[eidx]]
+        xe, ye, ze = [1000*v for v in m.endint[eidx]]
+        xeg, yeg, zeg = [1000*v for v in m.endgeomint[eidx]]
+
         vp = _np.array(m.midrotationint[eidx]) @ _np.array([0,0,1])
 
         yr1 = _np.arctan2(vp[0], vp[2])
@@ -122,8 +130,12 @@ def plot_machine_xz(machine) :
 
         ###########################################
         ax = _plt.subplot(1,1,1)
-        _plt.plot(z,x,"+", color=(0,0,1.0))
-        bounding_box = _makeBoundingRect([z,x], [length*1000, width], yr1)
+        _plt.plot(z,x,"+", color=(0,0,1))
+        _plt.plot(zg,xg,"x", color=(0,1,0))
+        _plt.plot(ze,xe,"+", color=(1,0,0))
+        _plt.plot(zeg,xeg,"x", color=(1,1,0))
+
+        bounding_box = _makeBoundingRect([zg,xg], [length*1000, width], yr1)
         ax.add_patch(bounding_box)
 
         _plt.xlabel("z/mm")

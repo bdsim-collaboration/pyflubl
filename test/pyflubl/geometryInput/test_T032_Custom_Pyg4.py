@@ -1,8 +1,11 @@
 import pyg4ometry.geant4 as _g4
 import pyg4ometry.gdml as _gd
 import pyg4ometry.visualisation as _vi
+import os as _os
 
 def test_T032_Custom_Pyg4(vis=False, interactive=False) :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     reg = _g4.Registry()
 
     # defines
@@ -44,5 +47,5 @@ def test_T032_Custom_Pyg4(vis=False, interactive=False) :
 
     w = _gd.Writer()
     w.addDetector(reg)
-    w.write("test_T032_Custom_Pyg4.gdml")
+    w.write(this_dir+"/test_T032_Custom_Pyg4.gdml")
 

@@ -1,7 +1,10 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
-def test_T111_ring_sbend() :
+def make_T111_ring_sbend() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -34,16 +37,19 @@ def test_T111_ring_sbend() :
 
     for i in range(0,n,1):
         m.AddDrift(name="d1-"+str(i), length=0.5,
-                   beampipeMaterial="TUNGSTEN")
+                   beampipeMaterial="TUNGSTEN", outerMaterial="WATER")
         m.AddSBendSplit(name="rb_"+str(i), length=0.5, angle=bendangle, nsplit=3)
         m.AddDrift(name="d2-"+str(i), length=0.5,
-                   beampipeMaterial="TUNGSTEN")
-        m.AddQuadrupole(name="q_"+str(i), length=0.25, k1=0.5)
+                   beampipeMaterial="TUNGSTEN", outerMaterial="WATER")
+        m.AddQuadrupole(name="q_"+str(i), length=0.25, k1=0.5, outerMaterial="HELIUM")
         m.AddSamplerPlane(name="s1_"+str(i), length=1e-6)
 
-    m.Write("T111_Ring_SBend")
+    m.Write(this_dir+"/T111_Ring_SBend")
 
     return m
+
+def test_T111_ring_sbend() :
+    make_T111_ring_sbend()
 
 if __name__ == "__main__":
     test_T111_ring_sbend()

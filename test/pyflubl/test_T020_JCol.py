@@ -1,7 +1,10 @@
 import pyflubl as _pfbl
 import numpy as _np
+import os as _os
 
-def test_T020_jcol() :
+def make_T020_jcol() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -35,9 +38,12 @@ def test_T020_jcol() :
     m.AddSamplerPlane(name="s3", length=1e-6)
     m.AddDrift(name="d5", length=1)
 
-    m.Write("T020_JCol")
+    m.Write(this_dir+"/T020_JCol")
 
     return m
+
+def test_T020_jcol() :
+    make_T020_jcol()
 
 if __name__ == "__main__":
     test_T020_jcol()

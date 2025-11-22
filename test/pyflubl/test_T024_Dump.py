@@ -1,6 +1,9 @@
 import pyflubl as _pfbl
+import os as _os
 
-def test_T024_dump() :
+def make_T024_dump() :
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
     m = _pfbl.Builder.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -25,9 +28,13 @@ def test_T024_dump() :
     m.AddDump(name="p2", length=1, horizontalWidth=200,
               outerMaterial="VACUUM", apertureType="circular")
     m.AddSamplerPlane(name="s2", length=1e-6)
-    m.Write("T024_dump")
+
+    m.Write(this_dir+"/T024_dump")
 
     return m
+
+def test_T024_dump() :
+    make_T024_dump()
 
 if __name__ == "__main__":
     test_T024_dump()

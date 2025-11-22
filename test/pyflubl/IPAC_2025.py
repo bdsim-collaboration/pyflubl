@@ -16,7 +16,6 @@ def test_IPAC_2025() :
     m.AddBeampos(bp)
     m.AddBeamaxes(ba)
 
-    
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
@@ -33,8 +32,10 @@ def test_IPAC_2025() :
     m.AddUserdump(ud)
     
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
+    #m.AddSBend(name="b1", length=1, angle=_np.pi / 8)
     m.AddSBendSplit(name="b1", length=1, angle=_np.pi/8)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
+    #m.AddSBend(name="b2", length=1, angle=-_np.pi / 8)
     m.AddSBendSplit(name="b2", length=1, angle=-_np.pi/8)
     m.AddSamplerPlane(name="s1", length=10e-6)
     m.AddCustomFlukaFile(name="c1", length=1,
@@ -54,7 +55,6 @@ def test_IPAC_2025() :
 
     m.Write("IPAC_2025", prettyJSON=False)
 
-    
     return m
 
 if __name__ == "__main__":
