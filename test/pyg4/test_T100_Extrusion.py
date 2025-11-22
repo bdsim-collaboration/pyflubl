@@ -103,7 +103,7 @@ def make_T100_Extrusion(vis = False, writeNISTMaterials=True) :
     flukafilename = "T100_Extrusion.inp"
     w = _pyg4.fluka.Writer()
     w.addDetector(freg)
-    w.write(this_dir+"/"+flukafilename)
+    w.write(this_dir + "/" + flukafilename)
 
     return [yokeCoordindates, coilCoordinates, beampipeInnerCoordinates, beampipeOuterCoordinates]
 

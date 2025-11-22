@@ -1028,7 +1028,7 @@ class Machine(object) :
             return self.MakeFlukaShield(name=e.name, element=e,
                                         rotation=r,
                                         translation=t * 1000,
-                                        geomtranslation=gt *1000,
+                                        geomtranslation=gt * 1000,
                                         geant4RegistryAdd=g4add, flukaConvert=fc)
         elif e.category == "dump" :
             return self.MakeFlukaDump(name=e.name, element=e,
