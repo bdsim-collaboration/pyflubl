@@ -29,6 +29,9 @@ dependencies = [
     "pyg4ometry"
 ]
 
+[project.optional-dependencies]
+dev = ["pytest", "sphinx", "sphinx-rtd-theme"]
+
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
