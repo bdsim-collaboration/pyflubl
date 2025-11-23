@@ -26,7 +26,8 @@ maintainers = [
   {name = "Stewart Boogert", email = "stewart.boogert@cockcroft.ac.uk"}
 ]
 dependencies = [
-    "pyg4ometry"
+    "pyg4ometry",
+    "pybsim"
 ]
 
 [project.optional-dependencies]
