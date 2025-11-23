@@ -13,3 +13,4 @@ run_*
 *.pickle
 *.pdf
 *.mac
+docs/build
