@@ -26,9 +26,16 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo .github/bin/install-deps-ubuntu.sh
+        git clone https://github.com/stewartboogert/pyg4ometry-fork.git
+        cd pyg4ometry-fork
+        git checkout flukaTransform
+        pip install -e . 
+        cd ../
         python -m pip install --upgrade pip
-        pip install -e .  
+        pip install -e .[dev]  
 
     - name: Run tests
       run: |
+        cd test
         pytest

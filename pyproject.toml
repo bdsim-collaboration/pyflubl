@@ -26,8 +26,12 @@ maintainers = [
   {name = "Stewart Boogert", email = "stewart.boogert@cockcroft.ac.uk"}
 ]
 dependencies = [
-    "pyg4ometry"
+    "pyg4ometry",
+    "pybdsim"
 ]
+
+[project.optional-dependencies]
+dev = ["pytest", "sphinx", "sphinx-rtd-theme"]
 
 [build-system]
 requires = ["setuptools"]
