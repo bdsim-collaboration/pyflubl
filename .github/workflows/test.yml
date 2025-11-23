@@ -27,8 +27,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo .github/bin/install-deps-ubuntu.sh
-        git clone https://github.com/g4edge/pyg4ometry.git
+        git clone https://github.com/stewartboogert/pyg4ometry-fork.git
         cd pyg4ometry 
+        git checkout flukaTransform
         pip install -e . 
         cd ../
         python -m pip install --upgrade pip
