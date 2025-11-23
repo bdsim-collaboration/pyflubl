@@ -28,7 +28,7 @@ jobs:
       run: |
         sudo .github/bin/install-deps-ubuntu.sh
         git clone https://github.com/stewartboogert/pyg4ometry-fork.git
-        cd pyg4ometry 
+        cd pyg4ometry-fork
         git checkout flukaTransform
         pip install -e . 
         cd ../
