@@ -1,6 +1,6 @@
 [project]
 name = "pyflubl"
-requires-python = ">=3.6"
+requires-python = ">=3.9"
 dynamic = ["version"]
 readme = "README.md"
 description = "FLUKA beamline builder."
@@ -34,5 +34,8 @@ dependencies = [
 dev = ["pytest", "sphinx", "sphinx-rtd-theme"]
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools","setuptools_scm"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "src/pyflubl/_version.py"
