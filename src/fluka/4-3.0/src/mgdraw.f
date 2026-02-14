@@ -39,6 +39,9 @@
       LOGICAL LFCOPE
       SAVE LFCOPE
       DATA LFCOPE / .FALSE. /
+
+      CHARACTER*8 reg_name_from
+      CHARACTER*8 reg_name_to
 *
 *----------------------------------------------------------------------*
 *                                                                      *
@@ -99,9 +102,10 @@
 *                                                                      *
       ENTRY BXDRAW ( ICODE, MREG, NEWREG, XSCO, YSCO, ZSCO )
 
-      WRITE (*,*) "BXDRAW", ICODE, MREG, NEWREG, XSCO, YSCO, ZSCO,
-     &   NCASE, JTRACK, XTRACK(NTRACK), YTRACK(NTRACK), ZTRACK(NTRACK),
-     &   CXTRCK, CYTRCK, CZTRCK, ETRACK, PTRACK 
+*      WRITE(*,*) "PYFLUBL-MGDRAW>", ICODE, MREG, NEWREG, XSCO, YSCO, ZSCO, JTRACK
+*      WRITE(*,*) CXTRCK, CYTRCK, CZTRCK
+
+      call mgdraw_bxdraw_c(MREG, NEWREG, XSCO, YSCO, ZSCO, CXTRCK, CYTRCK, CZTRCK, ETRACK, ATRACK, JTRACK)
       RETURN
 *
 *======================================================================*
@@ -166,10 +170,15 @@
       IF ( LQEMGD ) THEN
          RULLL = RULL
          CALL QUENMG ( ICODE, MREG, RULLL, DTQUEN )
+*     |  Back from QUENMG, the RULLL quantity does no longer embed
+*     |  the WSCRNG statistical weight
          WRITE (IODRAW) ( SNGL (DTQUEN(1, JBK)), JBK = 1, NQEMGD )
       END IF
 *  |  end quenching
 *  +-------------------------------------------------------------------*
+
+      call mgdraw_endraw_c(MREG, XSCO, YSCO, ZSCO, ETRACK)
+
       RETURN
 *
 *======================================================================*

@@ -27,8 +27,10 @@
       LUSRIN = .TRUE.
 * *** Write from here on *** *
 
-      WRITE(*,*) "USRINI-BDSIM>"
-      CALL bdsim()
+      WRITE(*,*) "PYFLUBL-USRINI>"
+
+* Call C/C++ function
+      call usrini_c()
 
       RETURN
 *=== End of subroutine Usrini =========================================*
