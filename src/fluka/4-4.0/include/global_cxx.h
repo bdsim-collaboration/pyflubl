@@ -2,7 +2,7 @@
 #include "TTree.h"
 #include "ElementData.h"
 #include "SamplerData.h"
-#include "ELossData.h"
+#include "ElossData.h"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;

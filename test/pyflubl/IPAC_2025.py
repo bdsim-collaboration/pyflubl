@@ -36,7 +36,7 @@ def test_IPAC_2025() :
     m.AddSBendSplit(name="b1", length=1, angle=_np.pi/8)
     m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
     #m.AddSBend(name="b2", length=1, angle=-_np.pi / 8)
-    m.AddSBendSplit(name="b2", length=1, angle=-_np.pi/8)
+    m.AddSBendSplit(name="b2", length=1, angle=-_np.pi/8+0.0000000001)
     m.AddSamplerPlane(name="s1", length=10e-6)
     m.AddCustomFlukaFile(name="c1", length=1,
                          geometryFile="./geometryInput/test_T032_Custom_Fluka_Gap.inp",
