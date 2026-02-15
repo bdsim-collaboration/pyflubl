@@ -34,8 +34,7 @@ void usrini_c_() {
 
 void loadBookkeeping() {
     std::cout << "loadBookkeeping>" << std::endl;
-    std::ifstream f("/tmp/pyflubl/test/pyflubl/run_IPAC_2025/IPAC_2025.json");
-    //std::ifstream f("/tmp/pyflubl/test/pyflubl/run_T300_Usricall/T300_Usricall.json");
+    std::ifstream f("./pyflubl.json");
     if(!f) {
         std::cerr << "Could not open JSON file." << std::endl;
     }
