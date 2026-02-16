@@ -34,7 +34,7 @@ void usrini_c_() {
 
 void loadBookkeeping() {
     std::cout << "loadBookkeeping>" << std::endl;
-    std::ifstream f("./pyflubl.json");
+    std::ifstream f("../pyflubl.json");
     if(!f) {
         std::cerr << "Could not open JSON file." << std::endl;
     }
