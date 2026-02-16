@@ -10,7 +10,7 @@ def make_T005_sbend() :
     d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0.01, sdum="ELECTRON")
+    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0, sdum="ELECTRON")
     bp = _pfbl.Fluka.Beampos(xCentre=0, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
     ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
                               zxCosine=0, zyCosine=0, zzCosine=1)
@@ -21,17 +21,50 @@ def make_T005_sbend() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(500)
     m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
 
     ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
     m.AddUserdump(ud)
 
-    m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSBend(name="sb1", length=1, angle=_np.pi/8)
-    m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSBend(name="sb2", length=1, angle=_np.pi / 8)
-    m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
+    # set world material
+    m.world_material = "VACUUM"
+
+    m.AddDrift(name="d1",
+               length=1,
+               beampipeMaterial = "IRON",
+               outerMaterial = "VACUUM")
+    m.AddSamplerPlane(name="s1",
+                      length=1e-6)
+    m.AddSBend(name="sb1",
+               length=1,
+               angle=_np.pi/18)
+    m.AddSamplerPlane(name="s2",
+                      length=1e-6)
+    m.AddDrift(name="d2",
+               length=1,
+               beampipeMaterial = "IRON",
+               outerMaterial = "VACUUM")
+    m.AddSamplerPlane(name="s3",
+                      length=1e-6)
+    m.AddSBend(name="sb2",
+               length=1,
+               angle=-_np.pi /18)
+    m.AddSamplerPlane(name="s4",
+                      length=1e-6)
+    m.AddDrift(name="d3",
+               length=1,
+               beampipeMaterial = "IRON",
+               outerMaterial = "VACUUM")
+    m.AddSamplerPlane(name="s5",
+                      length=1e-6)
+
     m.Write(this_dir+"/T005_SBend")
 
     return m
@@ -61,16 +94,42 @@ def make_T005_sbend_tilt() :
     s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
     ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
     m.AddUserdump(ud)
 
-    m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddSBend(name="sb1", length=1, angle=_np.pi/4, tilt=_np.pi/2)
-    m.AddSamplerPlane(name="s2", length=1e-6)
-    m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSBend(name="sb2", length=1, angle=_np.pi/4, tilt=_np.pi/2)
-    m.AddDrift(name="d3", length=1, beampipeMaterial = "TUNGSTEN")
+    # set world material
+    m.world_material = "VACUUM"
+
+    m.AddDrift(name="d1",
+               length=1,
+               beampipeMaterial = "TUNGSTEN",
+               outerMaterial = "VACUUM")
+    m.AddSamplerPlane(name="s1",
+                      length=1e-6)
+    m.AddSBend(name="sb1",
+               length=2,
+               angle=_np.pi/10,
+               tilt=_np.pi/2)
+    m.AddSamplerPlane(name="s2",
+                      length=1e-6)
+    m.AddDrift(name="d2",
+               length=1,
+               beampipeMaterial = "TUNGSTEN",
+               outerMaterial = "VACUUM")
+    m.AddSBend(name="sb2",
+               length=1,
+               angle=_np.pi/10,
+               tilt=_np.pi/2)
+    m.AddDrift(name="d3",
+               length=1,
+               beampipeMaterial = "TUNGSTEN",
+               )
 
     m.Write(this_dir+"/T005_SBend_tilt")
 
@@ -87,7 +146,7 @@ def make_T005_sbend_split() :
     d = _pfbl.Fluka.Defaults('EM-CASCA')
     m.AddDefaults(d)
 
-    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0.01, sdum="ELECTRON")
+    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0.0, sdum="ELECTRON")
     bp = _pfbl.Fluka.Beampos(xCentre=0, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
     ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
                               zxCosine=0, zyCosine=0, zzCosine=1)
@@ -98,18 +157,48 @@ def make_T005_sbend_split() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(500)
     m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
 
     ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
     m.AddUserdump(ud)
 
-    m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddSBendSplit(name="sb1", length=2, angle=_np.pi/4, nsplit=10)
-    m.AddSamplerPlane(name="s2", length=1e-6)
-    m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSBendSplit(name="sb2", length=2, angle=-_np.pi/4, nsplit=10)
+    # set world material
+    m.world_material = "VACUUM"
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    m.AddDrift(name="d1",
+               length=1,
+               beampipeMaterial = "TUNGSTEN",
+               outerMaterial = "VACUUM")
+    m.AddSamplerPlane(name="s1",
+                      length=1e-6)
+    m.AddSBendSplit(name="sb1",
+                    length=2,
+                    angle=_np.pi/10,
+                    nsplit=10)
+    m.AddSamplerPlane(name="s2",
+                      length=1e-6)
+    m.AddDrift(name="d2",
+               length=1,
+               beampipeMaterial = "TUNGSTEN",
+               outerMaterial = "VACUUM")
+    m.AddSamplerPlane(name="s3",
+                      length=1e-6)
+    m.AddSBendSplit(name="sb2",
+                    length=2,
+                    angle=-_np.pi/10,
+                    nsplit=10)
+    m.AddSamplerPlane(name="s4",
+                      length=1e-6)
 
     m.Write(this_dir+"/T005_SBend_Split")
 
@@ -140,14 +229,34 @@ def make_T005_sbend_split_tilt() :
     s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
     ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
     m.AddUserdump(ud)
 
-    m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
-    m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddSBendSplit(name="sb1", length=2, angle=_np.pi/4, tilt=_np.pi/2, nsplit=10)
-    m.AddSamplerPlane(name="s2", length=1e-6)
-    m.AddDrift(name="d2", length=1, beampipeMaterial = "TUNGSTEN")
+    # set world material
+    m.world_material = "VACUUM"
+
+    m.AddDrift(name="d1",
+               length=1,
+               beampipeMaterial = "IRON",
+               outerMaterial = "VACUUM")
+    m.AddSamplerPlane(name="s1",
+                      length=1e-6)
+    m.AddSBendSplit(name="sb1",
+                    length=2,
+                    angle=_np.pi/4,
+                    tilt=_np.pi/2, nsplit=10)
+    m.AddSamplerPlane(name="s2",
+                      length=1e-6)
+    m.AddDrift(name="d2",
+               length=1,
+               beampipeMaterial = "IRON",
+               outerMaterial = "VACUUM")
 
     m.Write(this_dir+"/T005_SBend_Split_tilt")
 

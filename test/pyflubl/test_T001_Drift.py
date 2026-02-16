@@ -24,22 +24,36 @@ def make_T001_drift() :
     s = _pfbl.Fluka.Start(1000)
     m.AddStart(s)
 
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    # set world material
+    m.world_material = "VACUUM"
+
     m.AddDrift(name="d1", length=1,
-               vacuumMaterial="HYDROGEN",
+               vacuumMaterial="VACUUM",
                beampipeMaterial = "IRON",
                beampipeRadius=30, beampipeThickness=5)
     m.AddSamplerPlane(name="s1", length=1e-6)
 
     m.AddDrift(name="d2", length=1,
-               vacuumMaterial="HELIUM",
-               beampipeMaterial = "COPPER",
+               vacuumMaterial="VACUUM",
+               beampipeMaterial = "IRON",
                beampipeRadius=50, beampipeThickness=10)
+    m.AddSamplerPlane(name="s2", length=1e-6)
 
     m.AddDrift(name="d3", length=1,
-               vacuumMaterial="NITROGEN",
+               vacuumMaterial="IRON",
                beampipeMaterial = "SILVER",
                beampipeRadius=100, beampipeThickness=20,
                outerMaterial="GOLD")
+    m.AddSamplerPlane(name="s3", length=1e-6)
 
     m.Write(this_dir+"/T001_Drift")
 
