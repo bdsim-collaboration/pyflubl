@@ -446,6 +446,11 @@ class Machine(object) :
 
         self.bakeTransforms = bakeTransforms
 
+        # world material
+        self._world_material = "AIR"
+        # sampler material
+        self._sampler_material = "VACUUM"
+
     def __iter__(self):
         self._iterindex = -1
         return self
@@ -953,7 +958,7 @@ class Machine(object) :
         zmax = max(abs(extent[0][2]), abs(extent[1][2]))*100 + 1000
 
         # make world region and surrounding black body
-        self.MakeFlukaInitialGeometry(worldsize=[xmax,ymax,zmax])
+        self.MakeFlukaInitialGeometry(worldsize=[xmax,ymax,zmax],worldmaterial=self.world_material)
         self.MakeGeant4InitialGeometry(worldsize=[2*xmax*10, 2*ymax*10, 2*zmax*10])
 
         # fix faces of elements
@@ -2194,12 +2199,15 @@ class Machine(object) :
                          translation = _np.array([0,0,0]),
                          geomtranslation = _np.array([0,0,0]),
                          geant4RegistryAdd = False,
-                         flukaConvert = True):
+                         flukaConvert = True,
+                         material=None):
 
+        if not material:
+            material = self.sampler_material
 
         samplerLength = element.length*1000
         rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
-        samplerMaterialName = self._GetDictVariable(element,"samplerMaterial","AIR")
+        samplerMaterialName = self._GetDictVariable(element,"samplerMaterial",material)
         samplerDiameter = self._GetDictVariable(element,"samplerDiameter",2000)
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
@@ -2220,6 +2228,30 @@ class Machine(object) :
 
         return self._MakeFlukaComponentCommonG4(name,samplerlogical, samplerphysical, flukaConvert,
                                               rotation, translation, geomtranslation, "sampler")
+
+    @property
+    def world_material(self):
+        """Getter method"""
+        return self._world_material
+
+    @world_material.setter
+    def world_material(self, value):
+        """Setter method"""
+        if not value:
+            raise ValueError("Name cannot be empty")
+        self._world_material = value
+
+    @property
+    def sampler_material(self):
+        """Getter method"""
+        return self._sampler_material
+
+    @world_material.setter
+    def sampler_material(self, value):
+        """Setter method"""
+        if not value:
+            raise ValueError("Name cannot be empty")
+        self._sampler_material = value
 
     def View(self) :
         v = _pyg4.visualisation.VtkViewerNew()
