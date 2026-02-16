@@ -448,6 +448,8 @@ class Machine(object) :
 
         # world material
         self._world_material = "AIR"
+        # sampler material
+        self._sampler_material = "VACUUM"
 
     def __iter__(self):
         self._iterindex = -1
@@ -2197,12 +2199,15 @@ class Machine(object) :
                          translation = _np.array([0,0,0]),
                          geomtranslation = _np.array([0,0,0]),
                          geant4RegistryAdd = False,
-                         flukaConvert = True):
+                         flukaConvert = True,
+                         material=None):
 
+        if not material:
+            material = self.sampler_material
 
         samplerLength = element.length*1000
         rotation, geomtranslation = self._MakeOffsetAndTiltTransforms(element, rotation, geomtranslation)
-        samplerMaterialName = self._GetDictVariable(element,"samplerMaterial","AIR")
+        samplerMaterialName = self._GetDictVariable(element,"samplerMaterial",material)
         samplerDiameter = self._GetDictVariable(element,"samplerDiameter",2000)
         g4registry = self._GetRegistry(geant4RegistryAdd)
 
@@ -2235,6 +2240,18 @@ class Machine(object) :
         if not value:
             raise ValueError("Name cannot be empty")
         self._world_material = value
+
+    @property
+    def sampler_material(self):
+        """Getter method"""
+        return self._sampler_material
+
+    @world_material.setter
+    def sampler_material(self, value):
+        """Setter method"""
+        if not value:
+            raise ValueError("Name cannot be empty")
+        self._sampler_material = value
 
     def View(self) :
         v = _pyg4.visualisation.VtkViewerNew()
