@@ -10,7 +10,7 @@ def make_T001_drift() :
     m.AddDefaults(d)
 
     # b = _pfbl.Fluka.Beam(energy=1, energySpread=0.01, particleType='ELECTRON')
-    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0.01, sdum="ELECTRON")
+    b = _pfbl.Fluka.Beam1(momentumOrKe=1, energySpread=0.0, sdum="ELECTRON")
     bp = _pfbl.Fluka.Beampos(xCentre=0, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
     ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
                               zxCosine=0, zyCosine=0, zzCosine=1)
@@ -21,7 +21,7 @@ def make_T001_drift() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(1000)
+    s = _pfbl.Fluka.Start(500)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -39,21 +39,25 @@ def make_T001_drift() :
     m.AddDrift(name="d1", length=1,
                vacuumMaterial="VACUUM",
                beampipeMaterial = "IRON",
-               beampipeRadius=30, beampipeThickness=5)
-    m.AddSamplerPlane(name="s1", length=1e-6)
+               beampipeRadius=30,
+               beampipeThickness=5)
+    m.AddSamplerPlane(name="s1",
+                      length=1e-4)
 
     m.AddDrift(name="d2", length=1,
                vacuumMaterial="VACUUM",
                beampipeMaterial = "IRON",
-               beampipeRadius=50, beampipeThickness=10)
-    m.AddSamplerPlane(name="s2", length=1e-6)
+               beampipeRadius=50,
+               beampipeThickness=10)
+    m.AddSamplerPlane(name="s2", length=1e-4)
 
     m.AddDrift(name="d3", length=1,
-               vacuumMaterial="IRON",
-               beampipeMaterial = "SILVER",
-               beampipeRadius=100, beampipeThickness=20,
-               outerMaterial="GOLD")
-    m.AddSamplerPlane(name="s3", length=1e-6)
+               vacuumMaterial="VACUUM",
+               beampipeMaterial = "IRON",
+               beampipeRadius=100,
+               beampipeThickness=20,
+               outerMaterial="AIR")
+    m.AddSamplerPlane(name="s3", length=1e-4)
 
     m.Write(this_dir+"/T001_Drift")
 
