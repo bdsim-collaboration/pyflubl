@@ -1135,7 +1135,7 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
-    def _AddBookkeepingTransformation(self, name, rotation, translation, geomtranslation = _np.array([0,0,0])):
+    def _AddBookkeepingTransformation(self, name, rotation, translation, geomtranslation = _np.array([0,0,0]), angle=0.0, k1=0.0):
         # make bookkeeping information
         if name not in self.elementBookkeeping :
             self.elementBookkeeping[name] = {}
@@ -1143,6 +1143,8 @@ class Machine(object) :
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
         self.elementBookkeeping[name]['geomtranslation'] = geomtranslation.tolist()
+        self.elementBookkeeping[name]['angle'] = angle
+        self.elementBookkeeping[name]['k1'] = k1
 
     def _AddBookkeepingUsrbin(self, usrbinnumber, usrbinname, rotation = None, translation = None):
         self.usrbinnumber_usrbininfo[usrbinnumber] = {"name":usrbinname, "rotation":rotation.tolist(), "translation":translation.tolist()}
@@ -1454,7 +1456,7 @@ class Machine(object) :
                                                         g4registry)
 
 
-        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation, angle=angle)
 
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
 
