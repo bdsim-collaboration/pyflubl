@@ -19,13 +19,13 @@ def plot_usrdump(ud, projection = "xz", linewidth=1):
     if projection == "xz":
         for t in ud.track_data :
             _plt.plot([10*t[2],10*t[5]], [10*t[0],10*t[3]],
-                      "+-",
+                      "x-",
                       color=(0.5, 0.5, 0.5),
                       linewidth=linewidth)
 
     if projection == "":
         for t in ud.track_data :
-            _plt.plot([10*t[2],10*t[5]], [10*t[0],10*t[3]],"+",
+            _plt.plot([10*t[2],10*t[5]], [10*t[0],10*t[3]],"x",
                       linewidth=linewidth)
 
     #_plt.show()
@@ -144,6 +144,32 @@ def plot_machine_xz(machine) :
         _plt.ylabel("x/mm")
 
         _plt.tight_layout()
+
+def plot_bookkeeping(bookkeeping) :
+    elements = bookkeeping['elements']
+
+    switch_marker = True
+    for k in elements :
+        element = elements[k]
+        centre = _np.array(element['geomtranslation'])
+        rotation = _np.array(element['rotation'])
+        length = element['length']
+        if element['category'] == "sbend" :
+            theta = element['angle']
+            length_half = _np.array([0, 0, length * 1000]) * 2 * _np.sin(theta / 2) / theta / 2
+            start = centre - rotation @ length_half
+            end   = centre + rotation @ length_half
+        else :
+            length_half = _np.array([0, 0, length * 1000]) / 2
+            start = centre - rotation @ length_half
+            end   = centre + rotation @ length_half
+
+        if switch_marker :
+            _plt.plot([start[2], end[2]], [start[0], end[0]], "+--")
+            switch_marker = False
+        else :
+            _plt.plot([start[2], end[2]], [start[0], end[0]], "o--")
+            switch_marker = True
 
 def _makeBoundingRect(centre, size, angle) :
     cen = _np.array(centre)

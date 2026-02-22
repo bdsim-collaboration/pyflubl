@@ -1135,7 +1135,7 @@ class Machine(object) :
                                                                [0,0,0,1]])):
         pass
 
-    def _AddBookkeepingTransformation(self, name, rotation, translation, geomtranslation = _np.array([0,0,0])):
+    def _AddBookkeepingTransformation(self, name, rotation, translation, geomtranslation = _np.array([0,0,0]), angle=0.0, k1=0.0):
         # make bookkeeping information
         if name not in self.elementBookkeeping :
             self.elementBookkeeping[name] = {}
@@ -1143,6 +1143,8 @@ class Machine(object) :
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
         self.elementBookkeeping[name]['geomtranslation'] = geomtranslation.tolist()
+        self.elementBookkeeping[name]['angle'] = angle
+        self.elementBookkeeping[name]['k1'] = k1
 
     def _AddBookkeepingUsrbin(self, usrbinnumber, usrbinname, rotation = None, translation = None):
         self.usrbinnumber_usrbininfo[usrbinnumber] = {"name":usrbinname, "rotation":rotation.tolist(), "translation":translation.tolist()}
@@ -1420,7 +1422,7 @@ class Machine(object) :
         # rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
         angle = self._GetDictVariable(element,"angle",0)
 
-        length = 2 * (length / angle) * _np.sin(angle / 2)
+        chord = 2 * (length / angle) * _np.sin(angle / 2)
 
         outerHorizontalSize = self._GetDictVariable(element, "outerHorizontalSize", self.options.outerHorizontalSize)
         outerVerticalSize = self._GetDictVariable(element, "outerVerticalSize", self.options.outerVerticalSize)
@@ -1432,7 +1434,7 @@ class Machine(object) :
         outerMaterial    = _pyg4.geant4.MaterialSingleElement(name=outerMaterialName, atomic_number=1, atomic_weight=1, density=1)
 
         # make trap of correct size
-        outersolid    = self._MakeGeant4GenericTrap(name,length, outerHorizontalSize/2, outerVerticalSize/2, -angle/2, angle/2, g4registry)
+        outersolid    = self._MakeGeant4GenericTrap(name,chord, outerHorizontalSize/2, outerVerticalSize/2, -angle/2, angle/2, g4registry)
         outerlogical  = _pyg4.geant4.LogicalVolume(outersolid,outerMaterial,name+"_outer_lv",g4registry)
         outerphysical = _pyg4.geant4.PhysicalVolume([0,0,0],
                                                     [0,0,0],
@@ -1442,7 +1444,7 @@ class Machine(object) :
 
         # make beampipe
         elementCopy = _copy.deepcopy(element)
-        elementCopy.length= length/1000.0
+        elementCopy.length= chord/1000.0
         elementCopy['e1'] = angle/2
         elementCopy['e2'] = angle/2
         beampipelogical, vacphysical = self._MakeGeant4BeamPipe(name+"_bp",elementCopy,g4registry)
@@ -1454,7 +1456,7 @@ class Machine(object) :
                                                         g4registry)
 
 
-        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation, angle=angle)
 
         rotation = rotation @ _tbxyz2matrix([0,0,-_np.pi/2]) @ _tbxyz2matrix([0,_np.pi/2,0])
 
@@ -1467,9 +1469,8 @@ class Machine(object) :
         # calculate field strength
         rho = length/angle
 
-        #print("rho ", rho)
+        # calculate field strength
         b_field = self._CalculateDipoleFieldStrength(self.beam1.momentum, rho)
-        #print("b_field ",b_field)
 
         # bookkeeping info for element
         bki = self.elementBookkeeping[element.name]
