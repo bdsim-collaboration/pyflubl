@@ -15,7 +15,7 @@ ROOT_INC := $(shell root-config --cflags)
 	$(FFF) $<
 
 fluka: usrini.o usrini_c.o source_newgen.o mgdraw.o mgdraw_c.o usreou.o usreou_c.o usrout.o usrout_c.o
-	$(LFLUKA) $(ROOT_LIB) -m fluka usrini.o usrini_c.o source.o mgdraw.o mgdraw_c.o usreou.o usreou_c.o usrout.o usrout_c.o
+	$(LFLUKA) $(ROOT_LIB) -m fluka usrini.o usrini_c.o source_newgen.o mgdraw.o mgdraw_c.o usreou.o usreou_c.o usrout.o usrout_c.o
 
 clean:
 	$(RM) -rf *.o fluka
