@@ -160,7 +160,10 @@ def MakeTarget(g4registry = None,
     else:
         targetsolid = _pyg4.geant4.solid.Box(name + "_target_solid", horizontalWidth, verticalWidth, length, g4registry)
 
-    targetlogical = _pyg4.geant4.LogicalVolume(targetsolid, material, name + "_targe_lv", g4registry)
+    # fake materials
+    materialFake = _pyg4.geant4.MaterialSingleElement(name=material, atomic_number=1, atomic_weight=1,density=1)
+
+    targetlogical = _pyg4.geant4.LogicalVolume(targetsolid, materialFake, name + "_targe_lv", g4registry)
     targetphysical = _pyg4.geant4.PhysicalVolume(PlacementType.rotationFromPlacementType(placement),
                                                  [0, 0, 0],
                                                  targetlogical,
