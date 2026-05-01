@@ -185,9 +185,9 @@
       ! ==============================
 
       write(*,*) "PYFLUBL-SOURCE>"
-      write(*,*) "PYFLUBL-SOURCE>", whatou(1), whatou(2), whatou(3), whatou(4), whatou(5), whatou(6)
-      write(*,*) "PYFLUBL-SOURCE>", whatou(7), whatou(8), whatou(9), whatou(10), whatou(11), whatou(12)
-      write(*,*) "PYFLUBL-SOURCE>", whatou(13), whatou(14), whatou(15), whatou(16), whatou(17), whatou(18)
+      write(*,*) "PYFLUBL-SOURCE>", WHATOU(1), WHATOU(2), WHATOU(3), WHATOU(4), WHATOU(5), WHATOU(6)
+      write(*,*) "PYFLUBL-SOURCE>", WHATOU(7), WHATOU(8), WHATOU(9), WHATOU(10), WHATOU(11), WHATOU(12)
+      write(*,*) "PYFLUBL-SOURCE>", WHATOU(13), WHATOU(14), WHATOU(15), WHATOU(16), WHATOU(17), WHATOU(18)
 
       ! ==================================
       call source_newgen_c(particle_code)
