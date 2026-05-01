@@ -3,7 +3,7 @@
 extern "C" {
     void source_newgen_init_c_();
     void source_newgen_c_(double *whasou,int *particle_code);
-    void source_newgen_twiss_c_(double emitx, double alpx, double betx, double etax, double etaxp
+    void source_newgen_twiss_c_(double emitx, double alpx, double betx, double etax, double etaxp,
                                 double emity, double alpy, double bety, double etay, double etayp);
 }
 
