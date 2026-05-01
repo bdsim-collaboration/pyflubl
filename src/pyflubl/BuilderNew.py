@@ -1517,11 +1517,12 @@ class Machine(_Coordinates) :
         # make beampipe
         [targetLogical, targetPhysical] = _MakeTarget(g4registry,
                                                       motherLogical=outerLogical,
-                                                      name = name,
+                                                      name=name,
                                                       apertureType=targetApertureType,
                                                       length=length,
+                                                      material=targetMaterial,
                                                       horizontalWidth=targetHorizontalSize,
-                                                      verticalWidth=targetVerticalSize,)
+                                                      verticalWidth=targetVerticalSize)
 
 
         self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
