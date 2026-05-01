@@ -72,7 +72,7 @@ def plot_usrbin_projection_xarray(xarr3d,
         yr = _np.arctan2(vp[0], vp[2])
         translation_vector= [translation_vector[2], translation_vector[0]]
 
-        print(f'rotation_angle={yr}, translation_vector={translation_vector}')
+        #print(f'rotation_angle={yr}, translation_vector={translation_vector}')
         plot_usrbin_projection_numpy(proj.to_numpy(),
                                      extent=[zmin, zmax, xmax, xmin],
                                      rotation_angle=yr,
@@ -89,7 +89,7 @@ def plot_usrbin_projection_xarray(xarr3d,
         xr = _np.arctan2(vp[1], vp[2])
         translation_vector= [translation_vector[2], translation_vector[1]]
 
-        print(f'rotation_angle={xr}, translation_vector={translation_vector}')
+        #print(f'rotation_angle={xr}, translation_vector={translation_vector}')
         plot_usrbin_projection_numpy(proj.to_numpy(),
                                      extent=[zmin, zmax, ymax, ymin],
                                      rotation_angle=xr,
@@ -106,7 +106,7 @@ def plot_usrbin_projection_xarray(xarr3d,
         zr = _np.arctan2(vp[1], vp[0])
         translation_vector= [translation_vector[0], translation_vector[1]]
 
-        print(f'rotation_angle={zr}, translation_vector={translation_vector}')
+        #print(f'rotation_angle={zr}, translation_vector={translation_vector}')
         plot_usrbin_projection_numpy(proj.to_numpy(),
                                      extent=[xmin, xmax, ymin, ymax],
                                      rotation_angle=zr,
