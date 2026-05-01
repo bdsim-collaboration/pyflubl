@@ -79,9 +79,9 @@ class PyflublOutput:
 
                 rotation = _np.array(det_info['rotation'])
                 translation = _np.array(det_info['translation'])
-                print(f'idef={idet}')
-                print(f'det_info[rotation]={rotation}')
-                print(f'det_info[translation]={translation}')
+                #print(f'idef={idet}')
+                #print(f'det_info[rotation]={rotation}')
+                #print(f'det_info[translation]={translation}')
 
                 # plot xarray
                 _plot_usrbin_projection_xarray(det_xr,
