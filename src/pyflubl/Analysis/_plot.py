@@ -56,6 +56,87 @@ def plot_usrdump(ud, projection = "xz", linewidth=1, markersize=1):
                   markersize=markersize,
                   color=(0, 0, 0))
 
+def plot_usrbin_projection_xarray(xarr3d,
+                                  projection = "zx",
+                                  rotation_matrix = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
+                                  translation_vector = _np.array([0,0,0]),
+                                  cmap = "Greens") :
+    if projection == "zx" :
+        proj = xarr3d.sum(dim="y")
+        zmin = xarr3d.coords['z'].min()
+        zmax = xarr3d.coords['z'].max()
+        xmin = xarr3d.coords['x'].min()
+        xmax = xarr3d.coords['x'].max()
+
+        vp = _np.array(rotation_matrix) @ _np.array([0, 0, 1])
+        yr = _np.arctan2(vp[0], vp[2])
+        translation_vector= [translation_vector[2], translation_vector[0]]
+
+        print(f'rotation_angle={yr}, translation_vector={translation_vector}')
+        plot_usrbin_projection_numpy(proj.to_numpy(),
+                                     extent=[zmin, zmax, xmax, xmin],
+                                     rotation_angle=yr,
+                                     translation_vector=translation_vector,
+                                     cmap=cmap)
+    elif projection == "zy" :
+        proj = xarr3d.sum(dim="x")
+        zmin = xarr3d.coords['z'].min()
+        zmax = xarr3d.coords['z'].max()
+        ymin = xarr3d.coords['y'].min()
+        ymax = xarr3d.coords['y'].max()
+
+        vp = _np.array(rotation_matrix) @ _np.array([0, 0, 1])
+        xr = _np.arctan2(vp[1], vp[2])
+        translation_vector= [translation_vector[2], translation_vector[1]]
+
+        print(f'rotation_angle={xr}, translation_vector={translation_vector}')
+        plot_usrbin_projection_numpy(proj.to_numpy(),
+                                     extent=[zmin, zmax, ymax, ymin],
+                                     rotation_angle=xr,
+                                     translation_vector=translation_vector,
+                                     cmap=cmap)
+    elif projection == "xy" :
+        proj = xarr3d.sum(dim="z")
+        xmin = xarr3d.coords['x'].min()
+        xmax = xarr3d.coords['x'].max()
+        ymin = xarr3d.coords['y'].min()
+        ymax = xarr3d.coords['y'].max()
+
+        vp = _np.array(rotation_matrix) @ _np.array([1, 0, 0])
+        zr = _np.arctan2(vp[1], vp[0])
+        translation_vector= [translation_vector[0], translation_vector[1]]
+
+        print(f'rotation_angle={zr}, translation_vector={translation_vector}')
+        plot_usrbin_projection_numpy(proj.to_numpy(),
+                                     extent=[xmin, xmax, ymin, ymax],
+                                     rotation_angle=zr,
+                                     translation_vector=translation_vector,
+                                     cmap=cmap)
+    else :
+        print("projection does not exist yet, please implement")
+
+
+def plot_usrbin_projection_numpy(arr2d,
+                                 extent = [-1.,1.,-1.,1.],
+                                 rotation_angle = 0,
+                                 translation_vector = [0.,0.],
+                                 cmap = "Greens") :
+
+    # upgrade to numpy array
+    translation_vector = _np.array(translation_vector)
+
+    # calculate transformation for imshow
+    ax = _plt.gca()
+    trans = _transforms.Affine2D().rotate_deg(rotation_angle/_np.pi*180).translate(translation_vector[0], translation_vector[1]) + ax.transData
+
+    # plot imshow
+    _plt.imshow(arr2d,
+                extent=extent,
+                # norm=_LogNorm(),
+                transform=trans,
+                cmap=cmap)
+
+
 def plot_usrbin(ub, detector_idx = 0, projection = 0, cmap = "Greens",
                 rotmatrix = _np.array([[1,0,0],[0,1,0],[0,0,1]]),
                 translation = _np.array([0,0,0]),
@@ -204,6 +285,8 @@ def plot_coordinates_projection(coordinates,
                                 plotFilledElements = True,
                                 plotNormals = True) :
 
+    fig, ax = _plt.subplots(figsize=(8, 6))
+
     if projection == "xz":
         axis1 = 0
         axis2 = 2
@@ -300,6 +383,8 @@ def plot_coordinates_projection(coordinates,
     labels = ["x/mm", "y/mm", "z/mm"]
     _plt.xlabel(labels[axis1])
     _plt.ylabel(labels[axis2])
+
+    return ax
 
 def plot_coordinates_3d(coordinates) :
     ax = _plt.gcf().add_subplot(111, projection='3d')
