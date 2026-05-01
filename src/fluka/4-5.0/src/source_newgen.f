@@ -184,6 +184,11 @@
       ! BEGINNING of customizable code
       ! ==============================
 
+      write(*,*) "PYFLUBL-SOURCE>"
+      write(*,*) "PYFLUBL-SOURCE>", whatou(1), whatou(2), whatou(3), whatou(4), whatou(5), whatou(6)
+      write(*,*) "PYFLUBL-SOURCE>", whatou(7), whatou(8), whatou(9), whatou(10), whatou(11), whatou(12)
+      write(*,*) "PYFLUBL-SOURCE>", whatou(13), whatou(14), whatou(15), whatou(16), whatou(17), whatou(18)
+
       ! ==================================
       call source_newgen_c(particle_code)
 
