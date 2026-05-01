@@ -159,9 +159,13 @@
 
       nomore = 0
 
+      write(*,*) "PYFLUBL-SOURCE>"
+
       call initialization()
 
       if ( first_run ) then
+         ! ==================================
+         call source_newgen_init_c()
 
          ! ==================================
          ! BEGINNING of custom initialization
@@ -175,6 +179,9 @@
 
          first_run = .false.
       end if
+
+      ! ==================================
+      call source_newgen_c()
 
       ! ==============================
       ! BEGINNING of customizable code
