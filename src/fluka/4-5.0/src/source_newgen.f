@@ -190,7 +190,7 @@
       write(*,*) "PYFLUBL-SOURCE>", WHASOU(13), WHASOU(14), WHASOU(15), WHASOU(16), WHASOU(17), WHASOU(18)
 
       ! ==================================
-      call source_newgen_c(particle_code)
+      call source_newgen_c(whasou, particle_code)
 
       ! 1. Accessing variables from the SOURCE card
       ! ===========================================
