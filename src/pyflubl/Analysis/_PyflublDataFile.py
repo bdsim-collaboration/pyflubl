@@ -30,6 +30,10 @@ class PyflublOutput:
                  usrbinFileName = None,
                  usrbnxFileName = None):
 
+        self.dumpFile = None
+        self.usrbinFile = None
+        self.uprootTree = None
+
         if jsonFileName is not None:
             self.bookkeeping = load_bookkeeping(jsonFileName)
         if jsonCoordinateFileName is not None:
