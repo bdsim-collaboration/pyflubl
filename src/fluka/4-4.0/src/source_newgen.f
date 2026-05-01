@@ -178,13 +178,12 @@
          first_run = .false.
       end if
 
-      ! ==================================
-      call source_newgen_c()
-
       ! ==============================
       ! BEGINNING of customizable code
       ! ==============================
 
+      ! ==================================
+      call source_newgen_c()
 
       ! 1. Accessing variables from the SOURCE card
       ! ===========================================
