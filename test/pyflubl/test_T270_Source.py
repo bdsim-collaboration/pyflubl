@@ -28,7 +28,16 @@ def make_T270_Source() :
     uic = _pfbl.Fluka.Usricall()
     m.AddUsricall(uic)
 
-    us = _pfbl.Fluka.Source()
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    us = _pfbl.Fluka.Source(1, 12, 13, 14, 15, 16,
+                            21, 22, 23, 24, 25, 26,
+                            31, 32, 33, 34, 35, 36,
+                            sdum = "NONE")
     m.AddSource(us)
 
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
@@ -46,6 +55,7 @@ def make_T270_Source() :
     m.AddSamplerPlane(name="s5", length=1e-6)
     m.AddDrift(name="d5", length=1, beampipeMaterial = "TUNGSTEN")
 
+    m.SaveJSON(this_dir + "/T270_Source_coordinate.json")
     m.Write(this_dir+"/T270_Source")
 
     return m
