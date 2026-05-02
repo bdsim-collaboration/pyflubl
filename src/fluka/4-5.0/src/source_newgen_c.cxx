@@ -7,7 +7,7 @@
 
 #define DEBUG 1
 extern "C" {
-    double flnorml_(double* xdummy);
+    double flnrrn_(double* xdummy);
     void source_newgen_init_c_();
     void source_newgen_c_(double *whasou,int *particle_code);
     void source_newgen_twiss_c_(double emitx, double alpx, double betx, double etax, double etaxp,
@@ -98,8 +98,8 @@ void source_newgen_twiss_c_(double emitx, double alpx, double betx, double etax,
     for (int j = 0; j < ndim; j++)
         // ROOT random number generator
         // z[j] = rng.Gaus(0.0, 1.0);
-        // FLNORML random number generate
-        z[j] = flnorml_(&xdummy);
+        // FLNRRN random number generate
+        z[j] = flnrrn_(&xdummy);
 
     // Transform: x = mean + L * z
     TVectorD x = mean + L * z;
