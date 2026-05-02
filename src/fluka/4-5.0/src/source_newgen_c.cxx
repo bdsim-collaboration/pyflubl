@@ -96,12 +96,16 @@ void source_newgen_twiss_c_(double emitx, double alpx, double betx, double etax,
     double xdummy = 0.0;
     TVectorD z(6);
     for (int j = 0; j < ndim; j++)
-        // ROOT random number generator
-        // z[j] = rng.Gaus(0.0, 1.0);
         // FLNRRN random number generate
         z[j] = flnrrn_(&xdummy);
 
     // Transform: x = mean + L * z
     TVectorD x = mean + L * z;
 
+#if DEBUG
+    std::cout << "source_newgen_twiss_c> " << z[0] << " " << z[1] << " " << z[3] << " "
+                                           << z[4] << " " << z[5] << " " << z[6] << std::endl;
+#endif
+
 }
+
