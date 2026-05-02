@@ -86,13 +86,14 @@ void source_newgen_twiss_c_(double emitx, double alpx, double betx, double etax,
     sigma[5][4] = 0.0;
     sigma[5][5] = 0.0;
 
-    TDecompChol chol(sigma);  // Cholesky decomposition: sigma = L * L^T
-    chol.Decompose();
+    TDecompChol chol(sigma);
+    chol.Decompose();          // Cholesky decomposition: sigma = L * L^T
     TMatrixD L = chol.GetU();  // Upper triangular in ROOT
     L.Transpose(L);            // Convert to lower triangular
 
     TRandom3 rng(42);
 
+    TVectorD z(6);
     for (int j = 0; j < ndim; j++)
         z[j] = rng.Gaus(0.0, 1.0);
 
