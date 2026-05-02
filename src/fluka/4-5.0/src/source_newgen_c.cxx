@@ -1,5 +1,10 @@
 #include <iostream>
 
+#include "TMatrixD.h"
+#include "TDecompChol.h"
+#include "TRandom3.h"
+#include "TVectorD.h"
+
 #define DEBUG 1
 extern "C" {
     void source_newgen_init_c_();
@@ -27,7 +32,71 @@ void source_newgen_c_(double *whasou, int *particle_code) {
 void source_newgen_twiss_c_(double emitx, double alpx, double betx, double etax, double etaxp,
                             double emity, double alpy, double bety, double etay, double etayp) {
 #if debug
-    std::cout << "source_newgen_twiss_c> " << emitx << " " << alpx << std::endl;
+    std::cout << "source_newgen_twiss_c> " << emitx << " " << alpx << " " << betx << " " << etax << " " << etaxp << std::endl;
+    std::cout << "source_newgen_twiss_c> " << emity << " " << alpy << " " << bety << " " << etay << " " << etayp << std::endl;
 #endif
+
+    int ndim = 6;
+
+    // Mean
+    TVectorD mean(ndim);
+
+    // calcualte sigma matrix
+    TMatrixD sigma(ndim, ndim);
+
+    sigma[0][0] =  emitx * betx;
+    sigma[0][1] = -emitx * alpx;
+    sigma[0][2] = 0.0;
+    sigma[0][3] = 0.0;
+    sigma[0][4] = 0.0;
+    sigma[0][5] = 0.0;
+
+    sigma[1][0] = -emitx * alpx;
+    sigma[1][1] =  emitx * betx;
+    sigma[1][2] = 0.0;
+    sigma[1][3] = 0.0;
+    sigma[1][4] = 0.0;
+    sigma[1][5] = 0.0;
+
+    sigma[2][0] = 0.0;
+    sigma[2][1] = 0.0;
+    sigma[2][2] =  emity * bety;
+    sigma[2][3] = -emity * alpy;
+    sigma[2][4] = 0.0;
+    sigma[2][5] = 0.0;
+
+    sigma[3][0] = 0.0;
+    sigma[3][1] = 0.0;
+    sigma[3][2] = -emity * alpy;
+    sigma[3][3] =  emity * bety;
+    sigma[3][4] = 0.0;
+    sigma[3][5] = 0.0;
+
+    sigma[4][0] = 0.0;
+    sigma[4][1] = 0.0;
+    sigma[4][2] = 0.0;
+    sigma[4][3] = 0.0;
+    sigma[4][4] = 0.0;
+    sigma[4][5] = 0.0;
+
+    sigma[5][0] = 0.0;
+    sigma[5][1] = 0.0;
+    sigma[5][2] = 0.0;
+    sigma[5][3] = 0.0;
+    sigma[5][4] = 0.0;
+    sigma[5][5] = 0.0;
+
+    TDecompChol chol(sigma);  // Cholesky decomposition: sigma = L * L^T
+    chol.Decompose();
+    TMatrixD L = chol.GetU();  // Upper triangular in ROOT
+    L.Transpose(L);            // Convert to lower triangular
+
+    TRandom3 rng(42);
+
+    for (int j = 0; j < ndim; j++)
+        z[j] = rng.Gaus(0.0, 1.0);
+
+    // Transform: x = mean + L * z
+    TVectorD x = mean + L * z;
 
 }
