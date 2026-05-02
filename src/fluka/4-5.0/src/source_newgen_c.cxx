@@ -14,7 +14,7 @@ void source_newgen_init_c_() {
 void source_newgen_c_(double *whasou, int *particle_code) {
     std::cout << "source_newgen_c> " << whasou[0] << std::endl;
     if (whasou[0] == 1) {
-      source_newgen_twiss_c_(whasou[1], whasou[2], whasou[3], whasou[4], whasou[5],)
+      source_newgen_twiss_c_(whasou[1], whasou[2], whasou[3], whasou[4], whasou[5],
                              whasou[6], whasou[7], whasou[8], whasou[9], whasou[10]);
     }
 }
