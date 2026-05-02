@@ -159,19 +159,19 @@
 
       nomore = 0
 
-      write(*,*) "PYFLUBL-SOURCE>"
-
       call initialization()
+
+      write(*,*) "PYFLUBL-SOURCE>", particle_code, momentum_energy
+      write(*,*) "PYFLUBL-SOURCE> coordinate", coordinate_x, coordinate_y, coordinate_z
+
 
       if ( first_run ) then
          ! ==================================
-         call source_newgen_init_c()
 
          ! ==================================
          ! BEGINNING of custom initialization
          ! ==================================
-
-
+         call source_newgen_init_c(whasou)
 
          ! ============================
          ! END of custom initialization
@@ -185,12 +185,14 @@
       ! ==============================
 
       write(*,*) "PYFLUBL-SOURCE>"
-      ! write(*,*) "PYFLUBL-SOURCE>", WHASOU(1), WHASOU(2), WHASOU(3), WHASOU(4), WHASOU(5), WHASOU(6)
-      ! write(*,*) "PYFLUBL-SOURCE>", WHASOU(7), WHASOU(8), WHASOU(9), WHASOU(10), WHASOU(11), WHASOU(12)
-      ! write(*,*) "PYFLUBL-SOURCE>", WHASOU(13), WHASOU(14), WHASOU(15), WHASOU(16), WHASOU(17), WHASOU(18)
 
       ! ==================================
-      call source_newgen_c(whasou, particle_code)
+      call source_newgen_c(whasou, particle_code, momentum_energy, coordinate_x, coordinate_y, coordinate_z)
+
+      write(*,*) "PYFLUBL-SOURCE> after C++"
+      write(*,*) "PYFLUBL-SOURCE>", particle_code, momentum_energy
+      write(*,*) "PYFLUBL-SOURCE> coordinate", coordinate_x, coordinate_y, coordinate_z
+
 
       ! 1. Accessing variables from the SOURCE card
       ! ===========================================

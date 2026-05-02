@@ -34,9 +34,11 @@ def make_T270_Source() :
     ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
     m.AddUserdump(ud)
 
-    us = _pfbl.Fluka.Source(1, 12, 13, 14, 15, 16,
-                            21, 22, 23, 24, 25, 26,
-                            31, 32, 33, 34, 35, 36,
+    us = _pfbl.Fluka.Source(1, # type (1 - TWISS, 2 - SIGMA)
+                            1e-6, 0, 1e-3, 0, 0, # x emit, alp, bet, eta, etap
+                            1e-6, 0, 1e-3, 0, 0, # y emit, alp, bet, eta, etap
+                            0, # energy spread
+                            0, 0, 0, 0, 0, 0, # x0, xp0, y, yp0, t0, E0
                             sdum = "NONE")
     m.AddSource(us)
 
