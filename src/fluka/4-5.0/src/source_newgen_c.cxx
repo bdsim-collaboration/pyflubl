@@ -19,9 +19,11 @@ extern "C" {
                                      double x0, double xp0, double y0, double yp0, double T0, double E0);
 
     void source_newgen_c_(double *whasou, int *particle_code, double *momentum_energy,
-                          double *coordinate_x, double *coordinate_y, double *coordinate_z);
+                          double *coordinate_x, double *coordinate_y, double *coordinate_z,
+                          double *direction_cosx, double *direction_cosy, double *direction_cosz);
     void source_newgen_twiss_c_(int *particle_code, double *momentum_energy,
-                                double *coordinate_x, double *coordinate_y, double *coordinate_z);
+                                double *coordinate_x, double *coordinate_y, double *coordinate_z,
+                                double *direction_cosx, double *direction_cosy, double *direction_cosz);
 }
 
 void source_newgen_init_c_(double *whasou) {
@@ -115,18 +117,21 @@ void source_newgen_twiss_init_c_(double emitx, double alpx, double betx, double 
 }
 
 void source_newgen_c_(double *whasou, int *particle_code, double *momentum_energy,
-                      double *coordinate_x, double *coordinate_y, double *coordinate_z) {
+                      double *coordinate_x, double *coordinate_y, double *coordinate_z,
+                      double *direction_cosx, double *direction_cosy, double *direction_cosz) {
 #if DEBUG
     std::cout << "source_newgen_c> " << whasou[0] << std::endl;
 #endif
     if (whasou[0] == 1) {
       source_newgen_twiss_c_(particle_code, momentum_energy,
-                             coordinate_x, coordinate_y, coordinate_z);
+                             coordinate_x, coordinate_y, coordinate_z,
+                             direction_cosx, direction_cosy, direction_cosz);
     }
 }
 
 void source_newgen_twiss_c_(int *particle_code, double *momentum_energy,
-                            double *coordinate_x, double *coordinate_y, double *coordinate_z) {
+                            double *coordinate_x, double *coordinate_y, double *coordinate_z,
+                            double *direction_cosx, double *direction_cosy, double *direction_cosz) {
     double xdummy = 0.0;
     TVectorD z(6);
     for (int j = 0; j < 6; j++)
@@ -140,6 +145,11 @@ void source_newgen_twiss_c_(int *particle_code, double *momentum_energy,
     *coordinate_x = z[0]*100;
     *coordinate_y = z[2]*100;
     *coordinate_z = 0;
+
+    // Assign direction cosines
+    *direction_cosx = z[1];
+    *direction_cosy = z[3];
+    *direction_cosz = sqrt(1-pow(*direction_cosx,2)-pow(*direction_cosy,2));
 
     // If the energy has been set via SOURCE card
     if (mean[5] != 0) {
