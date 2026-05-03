@@ -23,7 +23,7 @@ def make_T001_drift() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -74,7 +74,7 @@ def make_T001_drift_many() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -140,7 +140,7 @@ def make_T001_drift_cut_e() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -188,7 +188,7 @@ def make_T001_drift_cut_e_p() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -230,3 +230,6 @@ def test_T001_drift_cut_e_p() :
 
 if __name__ == "__main__":
     test_T001_drift()
+    test_T001_drift_many()
+    test_T001_drift_cut_e()
+    test_T001_drift_cut_e_p()
