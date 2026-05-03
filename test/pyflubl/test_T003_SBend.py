@@ -183,7 +183,7 @@ def make_T003_SBend_split() :
     m.AddSamplerPlane(name="s1",
                       length=1e-4)
     m.AddSBendSplit(name="sb1",
-                    length=2,
+                    length=1,
                     angle=_np.pi/18,
                     nsplit=10)
     m.AddSamplerPlane(name="s2",
@@ -195,7 +195,7 @@ def make_T003_SBend_split() :
     m.AddSamplerPlane(name="s3",
                       length=1e-4)
     m.AddSBendSplit(name="sb2",
-                    length=2,
+                    length=1,
                     angle=-_np.pi/18,
                     nsplit=10)
     m.AddSamplerPlane(name="s4",
@@ -253,7 +253,7 @@ def make_T003_SBend_split_tilt() :
     m.AddSamplerPlane(name="s1",
                       length=1e-4)
     m.AddSBendSplit(name="sb1",
-                    length=2,
+                    length=1,
                     angle=_np.pi/18,
                     tilt=_np.pi/2,
                     nsplit=10)
@@ -266,7 +266,7 @@ def make_T003_SBend_split_tilt() :
     m.AddSamplerPlane(name="s3",
                       length=1e-4)
     m.AddSBendSplit(name="sb2",
-                    length=2,
+                    length=1,
                     angle=-_np.pi/18,
                     tilt=_np.pi/2,
                     nsplit=10)
