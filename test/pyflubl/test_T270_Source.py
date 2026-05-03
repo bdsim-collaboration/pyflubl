@@ -22,7 +22,7 @@ def make_T270_Source() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1000)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -35,8 +35,8 @@ def make_T270_Source() :
     m.AddUserdump(ud)
 
     us = _pfbl.Fluka.Source(1, # type (1 - TWISS, 2 - SIGMA)
-                            1e-6, 0, 1e-3, 0, 0, # x emit, alp, bet, eta, etap
-                            1e-6, 0, 1e-3, 0, 0, # y emit, alp, bet, eta, etap
+                            1e-9, 0, 1e-3, 0, 0, # x emit, alp, bet, eta, etap
+                            1e-9, 0, 1e-3, 0, 0, # y emit, alp, bet, eta, etap
                             0, # energy spread
                             0, 0, 0, 0, 0, 0, # x0, xp0, y, yp0, t0, E0
                             sdum = "NONE")
