@@ -21,7 +21,7 @@ def make_T002_RBend() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(1000)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -69,12 +69,10 @@ def make_T002_RBend() :
     m.AddSamplerPlane(name="s1",
                       length=1e-4)
 
+    m.SaveJSON(this_dir + "/T002_RBend_coordinate.json")
     m.Write(this_dir+"/T002_RBend")
 
     return m
-
-def test_T002_RBend() :
-    make_T002_RBend()
 
 def make_T002_RBend_tilt() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -95,7 +93,7 @@ def make_T002_RBend_tilt() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -142,12 +140,10 @@ def make_T002_RBend_tilt() :
                beampipeThickness=5,
                outerMaterial="AIR")
 
+    m.SaveJSON(this_dir + "/T002_RBend_tilt_coordinate.json")
     m.Write(this_dir+"/T002_RBend_tilt")
 
     return m
-
-def test_T002_RBend_tilt() :
-    make_T002_RBend_tilt()
 
 def make_T002_RBend_90deg() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -168,7 +164,7 @@ def make_T002_RBend_90deg() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -198,13 +194,10 @@ def make_T002_RBend_90deg() :
                         angle=_np.pi/nrbend/2)
 
 
-
+    m.SaveJSON(this_dir + "/T002_RBend_90deg_coordinate.json")
     m.Write(this_dir+"/T002_RBend_90deg")
 
     return m
-
-def test_T002_RBend_90deg() :
-    make_T002_RBend_90deg()
 
 def make_T002_RBend_90deg_tilt() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -225,7 +218,7 @@ def make_T002_RBend_90deg_tilt() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -256,10 +249,19 @@ def make_T002_RBend_90deg_tilt() :
                         tilt=_np.pi/2)
 
 
-
+    m.SaveJSON(this_dir + "/T002_RBend_90deg_tilt_coordinate.json")
     m.Write(this_dir+"/T002_RBend_90deg_tilt")
 
     return m
+
+def test_T002_RBend() :
+    make_T002_RBend()
+
+def test_T002_RBend_tilt() :
+    make_T002_RBend_tilt()
+
+def test_T002_RBend_90deg() :
+    make_T002_RBend_90deg()
 
 def test_T002_RBend_90deg_tilt() :
     make_T002_RBend_90deg_tilt()
