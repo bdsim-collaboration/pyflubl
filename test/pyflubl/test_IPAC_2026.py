@@ -77,7 +77,16 @@ def IPAC_2026() :
     m.AddQuadrupole(name="q1", length=0.25, k1=-0.2, beampipeMaterial="SS")
     m.AddSamplerPlane(name="s4", length=1e-6)
     m.AddDrift(name="d3", length=1.0, beampipeMaterial="SS")
+    m.AddTarget(name="t1", length=0.01, material="IRON")
+    m.AddDrift(name="d4", length=1.0, beampipeMaterial="SS")
     m.AddSamplerPlane(name="s5", length=1e-6)
+
+    eb1 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
+                             particle="ALL-PART",lun=-24,
+                             xmax=50, ymax=50, zmax=100, sdum="eb1",
+                             xmin=-50, ymin=-50, zmin=-100,
+                             nxbin=101, nybin=101, nzbin=101)
+    m.AddUsrbinToElement("t1", eb1)
 
     m.SaveJSON(this_dir + "/IPAC_2026_coordinate.json")
     m.Write(this_dir + "/IPAC_2026")
