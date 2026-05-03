@@ -72,9 +72,6 @@ def make_T051_Lattice_Drift() :
 
     return m
 
-def test_T051_Lattice_Drift() :
-    make_T051_Lattice_Drift()
-
 def make_T051_Lattice_RBend() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
@@ -164,9 +161,6 @@ def make_T051_Lattice_RBend() :
     m.Write(this_dir+"/T051_Lattice_RBend")
 
     return m
-
-def test_T051_Lattice_RBend() :
-    make_T051_Lattice_RBend()
 
 def make_T051_Lattice_SBend() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -258,9 +252,6 @@ def make_T051_Lattice_SBend() :
 
     return m
 
-def test_T051_Lattice_SBend() :
-    make_T051_Lattice_SBend()
-
 def make_T051_Lattice_SBend_simple() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
@@ -328,9 +319,6 @@ def make_T051_Lattice_SBend_simple() :
     m.Write(this_dir+"/T051_Lattice_SBend_simple")
 
     return m
-
-def test_T051_Lattice_SBend_simple() :
-    make_T051_Lattice_SBend_simple()
 
 def make_T051_Lattice_Quadrupole():
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -409,9 +397,6 @@ def make_T051_Lattice_Quadrupole():
 
     return m
 
-def test_T051_Lattice_Quadrupole() :
-    make_T051_Lattice_Quadrupole()
-
 def make_T051_Lattice_CustomFlukaFile() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
@@ -465,9 +450,6 @@ def make_T051_Lattice_CustomFlukaFile() :
     m.Write(this_dir+"/T051_Lattice_CustomFlukaFile")
 
     return m
-
-def test_T051_Lattice_CustomFlukaFile() :
-    make_T051_Lattice_CustomFlukaFile()
 
 def make_T051_Lattice_CustomFlukaFile_Bend() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -529,9 +511,6 @@ def make_T051_Lattice_CustomFlukaFile_Bend() :
 
     return m
 
-def test_T051_Lattice_CustomFlukaFile_Bend() :
-    make_T051_Lattice_CustomFlukaFile_Bend()
-
 def make_T051_Lattice_CustomG4File_RBend() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
@@ -578,9 +557,6 @@ def make_T051_Lattice_CustomG4File_RBend() :
     m.AddLatticeInstance("g4i1","g4")
 
     m.Write(this_dir+"/T051_Lattice_CustomG4File_RBend")
-
-def test_T051_Lattice_CustomG4File_RBend() :
-    make_T051_Lattice_CustomG4File_RBend()
 
 def make_T051_Lattice_CustomG4File_Quad() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -634,6 +610,30 @@ def make_T051_Lattice_CustomG4File_Quad() :
     m.Write(this_dir+"/T051_Lattice_CustomG4File_Quad")
 
     return m
+
+def test_T051_Lattice_Drift() :
+    make_T051_Lattice_Drift()
+
+def test_T051_Lattice_RBend() :
+    make_T051_Lattice_RBend()
+
+def test_T051_Lattice_SBend() :
+    make_T051_Lattice_SBend()
+
+def test_T051_Lattice_SBend_simple() :
+    make_T051_Lattice_SBend_simple()
+
+def test_T051_Lattice_Quadrupole() :
+    make_T051_Lattice_Quadrupole()
+
+def test_T051_Lattice_CustomFlukaFile() :
+    make_T051_Lattice_CustomFlukaFile()
+
+def test_T051_Lattice_CustomFlukaFile_Bend() :
+    make_T051_Lattice_CustomFlukaFile_Bend()
+
+def test_T051_Lattice_CustomG4File_RBend() :
+    make_T051_Lattice_CustomG4File_RBend()
 
 def test_T051_Lattice_CustomG4File_Quad() :
     make_T051_Lattice_CustomG4File_Quad()
