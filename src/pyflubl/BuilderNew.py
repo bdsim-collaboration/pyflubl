@@ -1251,6 +1251,11 @@ class Machine(_Coordinates) :
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
         else :
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1 / 1e3, maxStepSize=0.1,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, "dummy")
 
@@ -1363,6 +1368,11 @@ class Machine(_Coordinates) :
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
         else :
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1 / 1e3, maxStepSize=0.1,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, "dummy")
 
@@ -1472,6 +1482,11 @@ class Machine(_Coordinates) :
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
         else :
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1 / 1e3, maxStepSize=0.1,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, "dummy")
 
