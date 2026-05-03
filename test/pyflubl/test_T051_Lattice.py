@@ -21,7 +21,7 @@ def make_T051_Lattice_Drift() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -68,6 +68,7 @@ def make_T051_Lattice_Drift() :
     m.AddLatticeInstance("d2i4","d2")
     m.AddLatticeInstance("d3i4","d3")
 
+    m.SaveJSON(this_dir + "/T051_Lattice_Drift_coordinate.json")
     m.Write(this_dir+"/T051_Lattice_Drift")
 
     return m
@@ -156,8 +157,7 @@ def make_T051_Lattice_RBend() :
     m.AddLatticeInstance("d1i10","d1")
     m.AddLatticeInstance("rb2i5","rb2")
 
-
-
+    m.SaveJSON(this_dir + "/T051_Lattice_RBend_coordinate.json")
     m.Write(this_dir+"/T051_Lattice_RBend")
 
     return m
@@ -181,7 +181,7 @@ def make_T051_Lattice_SBend() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -248,75 +248,8 @@ def make_T051_Lattice_SBend() :
 
     m.AddSamplerPlane(name="s1", length=1e-4)
 
+    m.SaveJSON(this_dir + "/T051_Lattice_SBend_coordinate.json")
     m.Write(this_dir+"/T051_Lattice_SBend")
-
-    return m
-
-def make_T051_Lattice_SBend_simple() :
-    this_dir = _os.path.dirname(_os.path.abspath(__file__))
-
-    m = _pfbl.BuilderNew.Machine(bakeTransforms=True)
-
-    d = _pfbl.Fluka.Defaults('EM-CASCA')
-    m.AddDefaults(d)
-
-    b = _pfbl.Fluka.Beam(momentumOrKe=1, energySpread=0.0, sdum="ELECTRON")
-    bp = _pfbl.Fluka.Beampos(xCentre=0, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
-    ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
-                              zxCosine=0, zyCosine=0, zzCosine=1)
-    m.AddBeam(b)
-    m.AddBeampos(bp)
-    m.AddBeamaxes(ba)
-
-    r = _pfbl.Fluka.Randomiz()
-    m.AddRandomiz(r)
-
-    s = _pfbl.Fluka.Start(10)
-    m.AddStart(s)
-
-    uic = _pfbl.Fluka.Usricall()
-    m.AddUsricall(uic)
-
-    uoc = _pfbl.Fluka.Usrocall()
-    m.AddUsrocall(uoc)
-
-    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
-    m.AddUserdump(ud)
-
-    # set world material
-    m.world_material = "VACUUM"
-
-    d1 = m.AddDrift(name="d1",
-                    length=1.0,
-                    beampipeMaterial = "IRON",
-                    outerMaterial = "AIR",
-                    add=False)
-
-    sb1 = m.AddSBend(name="sb1",
-                     length=1.0,
-                     angle=_np.pi*5/180.0,
-                     add=False)
-
-    sb2 = m.AddSBend(name="sb2",
-                     length=1.0,
-                     angle=-_np.pi*5/180.0,
-                     add=False)
-
-    m.AddLatticePrototype(d1)
-    m.AddLatticePrototype(sb1)
-    m.AddLatticePrototype(sb2)
-
-    m.AddLatticeInstance("d1i1","d1")
-    m.AddRCol(name="c1",length=0.005,material="IRON",xsize=0,ysize=0)
-    m.AddLatticeInstance("d1i2","d1")
-    m.AddLatticeInstance("sb1i1","sb1")
-    m.AddLatticeInstance("d1i3","d1")
-    m.AddLatticeInstance("sb2i1","sb2")
-    m.AddLatticeInstance("d1i4","d1")
-
-    m.AddSamplerPlane(name="s1", length=1e-4)
-
-    m.Write(this_dir+"/T051_Lattice_SBend_simple")
 
     return m
 
@@ -393,6 +326,7 @@ def make_T051_Lattice_Quad():
 
     m.AddLatticeInstance("q2i2","q2")
 
+    m.SaveJSON(this_dir + "/T051_Lattice_Quad_coordinate.json")
     m.Write(this_dir+"/T051_Lattice_Quad")
 
     return m
@@ -541,11 +475,12 @@ def make_T051_Lattice_CustomFlukaFile() :
     m.AddLatticeInstance("c1i3","c1", tilt=_np.pi/4, offsetX=50)
     m.AddDrift(name="d4",length=1)
 
+    m.SaveJSON(this_dir + "/T051_Lattice_CustomFlukaFile_coordinate.json")
     m.Write(this_dir+"/T051_Lattice_CustomFlukaFile")
 
     return m
 
-def make_T051_Lattice_CustomFlukaFile_Bend() :
+def make_T051_Lattice_CustomFlukaFile_Transform() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
     m = _pfbl.BuilderNew.Machine(bakeTransforms=True)
@@ -601,7 +536,8 @@ def make_T051_Lattice_CustomFlukaFile_Bend() :
     m.AddLatticeInstance("c1i3","c1", tilt=_np.pi/4, offsetX=50)
     m.AddDrift(name="d6",length=1)
 
-    m.Write(this_dir+"/T051_Lattice_CustomFlukaFile_Bend")
+    m.SaveJSON(this_dir + "/T051_Lattice_CustomFlukaFile_Transform_coordinate.json")
+    m.Write(this_dir+"/T051_Lattice_CustomFlukaFile_Transform")
 
     return m
 
@@ -650,6 +586,7 @@ def make_T051_Lattice_CustomG4File_RBend() :
     m.AddDrift(name="d1",length=1)
     m.AddLatticeInstance("g4i1","g4")
 
+    m.SaveJSON(this_dir + "/T051_Lattice_CustomG4File_RBend_coordinate.json")
     m.Write(this_dir+"/T051_Lattice_CustomG4File_RBend")
 
 def make_T051_Lattice_CustomG4File_Quad() :
@@ -701,6 +638,7 @@ def make_T051_Lattice_CustomG4File_Quad() :
     m.AddDrift(name="d3",length=1)
     m.AddLatticeInstance("g4i3","g4")
 
+    m.SaveJSON(this_dir + "/T051_Lattice_CustomG4File_Quad_coordinate.json")
     m.Write(this_dir+"/T051_Lattice_CustomG4File_Quad")
 
     return m
@@ -714,9 +652,6 @@ def test_T051_Lattice_RBend() :
 def test_T051_Lattice_SBend() :
     make_T051_Lattice_SBend()
 
-def test_T051_Lattice_SBend_simple() :
-    make_T051_Lattice_SBend_simple()
-
 def test_T051_Lattice_Quad() :
     make_T051_Lattice_Quad()
 
@@ -726,8 +661,8 @@ def test_T051_Lattice_Quad_Transform() :
 def test_T051_Lattice_CustomFlukaFile() :
     make_T051_Lattice_CustomFlukaFile()
 
-def test_T051_Lattice_CustomFlukaFile_Bend() :
-    make_T051_Lattice_CustomFlukaFile_Bend()
+def test_T051_Lattice_CustomFlukaFile_Transform() :
+    make_T051_Lattice_CustomFlukaFile_Transform()
 
 def test_T051_Lattice_CustomG4File_RBend() :
     make_T051_Lattice_CustomG4File_RBend()
