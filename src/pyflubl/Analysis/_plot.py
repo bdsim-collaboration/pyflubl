@@ -132,7 +132,7 @@ def plot_usrbin_projection_numpy(arr2d,
     # plot imshow
     _plt.imshow(arr2d,
                 extent=extent,
-                # norm=_LogNorm(),
+                norm=_LogNorm(),
                 transform=trans,
                 cmap=cmap)
 
