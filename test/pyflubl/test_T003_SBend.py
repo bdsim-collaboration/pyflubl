@@ -21,7 +21,7 @@ def make_T003_SBend() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(1000)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -65,12 +65,10 @@ def make_T003_SBend() :
     m.AddSamplerPlane(name="s5",
                       length=1e-4)
 
+    m.SaveJSON(this_dir + "/T003_SBend_coordinate.json")
     m.Write(this_dir+"/T003_SBend")
 
     return m
-
-def test_T003_SBend() :
-    make_T003_SBend()
 
 def make_T003_SBend_tilt() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -91,7 +89,7 @@ def make_T003_SBend_tilt() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -113,7 +111,7 @@ def make_T003_SBend_tilt() :
     m.AddSamplerPlane(name="s1",
                       length=1e-4)
     m.AddSBend(name="sb1",
-               length=2,
+               length=1,
                angle=_np.pi/18,
                tilt=_np.pi/2)
     m.AddSamplerPlane(name="s2",
@@ -136,12 +134,10 @@ def make_T003_SBend_tilt() :
     m.AddSamplerPlane(name="s5",
                       length=1e-4)
 
+    m.SaveJSON(this_dir + "/T003_SBend_tilt_coordinate.json")
     m.Write(this_dir+"/T003_SBend_tilt")
 
     return m
-
-def test_T003_SBend_tilt() :
-    make_T003_SBend_tilt()
 
 def make_T003_SBend_split() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -162,7 +158,7 @@ def make_T003_SBend_split() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -211,12 +207,10 @@ def make_T003_SBend_split() :
     m.AddSamplerPlane(name="s5",
                       length=1e-4)
 
+    m.SaveJSON(this_dir + "/T003_SBend_split_coordinate.json")
     m.Write(this_dir+"/T003_SBend_split")
 
     return m
-
-def test_T003_SBend_split() :
-    make_T003_SBend_split()
 
 def make_T003_SBend_split_tilt() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -237,7 +231,7 @@ def make_T003_SBend_split_tilt() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -285,12 +279,10 @@ def make_T003_SBend_split_tilt() :
     m.AddSamplerPlane(name="s5",
                       length=1e-4)
 
+    m.SaveJSON(this_dir + "/T003_SBend_split_tilt_coordinate.json")
     m.Write(this_dir+"/T003_SBend_split_tilt")
 
     return m
-
-def test_T003_SBend_split_tilt() :
-    make_T003_SBend_split_tilt()
 
 def make_T003_SBend_split_90deg() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -311,7 +303,7 @@ def make_T003_SBend_split_90deg() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -335,9 +327,22 @@ def make_T003_SBend_split_90deg() :
     m.AddSamplerPlane(name="s2",
                       length=1e-4)
 
+    m.SaveJSON(this_dir + "/T003_SBend_split_90deg_coordinate.json")
     m.Write(this_dir+"/T003_SBend_split_90deg")
 
     return m
+
+def test_T003_SBend() :
+    make_T003_SBend()
+
+def test_T003_SBend_tilt() :
+    make_T003_SBend_tilt()
+
+def test_T003_SBend_split() :
+    make_T003_SBend_split()
+
+def test_T003_SBend_split_tilt() :
+    make_T003_SBend_split_tilt()
 
 def test_T003_SBend_split_90deg() :
     make_T003_SBend_split_90deg()
