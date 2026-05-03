@@ -22,13 +22,24 @@ def make_T270_Source() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1000)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
     m.AddUsricall(uic)
 
-    us = _pfbl.Fluka.Source()
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    us = _pfbl.Fluka.Source(1, # type (1 - TWISS, 2 - SIGMA)
+                            1e-9, 0, 1e-3, 0, 0, # x emit, alp, bet, eta, etap
+                            1e-9, 0, 1e-3, 0, 0, # y emit, alp, bet, eta, etap
+                            0, # energy spread
+                            0, 0, 0, 0, 0, 0, # x0, xp0, y, yp0, t0, E0
+                            sdum = "NONE")
     m.AddSource(us)
 
     m.AddDrift(name="d1", length=1, beampipeMaterial = "TUNGSTEN")
@@ -46,6 +57,7 @@ def make_T270_Source() :
     m.AddSamplerPlane(name="s5", length=1e-6)
     m.AddDrift(name="d5", length=1, beampipeMaterial = "TUNGSTEN")
 
+    m.SaveJSON(this_dir + "/T270_Source_coordinate.json")
     m.Write(this_dir+"/T270_Source")
 
     return m

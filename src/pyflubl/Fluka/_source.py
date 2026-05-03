@@ -37,4 +37,4 @@ class Source(_BaseCard):
         self.cardCont2 = _Card("SOURCE",
                                what13, what14, what15,
                                what16, what17, what18,
-                               "&")
+                               "&&")

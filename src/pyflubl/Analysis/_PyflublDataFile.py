@@ -64,8 +64,13 @@ class PyflublOutput:
             ylim = ax.get_ylim()
 
         if self.dumpFile is not None:
-            self.dumpFile.read_event(eventNumber)
-            _plot_usrdump(self.dumpFile,projection=projection)
+            if type(eventNumber) is int :
+                self.dumpFile.read_event(eventNumber)
+                _plot_usrdump(self.dumpFile,projection=projection)
+            elif type(eventNumber) is slice :
+                for i in range(eventNumber.start, eventNumber.stop,1) :
+                    self.dumpFile.read_event(i)
+                    _plot_usrdump(self.dumpFile, projection=projection)
 
         if self.usrbinFile is not None:
             self.usrbinXArray = []
