@@ -110,23 +110,32 @@ def IPAC_2026() :
 
     m.AddDrift(name="d1", length=1, beampipeMaterial="SS")
     m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddSBendSplit(name="sb1", length=2, angle=_np.pi / 4, nsplit=10, beampipeMaterial="SS")
-    m.AddSamplerPlane(name="s2", length=1e-6)
-    m.AddDrift(name="d2", length=0.25, beampipeMaterial="SS")
-    m.AddSamplerPlane(name="s3", length=1e-6)
     m.AddQuadrupole(name="q1", length=0.25, k1=-0.2, beampipeMaterial="SS")
-    m.AddSamplerPlane(name="s4", length=1e-6)
-    m.AddDrift(name="d3", length=1.0, beampipeMaterial="SS")
+    m.AddDrift(name="d2", length=1.0, beampipeMaterial="SS")
+    m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddTarget(name="t1", length=0.01, material="IRON")
-    m.AddDrift(name="d4", length=1.0, beampipeMaterial="SS")
+    m.AddSamplerPlane(name="s3", length=1e-6)
+    m.AddDrift(name="d3", length=1.0, beampipeMaterial="SS")
+    m.AddSamplerPlane(name="s4", length=1e-6)
+    m.AddSBendSplit(name="sb1", length=2, angle=_np.pi / 4, nsplit=10, beampipeMaterial="SS")
     m.AddSamplerPlane(name="s5", length=1e-6)
+    m.AddDrift(name="d4", length=1.0, beampipeMaterial="SS")
+    m.AddSamplerPlane(name="s6", length=1e-6)
 
     eb1 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
                              particle="ALL-PART",lun=-24,
-                             xmax=50, ymax=50, zmax=100, sdum="eb1",
-                             xmin=-50, ymin=-50, zmin=-100,
+                             xmax=50, ymax=50, zmax=50, sdum="eb1",
+                             xmin=-50, ymin=-50, zmin=-50,
                              nxbin=101, nybin=101, nzbin=101)
     m.AddUsrbinToElement("t1", eb1)
+
+
+    eb2 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
+                             particle="ALL-PART",lun=-24,
+                             xmax=50, ymax=50, zmax=150, sdum="eb2",
+                             xmin=-50, ymin=-50, zmin=-150,
+                             nxbin=101, nybin=101, nzbin=101)
+    m.AddUsrbinToElement("d4", eb2)
 
     m.SaveJSON(this_dir + "/IPAC_2026_coordinate.json")
     m.Write(this_dir + "/IPAC_2026")
