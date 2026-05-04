@@ -24,8 +24,6 @@ def IPAC_2025() :
     m.AddBeampos(bp)
     m.AddBeamaxes(ba)
 
-
-
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
