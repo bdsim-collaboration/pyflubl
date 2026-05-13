@@ -67,7 +67,7 @@ class ElementData {
         double transformS(double X, double Y, double Z) {
             double x,y,z;
             transform(X,Y,Z,x,y,z);
-            return S+z-length/2.0;
+            return S+z; //-length/2.0;
         }
 
         std::string name;
