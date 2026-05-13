@@ -215,5 +215,11 @@ def IPAC_2026() :
     m.SaveJSON(this_dir + "/IPAC_2026_coordinate.json")
     m.Write(this_dir + "/IPAC_2026")
 
+def test_IPAC_2026_Lattice():
+    IPAC_2026_Lattice()
+
+def test_IPAC_2026_magnetic():
+    IPAC_2026_magnetic()
+
 def test_IPAC_2026():
     IPAC_2026()
