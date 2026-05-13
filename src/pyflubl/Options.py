@@ -12,8 +12,8 @@ class Options:
 
         # outer
         self._outerMaterial = "AIR"
-        self._outerHorizontalSize = 300
-        self._outerVerticalSize = 300
+        self._outerHorizontalSize = 1000
+        self._outerVerticalSize = 1000
 
         # world material
         self._worldMaterial = "AIR"
