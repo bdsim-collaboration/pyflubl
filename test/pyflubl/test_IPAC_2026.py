@@ -151,18 +151,18 @@ def IPAC_2026() :
     ud = _pfbl.Fluka.Userdump(mgdraw=100, lun=23, mgdrawOption=-1, userDump=None, outputFile="dump")
     m.AddUserdump(ud)
 
-    us = _pfbl.Fluka.Source(1,  # type (1 - TWISS, 2 - SIGMA)
-                            1e-10, 0, 1e-4, 0, 0,  # x emit, alp, bet, eta, etap
-                            1e-10, 0, 1e-4, 0, 0,  # y emit, alp, bet, eta, etap
-                            0,  # energy spread
-                            0, 0, 0, 0, 0, 0,  # x0, xp0, y, yp0, t0, E0
-                            sdum="NONE")
-    m.AddSource(us)
+    #us = _pfbl.Fluka.Source(1,  # type (1 - TWISS, 2 - SIGMA)
+    #                        1e-10, 0, 1e-4, 0, 0,  # x emit, alp, bet, eta, etap
+    #                        1e-10, 0, 1e-4, 0, 0,  # y emit, alp, bet, eta, etap
+    #                        0,  # energy spread
+    #                        0, 0, 0, 0, 0, 0,  # x0, xp0, y, yp0, t0, E0
+    #                        sdum="NONE")
+    #m.AddSource(us)
 
     # Make materials (SS 316 )
     fr = m._GetFlukaRegistry(True)
     fm_c = _pyg4.fluka.Material("C", 6, 2.266, 12, flukaregistry=fr)  # graphite density
-    fm_mn = _pyg4.fluka.Material("MN", 25, 7.21, 56, flukaregistry=fr)  # density range 7.21 - 7.47 g/cm^3
+    fm_mn = _pyg4.fluka.Material("MN", 25, 7.21, 55, flukaregistry=fr)  # density range 7.21 - 7.47 g/cm^3
     fm_p = _pyg4.fluka.Material("P", 15, 1.82, 31, flukaregistry=fr)  # white 1.82 g/cm^3
     fm_s = _pyg4.fluka.Material("S", 16, 2.07, 32, flukaregistry=fr)
     fm_si = _pyg4.fluka.Material("SI", 14, 2.33, 28, flukaregistry=fr)
