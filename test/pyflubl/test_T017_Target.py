@@ -21,7 +21,7 @@ def make_T017_target_circular() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -50,12 +50,10 @@ def make_T017_target_circular() :
                 outerMaterial="AIR")
     m.AddSamplerPlane(name="s2", length=1e-6)
 
+    m.SaveJSON(this_dir + "/T017_target_circular_coordinate.json")
     m.Write(this_dir+"/T017_target_circular")
 
     return m
-
-def test_T017_target_circular() :
-    make_T017_target_circular()
 
 def make_T017_target_elliptical() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -97,12 +95,10 @@ def make_T017_target_elliptical() :
                 outerMaterial="AIR")
     m.AddSamplerPlane(name="s2", length=1e-6)
 
+    m.SaveJSON(this_dir + "/T017_target_elliptical_coordinate.json")
     m.Write(this_dir+"/T017_target_elliptical")
 
     return m
-
-def test_T017_target_elliptical() :
-    make_T017_target_elliptical()
 
 def make_T017_target_rectangular() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -144,9 +140,16 @@ def make_T017_target_rectangular() :
                 outerMaterial="AIR")
     m.AddSamplerPlane(name="s2", length=1e-6)
 
+    m.SaveJSON(this_dir + "/T017_target_rectangular_coordinate.json")
     m.Write(this_dir+"/T017_target_rectangular")
 
     return m
+
+def test_T017_target_circular() :
+    make_T017_target_circular()
+
+def test_T017_target_elliptical() :
+    make_T017_target_elliptical()
 
 def test_T017_target_rectangular() :
     make_T017_target_rectangular()
@@ -154,3 +157,4 @@ def test_T017_target_rectangular() :
 if __name__ == "__main__":
     test_T017_target_circular()
     test_T017_target_elliptical()
+    test_T017_target_rectangular()
