@@ -75,8 +75,17 @@ def make_T017_target_elliptical() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(1000)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
 
     m.AddDrift(name="d1", length=1)
     m.AddTarget(name="t1", length=1,
@@ -120,8 +129,18 @@ def make_T017_target_rectangular() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(1000)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
 
     m.AddDrift(name="d1", length=1)
     m.AddTarget(name="t1", length=1,
