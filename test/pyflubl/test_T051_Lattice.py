@@ -262,7 +262,7 @@ def make_T051_Lattice_Quad():
     m.AddDefaults(d)
 
     b = _pfbl.Fluka.Beam(momentumOrKe=1, energySpread=0.0, sdum="ELECTRON")
-    bp = _pfbl.Fluka.Beampos(xCentre=0, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
+    bp = _pfbl.Fluka.Beampos(xCentre=0.5, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
     ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
                               zxCosine=0, zyCosine=0, zzCosine=1)
     m.AddBeam(b)
@@ -340,7 +340,7 @@ def make_T051_Lattice_Quad_Transform():
     m.AddDefaults(d)
 
     b = _pfbl.Fluka.Beam(momentumOrKe=1, energySpread=0.0, sdum="ELECTRON")
-    bp = _pfbl.Fluka.Beampos(xCentre=0, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
+    bp = _pfbl.Fluka.Beampos(xCentre=0.25, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
     ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
                               zxCosine=0, zyCosine=0, zzCosine=1)
     m.AddBeam(b)
@@ -350,7 +350,7 @@ def make_T051_Lattice_Quad_Transform():
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(100)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -362,13 +362,13 @@ def make_T051_Lattice_Quad_Transform():
     ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
     m.AddUserdump(ud)
 
-    us = _pfbl.Fluka.Source(1, # type (1 - TWISS, 2 - SIGMA)
-                            1e-9, 0, 1e-3, 0, 0, # x emit, alp, bet, eta, etap
-                            1e-9, 0, 1e-3, 0, 0, # y emit, alp, bet, eta, etap
-                            0, # energy spread
-                            0, 0, 0, 0, 0, 0, # x0, xp0, y, yp0, t0, E0
-                            sdum = "NONE")
-    m.AddSource(us)
+    #us = _pfbl.Fluka.Source(1, # type (1 - TWISS, 2 - SIGMA)
+    #                        1e-9, 0, 1e-3, 0, 0, # x emit, alp, bet, eta, etap
+    #                        1e-9, 0, 1e-3, 0, 0, # y emit, alp, bet, eta, etap
+    #                        0, # energy spread
+    #                        0, 0, 0, 0, 0, 0, # x0, xp0, y, yp0, t0, E0
+    #                        sdum = "NONE")
+    #m.AddSource(us)
 
     # set world material
     m.world_material = "VACUUM"
@@ -472,7 +472,7 @@ def make_T051_Lattice_CustomFlukaFile() :
     m.AddDrift(name="d2",length=1)
     m.AddLatticeInstance("c1i2","c1", tilt=_np.pi/2)
     m.AddDrift(name="d3",length=1)
-    m.AddLatticeInstance("c1i3","c1", tilt=_np.pi/4, offsetX=50)
+    m.AddLatticeInstance("c1i3","c1", tilt=_np.pi/4, offsetX=50.0)
     m.AddDrift(name="d4",length=1)
 
     m.SaveJSON(this_dir + "/T051_Lattice_CustomFlukaFile_coordinate.json")
@@ -533,7 +533,7 @@ def make_T051_Lattice_CustomFlukaFile_Transform() :
     m.AddDrift(name="d4",length=1)
     m.AddLatticeInstance("c1i2","c1", tilt=_np.pi/2)
     m.AddDrift(name="d5",length=1)
-    m.AddLatticeInstance("c1i3","c1", tilt=_np.pi/4, offsetX=50)
+    m.AddLatticeInstance("c1i3","c1", tilt=_np.pi/4, offsetX=25)
     m.AddDrift(name="d6",length=1)
 
     m.SaveJSON(this_dir + "/T051_Lattice_CustomFlukaFile_Transform_coordinate.json")
@@ -669,3 +669,14 @@ def test_T051_Lattice_CustomG4File_RBend() :
 
 def test_T051_Lattice_CustomG4File_Quad() :
     make_T051_Lattice_CustomG4File_Quad()
+
+if __name__ == "__main__":
+    test_T051_Lattice_Drift()
+    test_T051_Lattice_RBend()
+    test_T051_Lattice_SBend()
+    test_T051_Lattice_Quad()
+    test_T051_Lattice_Quad_Transform()
+    test_T051_Lattice_CustomFlukaFile()
+    test_T051_Lattice_CustomFlukaFile_Transform()
+    test_T051_Lattice_CustomG4File_RBend()
+    test_T051_Lattice_CustomG4File_Quad()
