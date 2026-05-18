@@ -6,7 +6,7 @@ def T300_BDSIM_target(material = "G4_Al", length = 1.0) :
     m = _pybd.Builder.Machine()
 
     m.AddDrift(name="d1", length=1.0)
-    m.AddTarget(name="t", length=length, material=material)
+    # m.AddTarget(name="t", length=length, material=material)
     m.AddDrift(name="d2", length=1.0)
 
     b = _pybd.Beam.Beam()
