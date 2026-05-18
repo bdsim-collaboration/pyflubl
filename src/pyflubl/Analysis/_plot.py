@@ -285,7 +285,7 @@ def plot_coordinates_projection(coordinates,
                                 plotFilledElements = True,
                                 plotNormals = True) :
 
-    fig, ax = _plt.subplots(figsize=(8, 6))
+    fig, ax = _plt.subplots(figsize=(7, 3.5))
 
     if projection == "xz":
         axis1 = 0

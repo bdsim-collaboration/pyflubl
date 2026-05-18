@@ -10,6 +10,7 @@ old
 *.inp
 *.gdml
 *.json
+*.gmad
 run_*
 *.pickle
 *.pdf

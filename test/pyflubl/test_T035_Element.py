@@ -23,8 +23,17 @@ def make_T035_Element_G4() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
 
     # custom geometry
     g4registry = m._GetGeant4Registry(True)
@@ -40,12 +49,11 @@ def make_T035_Element_G4() :
     m.AddDrift(name="d2", length=1)
     m.AddCustomG4(name="c1", length=1, containerLV = outerlogical, convertMaterials=False)
     m.AddSamplerPlane(name="s1", length=1e-6)
+
+    m.SaveJSON(this_dir + "/T035_Element_G4_coordinate.json")
     m.Write(this_dir+"/T035_Element_G4")
 
     return m
-
-def test_T035_Element_G4() :
-    make_T035_Element_G4()
 
 def make_T035_Element_G4_File() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -70,6 +78,15 @@ def make_T035_Element_G4_File() :
     s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
     m.AddDrift(name="d1", length=1)
     m.AddSBend(name="b1", length=1, angle=_np.pi/6)
     m.AddDrift(name="d2", length=1)
@@ -79,12 +96,10 @@ def make_T035_Element_G4_File() :
                       lvName="bl")
     m.AddSamplerPlane(name="s1", length=1e-6)
 
+    m.SaveJSON(this_dir + "/T035_Element_G4_File_coordinate.json")
     m.Write(this_dir+"/T035_Element_G4_File")
 
     return m
-
-def test_T035_Element_G4_File() :
-    make_T035_Element_G4_File()
 
 def make_T035_Element_Fluka() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -109,6 +124,15 @@ def make_T035_Element_Fluka() :
     s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
     # custom fluka geometry
     reader = _pyg4.fluka.Reader(this_dir+"/geometryInput/test_T035_Custom_Fluka_Gap.inp")
     registry = reader.getRegistry()
@@ -132,12 +156,11 @@ def make_T035_Element_Fluka() :
                      customRegions = regions,
                      flukaRegistry = registry)
     m.AddSamplerPlane(name="s3", length=1e-6)
+
+    m.SaveJSON(this_dir + "/T035_Element_Fluka_coordinate.json")
     m.Write(this_dir+"/T035_Element_Fluka")
 
     return m
-
-def test_T035_Element_Fluka() :
-    make_T035_Element_Fluka()
 
 def make_T035_Element_Fluka_File() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -159,8 +182,17 @@ def make_T035_Element_Fluka_File() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
 
     m.AddDrift(name="d1", length=1)
     m.AddSBendSplit(name="b1", length=1, angle=_np.pi/8)
@@ -177,12 +209,10 @@ def make_T035_Element_Fluka_File() :
                          customRegions=['OUTER','SHIELD','BEAM','TARGET'])
     m.AddSamplerPlane(name="s3", length=1e-6)
 
+    m.SaveJSON(this_dir + "/T035_Element_Fluka_File_coordinate.json")
     m.Write(this_dir+"/T035_Element_Fluka_File")
 
     return m
-
-def test_T035_Element_Fluka_File() :
-    make_T035_Element_Fluka_File()
 
 def make_T035_Element_Fluka_RBend() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -204,8 +234,17 @@ def make_T035_Element_Fluka_RBend() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
 
     m.AddDrift(name="d1", length=1)
     m.AddSBendSplit(name="b1", length=1, angle=_np.pi/8)
@@ -228,12 +267,11 @@ def make_T035_Element_Fluka_RBend() :
                          customOuterBodies= ['OUTER'],
                          customRegions=['OUTER','YOKE','BP','VACUUM'],
                          tilt=_np.pi/2)
+
+    m.SaveJSON(this_dir + "/T035_Element_Fluka_RBend_coordinate.json")
     m.Write(this_dir+"/T035_Element_Fluka_RBend")
 
     return m
-
-def test_T035_Element_Fluka_RBend() :
-    make_T035_Element_Fluka_RBend()
 
 def make_T035_Element_BDSIM_RBend() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -255,18 +293,25 @@ def make_T035_Element_BDSIM_RBend() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(10)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
 
     m.AddCustomG4File(name="rb1",
                       length=1.0,
                       geometryFile=this_dir+"/../bdsim/geometry/02_rbend.gdml",
                       lvName="el_centre_container_lv0x600000caa800")
 
+    m.SaveJSON(this_dir + "/T035_Element_BDSIM_RBend_coordinate.json")
     m.Write(this_dir+"/T035_Element_BDSIM_RBend")
-
-def test_T035_Element_BDSIM_RBend() :
-    make_T035_Element_BDSIM_RBend()
 
 def make_T035_ELement_BDSIM_Quad() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
@@ -291,12 +336,40 @@ def make_T035_ELement_BDSIM_Quad() :
     s = _pfbl.Fluka.Start(10)
     m.AddStart(s)
 
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
     m.AddCustomG4File(name="q1",
                       length=0.25,
                       geometryFile=this_dir+"/../bdsim/geometry/04_quad.gdml",
                       lvName="el_container_lv0x6000015d3340")
 
+    m.SaveJSON(this_dir + "/T035_Element_BDSIM_Quad_coordinate.json")
     m.Write(this_dir+"/T035_Element_BDSIM_Quad")
+
+def test_T035_Element_G4() :
+    make_T035_Element_G4()
+
+def test_T035_Element_G4_File() :
+    make_T035_Element_G4_File()
+
+def test_T035_Element_Fluka() :
+    make_T035_Element_Fluka()
+
+def test_T035_Element_Fluka_File() :
+    make_T035_Element_Fluka_File()
+
+def test_T035_Element_Fluka_RBend() :
+    make_T035_Element_Fluka_RBend()
+
+def test_T035_Element_BDSIM_RBend() :
+    make_T035_Element_BDSIM_RBend()
 
 def test_T035_Element_BDSIM_Quad() :
     make_T035_ELement_BDSIM_Quad()

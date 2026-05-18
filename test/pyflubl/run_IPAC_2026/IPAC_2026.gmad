@@ -1,0 +1,27 @@
+d1: drift, l=1*m;
+q1: quadrupole, l=0.25, k1=-0.2;
+d2: drift, l=1*m;
+c: rcol, l=0.01*m, xsize=0, ysize=0, material="G4_Fe";
+d3: drift, l=1*m;
+b1: sbend, l=2*m, angle=0.2;
+d4: drift, l=1*m;
+
+l: line=(d1,q1,d2,c,d3,b1,d4);
+
+use, period=l;
+
+sample, all;
+
+beam, particle="e-", energy=1.0*GeV;
+
+option, magnetGeometryType="none",
+        !integratorSet="geant4",
+        worldMaterial="G4_AIR",
+        includeFringeFields=0,
+        physicsList="em",
+        beampipeThickness=5e-3*m,
+        defaultRangeCut=0.1*m,
+        prodCutPhotons=0.1*m,
+        prodCutElectrons=0.1*m,
+        prodCutPositrons=0.1*m,
+        elossHistoBinWidth=1*cm;

@@ -1251,6 +1251,11 @@ class Machine(_Coordinates) :
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
         else :
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1 / 1e3, maxStepSize=0.1,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, "dummy")
 
@@ -1363,6 +1368,11 @@ class Machine(_Coordinates) :
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
         else :
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1 / 1e3, maxStepSize=0.1,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, "dummy")
 
@@ -1472,6 +1482,11 @@ class Machine(_Coordinates) :
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
         else :
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1 / 1e3, maxStepSize=0.1,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
             # add magnetic field to assimat
             self.flukaregistry.assignmaAddMagnetic(vacuum_region, "dummy")
 
@@ -2208,8 +2223,9 @@ class Machine(_Coordinates) :
                 bki = self.elementBookkeeping[element.name]
 
                 # make field transform
-                translation = bki['translation']
-                rotation = _matrix2tbxyz(_np.linalg.inv(_np.array(bki['rotation'])))
+                rotation_inv = _np.linalg.inv(_np.array(bki['rotation']))
+                translation = - rotation_inv @ bki['translation']
+                rotation = _matrix2tbxyz(rotation_inv)
                 rdi = _rotoTranslationFromTra2("TM" + format(self.flukamgncount, "03"), [rotation, translation])
 
                 if len(rdi) > 0:
@@ -2243,8 +2259,9 @@ class Machine(_Coordinates) :
                 bki = self.elementBookkeeping[element.name]
 
                 # make field transform
-                translation = bki['translation']
-                rotation = _matrix2tbxyz(_np.linalg.inv(_np.array(bki['rotation'])))
+                rotation_inv = _np.linalg.inv(_np.array(bki['rotation']))
+                translation = - rotation_inv @ bki['translation']
+                rotation = _matrix2tbxyz(rotation_inv)
                 rdi = _rotoTranslationFromTra2("TM" + format(self.flukamgncount, "03"), [rotation, translation])
 
                 if len(rdi) > 0:
@@ -2275,8 +2292,9 @@ class Machine(_Coordinates) :
                 bki = self.elementBookkeeping[element.name]
 
                 # make field transform
-                translation = -_np.array(bki['translation'])
-                rotation = _matrix2tbxyz(_np.linalg.inv(_np.array(bki['rotation'])))
+                rotation_inv = _np.linalg.inv(_np.array(bki['rotation']))
+                translation = -rotation_inv @ _np.array(bki['translation'])
+                rotation = _matrix2tbxyz(rotation_inv)
                 rdi = _rotoTranslationFromTra2("TM" + format(self.flukamgncount, "03"), [rotation, translation])
 
                 # add transformation to registry

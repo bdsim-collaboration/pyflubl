@@ -23,7 +23,7 @@ def make_T001_drift() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -74,7 +74,7 @@ def make_T001_drift_many() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -114,6 +114,7 @@ def make_T001_drift_many() :
     m.AddSamplerPlane(name="s3",
                       length=1e-4)
 
+    m.SaveJSON(this_dir + "/T001_Drift_many_coordinate.json")
     m.Write(this_dir+"/T001_Drift_many")
 
     return m
@@ -139,7 +140,7 @@ def make_T001_drift_cut_e() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -161,6 +162,7 @@ def make_T001_drift_cut_e() :
                beampipeThickness=5,
                outerE1=_np.pi/4, outerE2=_np.pi/4)
 
+    m.SaveJSON(this_dir + "/T001_Drift_cut_e_coordinate.json")
     m.Write(this_dir+"/T001_Drift_cut_e")
 
     return m
@@ -186,7 +188,7 @@ def make_T001_drift_cut_e_p() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(500)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
 
     uic = _pfbl.Fluka.Usricall()
@@ -209,6 +211,7 @@ def make_T001_drift_cut_e_p() :
                outerE1=_np.pi/4, outerP1=_np.pi/2,
                outerE2=_np.pi/4, outerP2=0)
 
+    m.SaveJSON(this_dir + "/T001_Drift_cut_e_p_coordinate.json")
     m.Write(this_dir+"/T001_Drift_cut_e_p")
 
     return m
@@ -227,3 +230,6 @@ def test_T001_drift_cut_e_p() :
 
 if __name__ == "__main__":
     test_T001_drift()
+    test_T001_drift_many()
+    test_T001_drift_cut_e()
+    test_T001_drift_cut_e_p()

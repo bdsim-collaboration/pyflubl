@@ -1,7 +1,7 @@
 import pyflubl as _pfbl
 import os as _os
 
-def make_T025_dump() :
+def make_T025_Dump() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
     m = _pfbl.BuilderNew.Machine(bakeTransforms=True)
@@ -24,6 +24,15 @@ def make_T025_dump() :
     s = _pfbl.Fluka.Start(1000)
     m.AddStart(s)
 
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
     m.AddDrift(name="d1", length=1)
     m.AddDump(name="p1", length=1,
               horizontalWidth=250,
@@ -39,12 +48,13 @@ def make_T025_dump() :
               apertureType="circular")
     m.AddSamplerPlane(name="s2", length=1e-6)
 
-    m.Write(this_dir+"/T025_dump")
+    m.SaveJSON(this_dir + "/T025_Dump_coordinate.json")
+    m.Write(this_dir+"/T025_Dump")
 
     return m
 
-def test_T025_dump() :
-    make_T025_dump()
+def test_T025_Dump() :
+    make_T025_Dump()
 
 if __name__ == "__main__":
-    test_T025_dump()
+    test_T025_Dump()

@@ -50,7 +50,7 @@ class PyflublOutput:
     def plot_projection(self,
                         projection = "zx",
                         eventNumber = 0,
-                        detector = -1):
+                        detector = None):
         ax = None
         xlim = None
         ylim = None
@@ -65,14 +65,15 @@ class PyflublOutput:
 
         if self.dumpFile is not None:
             if type(eventNumber) is int :
-                self.dumpFile.read_event(eventNumber)
-                _plot_usrdump(self.dumpFile,projection=projection)
+                if eventNumber >= 0 :
+                    self.dumpFile.read_event(eventNumber)
+                    _plot_usrdump(self.dumpFile,projection=projection)
             elif type(eventNumber) is slice :
                 for i in range(eventNumber.start, eventNumber.stop,1) :
                     self.dumpFile.read_event(i)
                     _plot_usrdump(self.dumpFile, projection=projection)
 
-        if self.usrbinFile is not None:
+        if self.usrbinFile is not None and detector is not None:
             self.usrbinXArray = []
 
             for idet, det in enumerate(self.usrbinFile.detector) :

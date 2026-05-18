@@ -2,7 +2,7 @@ import pyflubl as _pfbl
 import numpy as _np
 import os as _os
 
-def make_usrbin() :
+def make_T289_Base() :
     m = _pfbl.BuilderNew.Machine(bakeTransforms=True)
 
     d = _pfbl.Fluka.Defaults('EM-CASCA')
@@ -56,7 +56,7 @@ def make_T289_Usrbin() :
 
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
-    m = make_usrbin()
+    m = make_T289_Base()
 
     ub1 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
                              particle="ALL-PART",lun=-24,
@@ -73,18 +73,16 @@ def make_T289_Usrbin() :
 
     m.AddUsrbin(ub2)
 
+    m.SaveJSON(this_dir + "/T289_Usrbin_coordinate.json")
     m.Write(this_dir+"/T289_Usrbin")
 
     return m
-
-def test_T289_Usrbin() :
-    m = make_T289_Usrbin()
 
 def make_T289_Usrbin_element():
 
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
-    m = make_usrbin()
+    m = make_T289_Base()
 
     eb1 = _pfbl.Fluka.Usrbin(binning=_pfbl.Fluka.Usrbin.CARTESIAN_STEP,
                              particle="ALL-PART",lun=-24,
@@ -104,6 +102,9 @@ def make_T289_Usrbin_element():
     m.Write(this_dir+"/T289_Usrbin_element")
 
     return m
+
+def test_T289_Usrbin() :
+    m = make_T289_Usrbin()
 
 def test_T289_Usrbin_element():
     m = make_T289_Usrbin_element()

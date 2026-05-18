@@ -2,7 +2,7 @@ import pyflubl as _pfbl
 import os as _os
 import numpy as _np
 
-def make_T024_shield() :
+def make_T024_Shield() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
     m = _pfbl.BuilderNew.Machine(bakeTransforms=True)
@@ -22,8 +22,17 @@ def make_T024_shield() :
     r = _pfbl.Fluka.Randomiz()
     m.AddRandomiz(r)
 
-    s = _pfbl.Fluka.Start(1000)
+    s = _pfbl.Fluka.Start(1)
     m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
 
     m.AddDrift(name="d1", length=1)
     m.AddShield(name="p1", length=0.25,
@@ -49,13 +58,13 @@ def make_T024_shield() :
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d3", length=1)
 
-
-    m.Write(this_dir+"/T024_shield")
+    m.SaveJSON(this_dir + "/T024_Shield_coordinate.json")
+    m.Write(this_dir+"/T024_Shield")
 
     return m
 
-def test_T024_shield() :
-    make_T024_shield()
+def test_T024_Shield() :
+    make_T024_Shield()
 
 if __name__ == "__main__":
-    test_T024_shield()
+    test_T024_Shield()

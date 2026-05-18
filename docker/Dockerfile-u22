@@ -1,0 +1,85 @@
+FROM ubuntu:jammy
+
+RUN mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
+
+CMD ["/bin/bash"]
+SHELL ["/bin/bash", "-c"]
+
+WORKDIR /tmp
+
+# start with more uptodate packages
+RUN apt-get update
+
+# build essentials
+RUN apt -y install build-essential
+
+# gfortran, zlib
+RUN DEBIAN_FRONTEND="noninteractive" apt -y install gfortran zlib1g-dev python3 python3-dev tk-dev libx11-dev python3-tk
+
+# fluka (4.4.0) files
+ADD fluka-4-3.0.x86-Linux-gfor9.tgz /tmp
+ADD fluka-4-4.0.x86-Linux-gfor9.tgz /tmp
+ADD fluka-4-5.1.x86-Linux-gfor9.tgz /tmp
+
+ADD flair-3.1-15.tgz /tmp
+ADD flair-3.2-4.5.tgz /tmp
+ADD flair-3.3-1.tgz /tmp
+ADD flair-3.4-0.tgz /tmp
+
+ADD flair-geoviewer-3.1-15.tgz /tmp
+ADD flair-geoviewer-3.2-4.5.tgz /tmp
+ADD flair-geoviewer-3.3-1.tgz /tmp
+ADD flair-geoviewer-3.4-0.tgz /tmp
+
+# build fluka
+RUN cd fluka4-3.0/src; make
+RUN cd fluka4-4.0/src; make
+RUN cd fluka4-5.1/src; make
+
+# build flair
+RUN cd flair-3.1; make
+RUN cd flair-3.2; make
+RUN cd flair-3.3; make
+RUN cd flair-3.4; make
+
+# build geoviewer
+RUN cd flair-geoviewer-3.1; make install DESTDIR=/tmp/flair-3.1; exit 0
+RUN cd flair-geoviewer-3.2; make install DESTDIR=/tmp/flair-3.2; exit 0
+RUN cd flair-geoviewer-3.3; make install DESTDIR=/tmp/flair-3.3; exit 0
+RUN cd flair-geoviewer-3.4; make install DESTDIR=/tmp/flair-3.4; exit 0
+
+# other deps for flair
+RUN apt -y install gnuplot pip less 
+RUN pip install pillow matplotlib
+
+# emacs
+RUN apt -y install emacs
+
+# ROOT
+RUN apt -y install wget libtbb-dev
+RUN wget https://root.cern/download/root_v6.34.08.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz &&\
+    tar zxf root_v6.34.08.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz &&\
+    rm -rf root_v6.34.08.Linux-ubuntu22.04-x86_64-gcc11.4.tar.gz &&\
+    echo "source /tmp/root/bin/thisroot.sh" >>  /tmp/setup.sh
+
+# json dev library
+RUN apt -y install nlohmann-json3-dev
+RUN apt -y install git 
+
+# Pyflubl
+ADD https://github.com/stewartboogert/pyflubl.git#notebook_rename /tmp/pyflubl
+
+RUN cd /tmp/pyflubl/src/fluka/4-3.0/src && \
+    source /tmp/setup.sh &&\
+    make
+RUN cd /tmp/pyflubl/src/fluka/4-4.0/src && \
+    source /tmp/setup.sh &&\
+    make
+RUN cd /tmp/pyflubl/src/fluka/4-5.0/src && \
+    source /tmp/setup.sh &&\
+    make    
+
+ADD fluka_pw_jeff-3.3-1-1.tgz /tmp/fluka4-4.0/
+ADD fluka_pw_jeff-3.3-1-1.tgz /tmp/fluka4-5.1/
+
+ENV DISPLAY=host.docker.internal:0.0
