@@ -36,7 +36,7 @@ dependencies = [
 dev = ["pytest", "sphinx", "sphinx-rtd-theme"]
 
 [build-system]
-requires = ["setuptools","setuptools_scm"]
+requires = ["setuptools>=64","setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
