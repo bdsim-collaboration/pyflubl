@@ -10,6 +10,8 @@ except ImportError :
 
 import numpy as _np
 import xarray as _xr
+import pandas as _pd
+import awkward as _ak
 
 from scipy.spatial.transform import Rotation as _Rotation
 from scipy.ndimage import affine_transform as _affine_transform
@@ -46,6 +48,30 @@ class PyflublOutput:
             # self.rootPandas = uprootTree.array(library="pd")
         if usrbinFileName is not None:
             self.usrbinFile = _openFile(usrbinFileName,"usrbin")
+
+    def get_sampler_names(self):
+        return list(self.bookkeeping['samplernames_samplernumber'].keys())
+
+    def get_sampler(self, name):
+        samplerdata_dict = {}
+        samplerdata_dict['x'] = _np.array(_ak.flatten(self.uprootTree[name+'.x'].array(library="ak")))
+        samplerdata_dict['y'] = _np.array(_ak.flatten(self.uprootTree[name+'.x'].array(library="ak")))
+        #samplerdata_dict['z'] = _np.array(_ak.flatten(self.uprootTree[name+'.z'].array(library="ak")))
+        samplerdata_dict['xp'] = _np.array(_ak.flatten(self.uprootTree[name+'.xp'].array(library="ak")))
+        samplerdata_dict['yp'] = _np.array(_ak.flatten(self.uprootTree[name+'.xp'].array(library="ak")))
+        samplerdata_dict['zp'] = _np.array(_ak.flatten(self.uprootTree[name+'.zp'].array(library="ak")))
+        samplerdata_dict['partID'] = _np.array(_ak.flatten(self.uprootTree[name+'.partID'].array(library="ak")))
+        samplerdata_dict['T'] = _np.array(_ak.flatten(self.uprootTree[name+'.T'].array(library="ak")))
+        samplerdata_dict['energy'] = _np.array(_ak.flatten(self.uprootTree[name+'.energy'].array(library="ak")))
+
+        return _pd.DataFrame(samplerdata_dict)
+
+    def get_eloss(self) :
+        elossdata_dict = {}
+        elossdata_dict['E'] = _np.array(_ak.flatten(self.uprootTree['eloss.E'].array(library="ak")))
+        elossdata_dict['S'] = _np.array(_ak.flatten(self.uprootTree['eloss.S'].array(library="ak")))
+
+        return  _pd.DataFrame(elossdata_dict)
 
     def plot_projection(self,
                         projection = "zx",
