@@ -409,8 +409,7 @@ class Coordinates(object) :
             else:
                 self.elements[item.name] = item
         else:
-            if self.verbose:
-                print("Element of name: ",item.name," already defined, simply adding to sequence")
+            raise ValueError(f"Coordinate.Append({item.name})  already in machine")
 
         # add to the sequence - optional as we may be appending a parent definition to the list
         # of objects to write before the main definitions.
