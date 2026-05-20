@@ -29,7 +29,8 @@ dependencies = [
     "pyg4ometry",
     "pybdsim",
     "pydantic",
-    "xarray"
+    "xarray",
+    "awkward"
 ]
 
 [project.optional-dependencies]

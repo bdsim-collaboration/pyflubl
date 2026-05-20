@@ -49,7 +49,13 @@ RUN cd flair-geoviewer-3.3; make install DESTDIR=/tmp/flair-3.3; exit 0
 RUN cd flair-geoviewer-3.4; make install DESTDIR=/tmp/flair-3.4; exit 0
 
 # other deps for flair
-RUN apt -y install gnuplot pip less 
+RUN apt -y install gnuplot pip python3.10-venv less
+
+# python environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# flair deps
 RUN pip install pillow matplotlib
 
 # emacs
