@@ -30,7 +30,8 @@ dependencies = [
     "pybdsim",
     "pydantic",
     "xarray",
-    "awkward"
+    "awkward",
+    "uproot"
 ]
 
 [project.optional-dependencies]
