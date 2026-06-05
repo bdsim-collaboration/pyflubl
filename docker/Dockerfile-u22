@@ -49,7 +49,13 @@ RUN cd flair-geoviewer-3.3; make install DESTDIR=/tmp/flair-3.3; exit 0
 RUN cd flair-geoviewer-3.4; make install DESTDIR=/tmp/flair-3.4; exit 0
 
 # other deps for flair
-RUN apt -y install gnuplot pip less 
+RUN apt -y install gnuplot pip python3.10-venv less
+
+# python environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# flair deps
 RUN pip install pillow matplotlib
 
 # emacs
@@ -66,8 +72,17 @@ RUN wget https://root.cern/download/root_v6.34.08.Linux-ubuntu22.04-x86_64-gcc11
 RUN apt -y install nlohmann-json3-dev
 RUN apt -y install git 
 
+# Pyg4ometry
+ADD https://github.com/stewartboogert/pyg4ometry-fork.git#flukaTransform /tmp/pyg4ometry
+
+RUN apt -y install ninja-build libcgal-dev "libocct-*" occt-misc libxi-dev && \
+    pip install cython
+
+RUN cd pyg4ometry && \
+    CMAKE_BUILD_PARALLEL_LEVEL=1 pip install -v -e .
+
 # Pyflubl
-ADD https://github.com/stewartboogert/pyflubl.git#notebook_rename /tmp/pyflubl
+ADD https://github.com/stewartboogert/pyflubl.git /tmp/pyflubl
 
 RUN cd /tmp/pyflubl/src/fluka/4-3.0/src && \
     source /tmp/setup.sh &&\
@@ -81,5 +96,11 @@ RUN cd /tmp/pyflubl/src/fluka/4-5.0/src && \
 
 ADD fluka_pw_jeff-3.3-1-1.tgz /tmp/fluka4-4.0/
 ADD fluka_pw_jeff-3.3-1-1.tgz /tmp/fluka4-5.1/
+
+RUN cd /tmp/pyflubl/ && \
+    pip install -e .
+
+# notebook environment
+RUN pip install ipython jupyter
 
 ENV DISPLAY=host.docker.internal:0.0

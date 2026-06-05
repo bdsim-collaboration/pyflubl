@@ -1,4 +1,8 @@
 import json as _json
+import os as _os
+
+def clear_flukarun() :
+    _os.system("rm -rf *_pyflubl.root *.err *.log *.out ran* *_dump")
 
 def load_bookkeeping(bookkeeping_file):
 

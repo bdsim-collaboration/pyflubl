@@ -2404,6 +2404,10 @@ class Machine(_Coordinates) :
 
         return flukaregistry
 
+    def _ResetRegistries(self):
+        print("Resetting Fluka and Geant4 registries")
+        self.flukaregistry = None
+        self.g4registry = None
 
     def _MakeOffsetAndTiltTransforms(self, element, rotation, translation):
         offsetX = element["offsetX"]

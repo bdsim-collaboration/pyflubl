@@ -1,0 +1,7 @@
+*.err
+*.log
+*.out
+*_dump
+*.24
+ran*
+*.root
