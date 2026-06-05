@@ -2405,7 +2405,7 @@ class Machine(_Coordinates) :
         return flukaregistry
 
     def _ResetRegistries(self):
-        print("Reseting Fluka Registries")
+        print("Resetting Fluka and Geant4 registries")
         self.flukaregistry = None
         self.g4registry = None
 

@@ -82,7 +82,7 @@ RUN cd pyg4ometry && \
     CMAKE_BUILD_PARALLEL_LEVEL=1 pip install -v -e .
 
 # Pyflubl
-ADD https://github.com/stewartboogert/pyflubl.git#analysis_notebook /tmp/pyflubl
+ADD https://github.com/stewartboogert/pyflubl.git /tmp/pyflubl
 
 RUN cd /tmp/pyflubl/src/fluka/4-3.0/src && \
     source /tmp/setup.sh &&\

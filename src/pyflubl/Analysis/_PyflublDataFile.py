@@ -55,10 +55,10 @@ class PyflublOutput:
     def get_sampler(self, name):
         samplerdata_dict = {}
         samplerdata_dict['x'] = _np.array(_ak.flatten(self.uprootTree[name+'.x'].array(library="ak")))
-        samplerdata_dict['y'] = _np.array(_ak.flatten(self.uprootTree[name+'.x'].array(library="ak")))
+        samplerdata_dict['y'] = _np.array(_ak.flatten(self.uprootTree[name+'.y'].array(library="ak")))
         #samplerdata_dict['z'] = _np.array(_ak.flatten(self.uprootTree[name+'.z'].array(library="ak")))
         samplerdata_dict['xp'] = _np.array(_ak.flatten(self.uprootTree[name+'.xp'].array(library="ak")))
-        samplerdata_dict['yp'] = _np.array(_ak.flatten(self.uprootTree[name+'.xp'].array(library="ak")))
+        samplerdata_dict['yp'] = _np.array(_ak.flatten(self.uprootTree[name+'.yp'].array(library="ak")))
         samplerdata_dict['zp'] = _np.array(_ak.flatten(self.uprootTree[name+'.zp'].array(library="ak")))
         samplerdata_dict['partID'] = _np.array(_ak.flatten(self.uprootTree[name+'.partID'].array(library="ak")))
         samplerdata_dict['T'] = _np.array(_ak.flatten(self.uprootTree[name+'.T'].array(library="ak")))
