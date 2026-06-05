@@ -27,6 +27,7 @@ maintainers = [
 ]
 dependencies = [
     "pyg4ometry",
+    "pandas",
     "pybdsim",
     "pydantic",
     "xarray",
