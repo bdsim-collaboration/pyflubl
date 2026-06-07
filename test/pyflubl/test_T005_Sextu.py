@@ -2,7 +2,7 @@ import pyflubl as _pfbl
 import numpy as _np
 import os as _os
 
-def make_quad(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T004_Quad"):
+def make_sextu(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T005_Sextu"):
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
     m = _pfbl.BuilderNew.Machine(bakeTransforms=True)
@@ -43,7 +43,7 @@ def make_quad(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T004_Quad"):
 
     m.AddDrift(name="d1", length=1)
     m.AddSamplerPlane(name="s1", length=1e-6)
-    m.AddQuadrupole(name="q1", length=0.25, k1=-0.25, tilt=tilt, offsetX=offsetX, offsetY=offsetY)
+    m.AddSextupole(name="x1", length=0.25, k2=-2.5, tilt=tilt, offsetX=offsetX, offsetY=offsetY)
     m.AddSamplerPlane(name="s2", length=1e-6)
     m.AddDrift(name="d2", length=1)
 
@@ -52,17 +52,5 @@ def make_quad(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T004_Quad"):
 
     return m
 
-def test_T004_quad() :
-    make_quad(fileName="T004_Quad")
-
-def test_T004_quad_offsetX() :
-    make_quad(offsetX=10, fileName="T004_Quad_offsetX")
-
-def test_T004_quad_offsetY() :
-    make_quad(offsetY=10, fileName="T004_Quad_offsetY")
-
-def test_T004_quad_tilt() :
-    make_quad(tilt=_np.pi/4, offsetX=0, fileName="T004_Quad_tilt")
-
-if __name__ == "__main__":
-    test_T004_quad()
+def test_T005_sextu() :
+    make_sextu(fileName="T005_Sextu")
