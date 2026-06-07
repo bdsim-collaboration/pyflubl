@@ -467,12 +467,12 @@ def make_T051_Lattice_Sextu():
 
     x1 = m.AddSextupole(name="x1",
                         length=0.25,
-                        k2=0.5,
+                        k2=1.5,
                         add=False)
 
     x2 = m.AddSextupole(name="x2",
                         length=0.25,
-                        k2=-0.5,
+                        k2=-1.5,
                         add=False)
 
     m.AddLatticePrototype(d1)
