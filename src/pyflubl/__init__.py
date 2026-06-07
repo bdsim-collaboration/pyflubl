@@ -15,6 +15,7 @@ from . import Fluka
 from . import Analysis
 from . import GeometryGeant4
 from . import Utilities
+from . import Field
 
 # from . import Convert
 
