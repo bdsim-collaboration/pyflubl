@@ -99,6 +99,8 @@ class Element(ElementBase):
     _tiltshift_allowed_keys = ["offsetX", "offsetY", "tilt"]
     _quadrupole_allowed_keys = ["k1"]
     _sextupole_allowed_keys = ["k2"]
+    _octupole_allowed_keys = ["k3"]
+    _decapole_allowed_keys = ["k4"]
     _target_allowed_keys = ["material","horizontalWidth","verticalWidth","apertureType"]
     _rcol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth", "verticalWidth"]
     _ecol_allowed_keys = ["xsize", "ysize", "material", "horizontalWidth", "verticalWidth"]

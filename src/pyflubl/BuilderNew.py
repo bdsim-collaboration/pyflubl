@@ -203,6 +203,32 @@ class Machine(_Coordinates) :
             self.Append(e)
         return e
 
+    def AddOctupole(self, name, length, add = True, **kwargs):
+        allowed_keys = _Element._beampipe_allowed_keys + \
+                       _Element._outer_allowed_keys + \
+                       _Element._tiltshift_allowed_keys + \
+                       _Element._octupole_allowed_keys
+
+        self._CheckElementKwargs(kwargs, allowed_keys)
+        self._SetDefaultElementKwargs(kwargs, allowed_keys)
+        e = _Element(name=name, category="octupole", length = length, **kwargs)
+        if add :
+            self.Append(e)
+        return e
+
+    def AddDecapole(self, name, length, add = True, **kwargs):
+        allowed_keys = _Element._beampipe_allowed_keys + \
+                       _Element._outer_allowed_keys + \
+                       _Element._tiltshift_allowed_keys + \
+                       _Element._decapole_allowed_keys
+
+        self._CheckElementKwargs(kwargs, allowed_keys)
+        self._SetDefaultElementKwargs(kwargs, allowed_keys)
+        e = _Element(name=name, category="decapole", length = length, **kwargs)
+        if add :
+            self.Append(e)
+        return e
+
     def AddTarget(self, name, length, add=True, **kwargs):
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
@@ -977,6 +1003,28 @@ class Machine(_Coordinates) :
                                            geant4RegistryAdd=g4add,
                                            flukaConvert=flukaConvert,
                                            prototype=prototype)
+        elif element.category == "octupole":
+            return self.MakeFlukaOctupole(name=element.name,
+                                          element=element,
+                                          rotation=rotation,
+                                          translation=translation * 1000,
+                                          geomtranslation=geomtranslation * 1000,
+                                          cubicalbound=cubicalbound,
+                                          trapezoidalbound=trapezoidalbound,
+                                          geant4RegistryAdd=g4add,
+                                          flukaConvert=flukaConvert,
+                                          prototype=prototype)
+        elif element.category == "decapole":
+            return self.MakeFlukaDecapole(name=element.name,
+                                          element=element,
+                                          rotation=rotation,
+                                          translation=translation * 1000,
+                                          geomtranslation=geomtranslation * 1000,
+                                          cubicalbound=cubicalbound,
+                                          trapezoidalbound=trapezoidalbound,
+                                          geant4RegistryAdd=g4add,
+                                          flukaConvert=flukaConvert,
+                                          prototype=prototype)
         elif element.category == "target":
             return self.MakeFlukaTarget(name=element.name,
                                         element=element,
@@ -1606,6 +1654,232 @@ class Machine(_Coordinates) :
             self.AddMgnfield(mgnfield)
 
             mgncreat = _Mgncreat(fieldType=_Mgncreat.SEXTUPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+            self.AddMgncreat(mgncreat)
+
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1/1e3, maxStepSize=0.1, # TODO needs to be user adjustable
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
+            # increment mgn count
+            self.flukamgncount += 1
+
+            # add magnetic field to assimat
+            self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
+        else :
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1 / 1e3, maxStepSize=0.1,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
+            # add magnetic field to assimat
+            self.flukaregistry.assignmaAddMagnetic(vacuum_region, "dummy")
+
+        return ret_dict
+
+    def MakeFlukaOctupole(self,
+                          name,
+                          element,
+                          rotation=_np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+                          translation=_np.array([0, 0, 0]),
+                          geomtranslation=_np.array([0, 0, 0]),
+                          cubicalbound=None,
+                          trapezoidalbound=None,
+                          geant4RegistryAdd=False,
+                          flukaConvert=True,
+                          prototype=False):
+
+        if self.verbose :
+            print("pyflubl.BuilderNew.Machine.MakeFlukaOctupole: Making octupole element ", name)
+
+        length = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+
+        outerHorizontalSize = element["outerHorizontalSize"]
+        outerVerticalSize   = element["outerVerticalSize"]
+        outerMaterial       = element["outerMaterial"]
+
+        beampipeMaterialName = element["beampipeMaterial"]
+        beampipeRadius       = element["beampipeRadius"]
+        beampipeThickness    = element["beampipeThickness"]
+
+        vacuumMaterial = element["vacuumMaterial"]
+
+        e1 = element["outerE1"]
+        e2 = element["outerE2"]
+        p1 = element['outerP1']
+        p2 = element['outerP2']
+
+        g4registry = self._GetGeant4Registry(geant4RegistryAdd)
+
+        # make outer volume
+        [outerLogical, outerPhysical] = _MakeOuterTrapezoid(g4registry, name = name, motherLogical=self.worldLogical,
+                                                            tra_coords=trapezoidalbound*1000,
+                                                            outerVerticalSize=outerVerticalSize,
+                                                            outerMaterial=outerMaterial)
+
+        # make beampipe
+        [bpLogical, bpPhysical, vacPhysical] = _MakeBeamPipeCircular(g4registry, motherLogical=outerLogical,
+                                                                     name = name,
+                                                                     length=length,
+                                                                     beamPipeRadius=beampipeRadius,
+                                                                     beamPipeThickness=beampipeThickness,
+                                                                     beamPipeMaterialName=beampipeMaterialName,
+                                                                     e1=e1, p1=p1, e2=e2, p2=p2)
+
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
+
+        ret_dict = self._MakeFlukaComponentCommonG4(name,outerLogical, outerPhysical, flukaConvert,
+                                                    rotation, translation, geomtranslation,
+                                                    category="octu",
+                                                    convertMaterials=False,
+                                                    prototype=prototype)
+
+        # calculate field strength
+        q_over_p = self.beam.charge/self.beam.momentum
+
+        # calculate fluka K
+        k3_fluka = element['k3']/q_over_p
+
+        # bookkeeping info for element
+        bki = self.elementBookkeeping[element.name]
+
+        # make field transform
+        rotation_inv = _np.linalg.inv(_np.array(bki['rotation']))
+        translation = - rotation_inv @ _np.array(bki['translation'])
+        rotation = _matrix2tbxyz(rotation_inv)
+        rdi = _rotoTranslationFromTra2("TM"+format(self.flukamgncount, "03"),[rotation, translation])
+
+        # find vacuum region
+        vacuum_index = bki['physicalVolumes'].index(vacPhysical.name)
+        vacuum_region = bki['flukaRegions'][vacuum_index]
+
+        if not prototype:
+            # add transformation to registry
+            if len(rdi) > 0 :
+                self._GetFlukaRegistry(flukaRegistryAdd=True).addRotoTranslation(rdi)
+
+            # make and assign field to region(s)
+            mgnname = "MG"+format(self.flukamgncount, "03")
+            mgnfield = _Mgnfield(strength=-k3_fluka,rotDefini=rdi.name, applyRegion=0,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None,
+                                 sdum = mgnname)
+            self.AddMgnfield(mgnfield)
+
+            mgncreat = _Mgncreat(fieldType=_Mgncreat.OCTUPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+            self.AddMgncreat(mgncreat)
+
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1/1e3, maxStepSize=0.1, # TODO needs to be user adjustable
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
+            # increment mgn count
+            self.flukamgncount += 1
+
+            # add magnetic field to assimat
+            self.flukaregistry.assignmaAddMagnetic(vacuum_region, mgnname)
+        else :
+            # add stepsize
+            stepsize = _Stepsize(minStepSize=-0.1 / 1e3, maxStepSize=0.1,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None)
+            self.AddStepsize(stepsize)
+
+            # add magnetic field to assimat
+            self.flukaregistry.assignmaAddMagnetic(vacuum_region, "dummy")
+
+        return ret_dict
+
+    def MakeFlukaDecapole(self,
+                          name,
+                          element,
+                          rotation=_np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+                          translation=_np.array([0, 0, 0]),
+                          geomtranslation=_np.array([0, 0, 0]),
+                          cubicalbound=None,
+                          trapezoidalbound=None,
+                          geant4RegistryAdd=False,
+                          flukaConvert=True,
+                          prototype=False):
+
+        if self.verbose :
+            print("pyflubl.BuilderNew.Machine.MakeFlukaDecapole: Making decapole element ", name)
+
+        length = element.length*1000
+        rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
+
+        outerHorizontalSize = element["outerHorizontalSize"]
+        outerVerticalSize   = element["outerVerticalSize"]
+        outerMaterial       = element["outerMaterial"]
+
+        beampipeMaterialName = element["beampipeMaterial"]
+        beampipeRadius       = element["beampipeRadius"]
+        beampipeThickness    = element["beampipeThickness"]
+
+        vacuumMaterial = element["vacuumMaterial"]
+
+        e1 = element["outerE1"]
+        e2 = element["outerE2"]
+        p1 = element['outerP1']
+        p2 = element['outerP2']
+
+        g4registry = self._GetGeant4Registry(geant4RegistryAdd)
+
+        # make outer volume
+        [outerLogical, outerPhysical] = _MakeOuterTrapezoid(g4registry, name = name, motherLogical=self.worldLogical,
+                                                            tra_coords=trapezoidalbound*1000,
+                                                            outerVerticalSize=outerVerticalSize,
+                                                            outerMaterial=outerMaterial)
+
+        # make beampipe
+        [bpLogical, bpPhysical, vacPhysical] = _MakeBeamPipeCircular(g4registry, motherLogical=outerLogical,
+                                                                     name = name,
+                                                                     length=length,
+                                                                     beamPipeRadius=beampipeRadius,
+                                                                     beamPipeThickness=beampipeThickness,
+                                                                     beamPipeMaterialName=beampipeMaterialName,
+                                                                     e1=e1, p1=p1, e2=e2, p2=p2)
+
+        self._AddBookkeepingTransformation(name, rotation, translation, geomtranslation)
+
+        ret_dict = self._MakeFlukaComponentCommonG4(name,outerLogical, outerPhysical, flukaConvert,
+                                                    rotation, translation, geomtranslation,
+                                                    category="deca",
+                                                    convertMaterials=False,
+                                                    prototype=prototype)
+
+        # calculate field strength
+        q_over_p = self.beam.charge/self.beam.momentum
+
+        # calculate fluka K
+        k4_fluka = element['k4']/q_over_p
+
+        # bookkeeping info for element
+        bki = self.elementBookkeeping[element.name]
+
+        # make field transform
+        rotation_inv = _np.linalg.inv(_np.array(bki['rotation']))
+        translation = - rotation_inv @ _np.array(bki['translation'])
+        rotation = _matrix2tbxyz(rotation_inv)
+        rdi = _rotoTranslationFromTra2("TM"+format(self.flukamgncount, "03"),[rotation, translation])
+
+        # find vacuum region
+        vacuum_index = bki['physicalVolumes'].index(vacPhysical.name)
+        vacuum_region = bki['flukaRegions'][vacuum_index]
+
+        if not prototype:
+            # add transformation to registry
+            if len(rdi) > 0 :
+                self._GetFlukaRegistry(flukaRegistryAdd=True).addRotoTranslation(rdi)
+
+            # make and assign field to region(s)
+            mgnname = "MG"+format(self.flukamgncount, "03")
+            mgnfield = _Mgnfield(strength=-k4_fluka,rotDefini=rdi.name, applyRegion=0,
+                                 regionFrom=vacuum_region, regionTo=None, regionStep=None,
+                                 sdum = mgnname)
+            self.AddMgnfield(mgnfield)
+
+            mgncreat = _Mgncreat(fieldType=_Mgncreat.DECAPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
             self.AddMgncreat(mgncreat)
 
             # add stepsize
@@ -2483,6 +2757,72 @@ class Machine(_Coordinates) :
 
                 # increment mgn count
                 self.flukamgncount += 1
+            elif element['prototype'].category == "octupole":
+
+                # calculate field strength
+                q_over_p = self.beam.charge / self.beam.momentum
+
+                # calculate fluka K
+                k3_fluka = element['prototype']['k3'] / q_over_p
+
+                # bookkeeping info for element
+                bki = self.elementBookkeeping[element.name]
+
+                # make field transform
+                rotation_inv = _np.linalg.inv(_np.array(bki['rotation']))
+                translation = -rotation_inv @ _np.array(bki['translation'])
+                rotation = _matrix2tbxyz(rotation_inv)
+                rdi = _rotoTranslationFromTra2("TM" + format(self.flukamgncount, "03"), [rotation, translation])
+
+                # add transformation to registry
+                if len(rdi) > 0 :
+                    self._GetFlukaRegistry(flukaRegistryAdd=True).addRotoTranslation(rdi)
+
+                # make and assign field to region(s)
+                mgnname = "MG"+format(self.flukamgncount, "03")
+                mgnfield = _Mgnfield(strength=-k3_fluka,rotDefini=rdi.name, applyRegion=0,
+                                     regionFrom=flukaouterregion.name, regionTo=None, regionStep=None,
+                                     sdum = mgnname)
+                self.AddMgnfield(mgnfield)
+
+                mgncreat = _Mgncreat(fieldType=_Mgncreat.OCTUPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+                self.AddMgncreat(mgncreat)
+
+                # increment mgn count
+                self.flukamgncount += 1
+            elif element['prototype'].category == "decapole":
+
+                # calculate field strength
+                q_over_p = self.beam.charge / self.beam.momentum
+
+                # calculate fluka K
+                k4_fluka = element['prototype']['k4'] / q_over_p
+
+                # bookkeeping info for element
+                bki = self.elementBookkeeping[element.name]
+
+                # make field transform
+                rotation_inv = _np.linalg.inv(_np.array(bki['rotation']))
+                translation = -rotation_inv @ _np.array(bki['translation'])
+                rotation = _matrix2tbxyz(rotation_inv)
+                rdi = _rotoTranslationFromTra2("TM" + format(self.flukamgncount, "03"), [rotation, translation])
+
+                # add transformation to registry
+                if len(rdi) > 0 :
+                    self._GetFlukaRegistry(flukaRegistryAdd=True).addRotoTranslation(rdi)
+
+                # make and assign field to region(s)
+                mgnname = "MG"+format(self.flukamgncount, "03")
+                mgnfield = _Mgnfield(strength=-k4_fluka,rotDefini=rdi.name, applyRegion=0,
+                                     regionFrom=flukaouterregion.name, regionTo=None, regionStep=None,
+                                     sdum = mgnname)
+                self.AddMgnfield(mgnfield)
+
+                mgncreat = _Mgncreat(fieldType=_Mgncreat.DECAPOLE, applicableRadius=0, xOffset=0, yOffset=0, mirrorSymmetry=0, sdum=mgnname)
+                self.AddMgncreat(mgncreat)
+
+                # increment mgn count
+                self.flukamgncount += 1
 
             # book keeping information for the instance
             instance_bki['category']     = element.category
@@ -2749,6 +3089,16 @@ Machine.AddSextupole.__doc__ = """allowed kwargs """ + \
                                " ".join(_Element._beampipe_allowed_keys) + \
                                " " + " ".join(_Element._outer_allowed_keys) + \
                                " " + " ".join(_Element._sextupole_allowed_keys) + \
+                               " " + " ".join(_Element._tiltshift_allowed_keys)
+Machine.AddOctupole.__doc__ = """allowed kwargs """ + \
+                               " ".join(_Element._beampipe_allowed_keys) + \
+                               " " + " ".join(_Element._outer_allowed_keys) + \
+                               " " + " ".join(_Element._octupole_allowed_keys) + \
+                               " " + " ".join(_Element._tiltshift_allowed_keys)
+Machine.AddDecapole.__doc__ = """allowed kwargs """ + \
+                               " ".join(_Element._beampipe_allowed_keys) + \
+                               " " + " ".join(_Element._outer_allowed_keys) + \
+                               " " + " ".join(_Element._decapole_allowed_keys) + \
                                " " + " ".join(_Element._tiltshift_allowed_keys)
 
 Machine.AddTarget.__doc__ = """allowed kwargs""" \
