@@ -32,13 +32,10 @@ sys.path.insert(0, os.path.abspath("../../src"))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.autosummary',
               'sphinx.ext.doctest',
               'sphinx.ext.inheritance_diagram',
               'sphinx.ext.mathjax',
               'sphinx.ext.todo']
-
-autosummary_generate = True
 autodoc_default_options = {
     'members': True,
     'undoc-members': False,
@@ -191,5 +188,4 @@ texinfo_documents = [
      author, 'pyflubl', 'One line description of project.',
      'Miscellaneous'),
 ]
-
 
