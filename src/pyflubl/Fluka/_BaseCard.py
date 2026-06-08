@@ -36,3 +36,6 @@ class BaseCard:
             retString += self.cardCont3.toFreeString()
 
         return retString
+
+    def toFreeString(self):
+        return self.__repr__()
