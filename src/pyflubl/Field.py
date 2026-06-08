@@ -57,7 +57,7 @@ class Field2D(Field) :
 
         self.cards = []
 
-    def Resample(self, newXPoints : int, newYPoints : int) :
+    def Resample(self, newXPoints : int, newYPoints : int, method : str = "cubic") :
         from scipy.interpolate import RegularGridInterpolator
 
         f = self.data[:,:,2:]
@@ -67,7 +67,7 @@ class Field2D(Field) :
 
         xi = _np.linspace(self.header['xmin'], self.header['xmax'], newXPoints)
         yi = _np.linspace(self.header['ymin'], self.header['ymax'], newYPoints)
-        self.f_interpolator = RegularGridInterpolator((x, y), f, method="cubic")
+        self.f_interpolator = RegularGridInterpolator((x, y), f, method=method)
 
         xd = self.data[:,:,0]
         yd = self.data[:,:,1]
