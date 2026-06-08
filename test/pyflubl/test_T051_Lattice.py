@@ -425,6 +425,84 @@ def make_T051_Lattice_Quad_Transform():
 
     return m
 
+def make_T051_Lattice_Sextu():
+    this_dir = _os.path.dirname(_os.path.abspath(__file__))
+
+    m = _pfbl.BuilderNew.Machine(bakeTransforms=True)
+
+    d = _pfbl.Fluka.Defaults('EM-CASCA')
+    m.AddDefaults(d)
+
+    b = _pfbl.Fluka.Beam(momentumOrKe=1, energySpread=0.0, sdum="ELECTRON")
+    bp = _pfbl.Fluka.Beampos(xCentre=0.5, yCentre=0, zCentre=0, xCosine=0, yCosine=0)
+    ba = _pfbl.Fluka.BeamAxes(xxCosine=1, xyCosine=0, xzCosine=0,
+                              zxCosine=0, zyCosine=0, zzCosine=1)
+    m.AddBeam(b)
+    m.AddBeampos(bp)
+    m.AddBeamaxes(ba)
+
+    r = _pfbl.Fluka.Randomiz()
+    m.AddRandomiz(r)
+
+    s = _pfbl.Fluka.Start(10)
+    m.AddStart(s)
+
+    uic = _pfbl.Fluka.Usricall()
+    m.AddUsricall(uic)
+
+    uoc = _pfbl.Fluka.Usrocall()
+    m.AddUsrocall(uoc)
+
+    ud = _pfbl.Fluka.Userdump(mgdraw=100,lun=23,mgdrawOption=-1,userDump=None, outputFile="dump")
+    m.AddUserdump(ud)
+
+    # set world material
+    m.world_material = "VACUUM"
+
+    d1 = m.AddDrift(name="d1",
+                    length=0.25,
+                    beampipeMaterial = "IRON",
+                    outerMaterial = "AIR",
+                    add=False)
+
+    x1 = m.AddSextupole(name="x1",
+                        length=0.25,
+                        k2=1.5,
+                        add=False)
+
+    x2 = m.AddSextupole(name="x2",
+                        length=0.25,
+                        k2=-1.5,
+                        add=False)
+
+    m.AddLatticePrototype(d1)
+    m.AddLatticePrototype(x1)
+    m.AddLatticePrototype(x2)
+
+    m.AddLatticeInstance("d1i1","d1")
+
+    m.AddLatticeInstance("x1i1","x1")
+
+    m.AddLatticeInstance("d1i2","d1")
+    m.AddLatticeInstance("d1i3","d1")
+
+    m.AddLatticeInstance("x2i1","x2")
+
+    m.AddLatticeInstance("d1i4","d1")
+    m.AddLatticeInstance("d1i5","d1")
+
+    m.AddLatticeInstance("x1i2","x1")
+
+    m.AddLatticeInstance("d1i6","d1")
+    m.AddLatticeInstance("d1i7","d1")
+
+    m.AddLatticeInstance("x2i2","x2")
+
+    m.SaveJSON(this_dir + "/T051_Lattice_Sextu_coordinate.json")
+    m.Write(this_dir+"/T051_Lattice_Sextu")
+
+    return m
+
 def make_T051_Lattice_CustomFlukaFile() :
     this_dir = _os.path.dirname(_os.path.abspath(__file__))
 
@@ -658,6 +736,9 @@ def test_T051_Lattice_Quad() :
 def test_T051_Lattice_Quad_Transform() :
     make_T051_Lattice_Quad_Transform()
 
+def test_T051_Lattice_Sextu() :
+    make_T051_Lattice_Sextu()
+
 def test_T051_Lattice_CustomFlukaFile() :
     make_T051_Lattice_CustomFlukaFile()
 
@@ -676,6 +757,7 @@ if __name__ == "__main__":
     test_T051_Lattice_SBend()
     test_T051_Lattice_Quad()
     test_T051_Lattice_Quad_Transform()
+    test_T051_Lattice_Sextu()
     test_T051_Lattice_CustomFlukaFile()
     test_T051_Lattice_CustomFlukaFile_Transform()
     test_T051_Lattice_CustomG4File_RBend()
