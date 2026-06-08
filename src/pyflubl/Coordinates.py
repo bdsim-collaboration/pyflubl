@@ -86,7 +86,7 @@ def _CalculateElementTransformation(e):
     if e.category == "lattice_instance" :
         e = e['prototype']
 
-    if e.category in ["drift", "quadrupole", "sextupole",
+    if e.category in ["drift", "quadrupole", "sextupole", "octupole", "decapole",
                       "target", "rcol", "ecol", "jcol",
                       "shield", "dump", "wirescanner",
                       "gap", "customG4", "customFluka",
