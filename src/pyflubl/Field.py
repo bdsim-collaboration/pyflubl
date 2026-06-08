@@ -6,10 +6,15 @@ from numpy.typing import NDArray
 
 class Field(object):
     def __init__(self,
-                 array   : NDArray = _np.array([]),
-                 columns : list[str] = [],
+                 array   : NDArray = None,
+                 columns : list[str] = None,
                  name    : str = "field") :
         self.name            = name
+        if array is None :
+            self.data = _np.array([])
+        if columns is None :
+            self.columns = columns
+
         self.data            = array
         self.columns         = columns
         self.header          = {}
@@ -32,9 +37,12 @@ class Field2D(Field) :
 
 
     def __init__(self, data, firstColumn='X', secondColumn='Y', name = "field") :
+
+        if data.shape[2] != 5 :
+            raise IndexError("The array supplied should be 3 dimensional, dimension 3 shoud be 5 long")
         columns = [firstColumn, secondColumn, 'Fx', 'Fy', 'Fz']
         super(Field2D, self).__init__(data, columns, name)
-        inds = [1, 0]
+        inds = [0, 1]
 
         fcl = firstColumn.lower() # first column
         scl = secondColumn.lower() # second column
@@ -47,7 +55,7 @@ class Field2D(Field) :
         self.header['n'+scl]   = _np.shape(self.data)[inds[1]]
         self.nDimensions = 2
 
-        self.data_original = None
+        self.cards = []
 
     def Resample(self, newXPoints : int, newYPoints : int) :
         from scipy.interpolate import RegularGridInterpolator
@@ -67,15 +75,15 @@ class Field2D(Field) :
         xmg, ymg = _np.meshgrid(xi, yi)
 
         b_inter = self.f_interpolator((xmg.flatten(), ymg.flatten())).transpose()
-        self.data = _np.vstack((xmg.flatten(), ymg.flatten(), b_inter[0], b_inter[1])).transpose()
+        self.data = _np.vstack((xmg.flatten(), ymg.flatten(), b_inter[0], b_inter[1], b_inter[2])).transpose()
 
         self.header['nx'] = newXPoints
         self.header['ny'] = newYPoints
 
     def Plot(self):
         import matplotlib.pyplot as plt
-        d = self.data.reshape((self.header['nx'], self.header['nx'], 4))
-        b = _np.sqrt(d[:, :, 2] ** 2 + d[:, :, 3] ** 2)
+        d = self.data.reshape((self.header['nx'], self.header['nx'], 5))
+        b = _np.sqrt(d[:, :, 2] ** 2 + d[:, :, 3] ** 2 + d[:, :, 4] ** 2)
         plt.imshow(b)
         plt.colorbar()
 
@@ -91,10 +99,16 @@ class Field2D(Field) :
                                     y_min = self.header['ymin'],
                                     y_max = self.header['ymax']))
 
-        for d in self.data.reshape(-1,4) :
-            self.cards.append(_Mgndata(d[2], d[3], 0, sdum=self.name))
+        for d in self.data.reshape(-1,5) :
+            self.cards.append(_Mgndata(d[2], d[3], d[4], sdum=self.name))
 
     def Write(self, fileName : str):
+
+        # make cards
+        if self.cards == []:
+            self.MakeCards()
+
+        # write to file
         with open(fileName, 'w') as f:
             for c in self.cards :
                 f.write(c.toFreeString()+"\n")
