@@ -10,13 +10,8 @@ class Field(object):
                  columns : list[str] = None,
                  name    : str = "field") :
         self.name            = name
-        if array is None :
-            self.data = _np.array([])
-        if columns is None :
-            self.columns = columns
-
-        self.data            = array
-        self.columns         = columns
+        self.data = _np.array([]) if array is None else  array
+        self.columns = [] if columns is None else columns
         self.header          = {}
         self.nDimensions     = 0
         self.comments        = []
@@ -39,7 +34,7 @@ class Field2D(Field) :
     def __init__(self, data, firstColumn='X', secondColumn='Y', name = "field") :
 
         if data.shape[2] != 5 :
-            raise IndexError("The array supplied should be 3 dimensional, dimension 3 shoud be 5 long")
+            raise IndexError("The array supplied should be 3 dimensional, dimension 3 should be 5 long")
         columns = [firstColumn, secondColumn, 'Fx', 'Fy', 'Fz']
         super(Field2D, self).__init__(data, columns, name)
         inds = [0, 1]
@@ -55,10 +50,15 @@ class Field2D(Field) :
         self.header['n'+scl]   = _np.shape(self.data)[inds[1]]
         self.nDimensions = 2
 
+        self.resample = False
         self.cards = []
+
 
     def Resample(self, newXPoints : int, newYPoints : int, method : str = "cubic") :
         from scipy.interpolate import RegularGridInterpolator
+
+        if  self.resample :
+            raise ValueError("Resampling is only possible once")
 
         f = self.data[:,:,2:]
 
@@ -80,9 +80,12 @@ class Field2D(Field) :
         self.header['nx'] = newXPoints
         self.header['ny'] = newYPoints
 
+        # Mark data has been resampled
+        self.resample = True
+
     def Plot(self):
         import matplotlib.pyplot as plt
-        d = self.data.reshape((self.header['nx'], self.header['nx'], 5))
+        d = self.data.reshape((self.header['nx'], self.header['ny'], 5))
         b = _np.sqrt(d[:, :, 2] ** 2 + d[:, :, 3] ** 2 + d[:, :, 4] ** 2)
         plt.imshow(b)
         plt.colorbar()

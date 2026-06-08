@@ -17,8 +17,6 @@ def test_T248_Mgncreat_mgndata() :
     By = By.reshape((2,2))
     Bz = Bz.reshape((2,2))
 
-    print(np.stack([x, y, Bx, By, Bz]).transpose().shape)
-
     fluka_field = pyflubl.Field.Field2D(np.stack([x, y, Bx, By, Bz]).transpose(), name="plasma")
 
     fluka_field.Resample(10,10, method='linear')
