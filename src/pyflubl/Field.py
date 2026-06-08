@@ -81,13 +81,16 @@ class Field2D(Field) :
         xd = self.data[:,:,0]
         yd = self.data[:,:,1]
 
-        xmg, ymg = _np.meshgrid(xi, yi)
+        xmg, ymg = _np.meshgrid(xi, yi, indexing="ij")
 
         b_inter = self.f_interpolator((xmg.flatten(), ymg.flatten())).transpose()
         self.data = _np.vstack((xmg.flatten(), ymg.flatten(), b_inter[0], b_inter[1], b_inter[2])).transpose()
 
-        self.header['nx'] = newXPoints
-        self.header['ny'] = newYPoints
+        # update header 
+        xk = self.columns[0].lower()
+        yk = self.columns[1].lower()
+        self.header[f"n{xk}"] = newXPoints
+        self.header[f"n{yk}"] = newYPoints
 
         # Mark data has been resampled
         self.resample = True
