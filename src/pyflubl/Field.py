@@ -54,7 +54,7 @@ class Field2D(Field) :
         self.cards = []
 
 
-    def Resample(self, newXPoints : int, newYPoints : int, method : str = "cubic") :
+    def Resample(self, newXPoints : int, newYPoints : int, method : str = "linear") :
         from scipy.interpolate import RegularGridInterpolator
 
         if  self.resample :
@@ -62,11 +62,20 @@ class Field2D(Field) :
 
         f = self.data[:,:,2:]
 
-        x = _np.linspace(self.header['xmin'], self.header['xmax'], self.header['nx'])
-        y = _np.linspace(self.header['ymin'], self.header['ymax'], self.header['ny'])
+        x = _np.linspace(self.header[f"{self.columns[0].lower()}min"],
+                         self.header[f"{self.columns[0].lower()}max"],
+                         self.header[f"n{self.columns[0].lower()}"])
+        y = _np.linspace(self.header[f"{self.columns[1].lower()}min"],
+                         self.header[f"{self.columns[1].lower()}max"],
+                         self.header[f"n{self.columns[1].lower()}"])
 
-        xi = _np.linspace(self.header['xmin'], self.header['xmax'], newXPoints)
-        yi = _np.linspace(self.header['ymin'], self.header['ymax'], newYPoints)
+        xi = _np.linspace(self.header[f"{self.columns[0].lower()}min"],
+                          self.header[f"{self.columns[0].lower()}max"],
+                          newXPoints)
+        yi = _np.linspace(self.header[f"{self.columns[1].lower()}min"],
+                          self.header[f"{self.columns[1].lower()}max"],
+                          newYPoints)
+
         self.f_interpolator = RegularGridInterpolator((x, y), f, method=method)
 
         xd = self.data[:,:,0]
@@ -85,7 +94,11 @@ class Field2D(Field) :
 
     def Plot(self):
         import matplotlib.pyplot as plt
-        d = self.data.reshape((self.header['nx'], self.header['ny'], 5))
+
+        xk = self.columns[0].lower()
+        yk = self.columns[1].lower()
+
+        d = self.data.reshape((self.header[f"n{xk}"], self.header[f"n{yk}"], 5))
         b = _np.sqrt(d[:, :, 2] ** 2 + d[:, :, 3] ** 2 + d[:, :, 4] ** 2)
         plt.imshow(b)
         plt.colorbar()
@@ -95,12 +108,12 @@ class Field2D(Field) :
 
         self.cards.append(_Mgncreat(_Mgncreat.INTERPOLATED,
                                     sdum=self.name,
-                                    nxr_pts = self.header['nx'],
-                                    ny_pts = self.header['ny'],
-                                    xr_min = self.header['xmin'],
-                                    xr_max = self.header['xmax'],
-                                    y_min = self.header['ymin'],
-                                    y_max = self.header['ymax']))
+                                    nxr_pts = self.header[f"n{self.columns[0].lower()}"],
+                                    ny_pts  = self.header[f"n{self.columns[1].lower()}"],
+                                    xr_min  = self.header[f"{self.columns[0].lower()}min"],
+                                    xr_max  = self.header[f"{self.columns[0].lower()}max"],
+                                    y_min   = self.header[f"{self.columns[1].lower()}min"],
+                                    y_max   = self.header[f"{self.columns[1].lower()}max"]))
 
         for d in self.data.reshape(-1,5) :
             self.cards.append(_Mgndata(d[2], d[3], d[4], sdum=self.name))

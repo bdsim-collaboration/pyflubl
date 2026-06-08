@@ -22,4 +22,3 @@ def test_T248_Mgncreat_mgndata() :
     fluka_field.Resample(10,10, method='linear')
     fluka_field.MakeCards()
     fluka_field.Write(this_dir + "/" + "T248_Mgncreat_mgndata.inp")
-    fluka_field.Plot()
