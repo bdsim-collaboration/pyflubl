@@ -1570,7 +1570,7 @@ class Machine(_Coordinates) :
 
         ret_dict = self._MakeFlukaComponentCommonG4(name,outerLogical, outerPhysical, flukaConvert,
                                                     rotation, translation, geomtranslation,
-                                                    category="quad",
+                                                    category="sextu",
                                                     convertMaterials=False,
                                                     prototype=prototype)
 
@@ -2745,11 +2745,11 @@ Machine.AddQuadrupole.__doc__ = """allowed kwargs """ + \
                                 " " + " ".join(_Element._outer_allowed_keys) + \
                                 " " + " ".join(_Element._quadrupole_allowed_keys) + \
                                 " " + " ".join(_Element._tiltshift_allowed_keys)
-Machine.AddQuadrupole.__doc__ = """allowed kwargs """ + \
-                                " ".join(_Element._beampipe_allowed_keys) + \
-                                " " + " ".join(_Element._outer_allowed_keys) + \
-                                " " + " ".join(_Element._sextupole_allowed_keys) + \
-                                " " + " ".join(_Element._tiltshift_allowed_keys)
+Machine.AddSextupole.__doc__ = """allowed kwargs """ + \
+                               " ".join(_Element._beampipe_allowed_keys) + \
+                               " " + " ".join(_Element._outer_allowed_keys) + \
+                               " " + " ".join(_Element._sextupole_allowed_keys) + \
+                               " " + " ".join(_Element._tiltshift_allowed_keys)
 
 Machine.AddTarget.__doc__ = """allowed kwargs""" \
                             " " + " ".join(_Element._outer_allowed_keys) + \

@@ -736,7 +736,7 @@ def test_T051_Lattice_Quad() :
 def test_T051_Lattice_Quad_Transform() :
     make_T051_Lattice_Quad_Transform()
 
-def test_T051_Latttice_Sextu() :
+def test_T051_Lattice_Sextu() :
     make_T051_Lattice_Sextu()
 
 def test_T051_Lattice_CustomFlukaFile() :
