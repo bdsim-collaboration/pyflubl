@@ -1,5 +1,4 @@
 import pyflubl as _pfbl
-import numpy as _np
 import os as _os
 
 def make_sextu(tilt = 0, offsetX = 0, offsetY = 0, fileName = "T005_Sextu"):
