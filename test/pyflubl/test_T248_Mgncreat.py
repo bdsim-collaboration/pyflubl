@@ -17,7 +17,7 @@ def test_T248_Mgncreat_mgndata() :
     By = By.reshape((2,2))
     Bz = Bz.reshape((2,2))
 
-    fluka_field = _pfbl.Field.Field2D(np.stack([x, y, Bx, By, Bz]).transpose(), name="plasma")
+    fluka_field = _pfbl.Field.Field2D(_np.stack([x, y, Bx, By, Bz]).transpose(), name="plasma")
 
     fluka_field.Resample(10,10, method='linear')
     fluka_field.MakeCards()
