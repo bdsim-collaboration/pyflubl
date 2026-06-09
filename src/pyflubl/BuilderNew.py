@@ -35,7 +35,9 @@ from .Fluka import Stepsize as _Stepsize
 from .Fluka import Rotprbin as _Rotprbin
 
 class Machine(_Coordinates) :
+    """Build and export beamline models to Geant4 and FLUKA representations."""
     def __init__(self, bakeTransforms = True, verbose = False) :
+        """Initialise a machine builder with geometry, bookkeeping, and control-card state."""
         super().__init__()
 
         # store if transforms are baked into bodies or rotdefis used
@@ -122,6 +124,7 @@ class Machine(_Coordinates) :
         self.usrocall = None
 
     def AddDrift(self,name, length, add=True, **kwargs):
+        """Add drift configuration to the machine."""
         allowed_keys = _Element._beampipe_allowed_keys + \
                        _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys
@@ -133,6 +136,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddRBend(self, name, length, add=True, **kwargs):
+        """Add rbend configuration to the machine."""
         allowed_keys = _Element._beampipe_allowed_keys + \
                        _Element._outer_allowed_keys + \
                        _Element._rbend_allowed_keys + \
@@ -149,6 +153,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddSBend(self, name, length, add=True, **kwargs):
+        """Add sbend configuration to the machine."""
         allowed_keys = _Element._beampipe_allowed_keys + \
                        _Element._outer_allowed_keys + \
                        _Element._sbend_allowed_keys + \
@@ -168,6 +173,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddSBendSplit(self, name, length, nsplit=10, add=True, **kwargs):
+        """Add sbend split configuration to the machine."""
         angle = kwargs.pop('angle')/nsplit
         length = length/nsplit
 
@@ -178,6 +184,7 @@ class Machine(_Coordinates) :
         return sbends
 
     def AddQuadrupole(self, name, length, add=True, **kwargs):
+        """Add quadrupole configuration to the machine."""
         allowed_keys = _Element._beampipe_allowed_keys + \
                        _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
@@ -191,6 +198,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddSextupole(self, name, length, add = True, **kwargs):
+        """Add sextupole configuration to the machine."""
         allowed_keys = _Element._beampipe_allowed_keys + \
                        _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
@@ -204,6 +212,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddOctupole(self, name, length, add = True, **kwargs):
+        """Add octupole configuration to the machine."""
         allowed_keys = _Element._beampipe_allowed_keys + \
                        _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
@@ -217,6 +226,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddDecapole(self, name, length, add = True, **kwargs):
+        """Add decapole configuration to the machine."""
         allowed_keys = _Element._beampipe_allowed_keys + \
                        _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
@@ -230,6 +240,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddTarget(self, name, length, add=True, **kwargs):
+        """Add target configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
                        _Element._target_allowed_keys
@@ -242,6 +253,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddRCol(self, name, length, add=True, **kwargs):
+        """Add rcol configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
                        _Element._rcol_allowed_keys
@@ -253,6 +265,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddECol(self, name, length, add=True, **kwargs):
+        """Add ecol configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
                        _Element._ecol_allowed_keys
@@ -264,6 +277,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddJCol(self, name, length, add=True, **kwargs):
+        """Add jcol configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
                        _Element._jcol_allowed_keys
@@ -275,6 +289,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddShield(self, name, length, add=True, **kwargs):
+        """Add shield configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
                        _Element._beampipe_allowed_keys + \
@@ -287,6 +302,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddDump(self, name, length, add=True, **kwargs):
+        """Add dump configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
                        _Element._target_allowed_keys
@@ -299,6 +315,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddWireScanner(self, name, length, add=True, **kwargs):
+        """Add wire scanner configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys + \
                        _Element._beampipe_allowed_keys + \
@@ -312,6 +329,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddGap(self, name, length, add=True, **kwargs):
+        """Add gap configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._tiltshift_allowed_keys
         self._CheckElementKwargs(kwargs,allowed_keys)
@@ -322,6 +340,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddCustomG4(self, name, length, containerLV, add=True, **kwargs):
+        """Add custom g4 configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._customg4_allowed_keys + \
                        _Element._customg4file_allowed_keys + \
@@ -335,6 +354,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddCustomG4File(self, name, length, add=True, **kwargs):
+        """Add custom g4 file configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._customg4file_allowed_keys + \
                        _Element._tiltshift_allowed_keys
@@ -354,6 +374,7 @@ class Machine(_Coordinates) :
         return self.AddCustomG4(name,length, containerLV = lv, add=add, **kwargs)
 
     def AddCustomFluka(self, name, length, add=True, **kwargs):
+        """Add custom fluka configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys +\
                        _Element._customfluka_allowed_keys + \
                        _Element._customflukafile_allowed_keys + \
@@ -370,6 +391,7 @@ class Machine(_Coordinates) :
         return e
 
     def AddCustomFlukaFile(self, name, length, add=True, **kwargs):
+        """Add custom fluka file configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._customflukafile_allowed_keys + \
                        _Element._tiltshift_allowed_keys
@@ -443,6 +465,7 @@ class Machine(_Coordinates) :
 
     def AddLatticeInstance(self, name, prototypeName, **kwargs):
 
+        """Add lattice instance configuration to the machine."""
         allowed_keys = _Element._tiltshift_allowed_keys
         self._CheckElementKwargs(kwargs,allowed_keys)
         self._SetDefaultElementKwargs(kwargs, allowed_keys)
@@ -458,9 +481,11 @@ class Machine(_Coordinates) :
     def AddLatticePrototype(self, e, **kwargs):
         # save in prototype dict
         # transformation information to be populated when built
+        """Add lattice prototype configuration to the machine."""
         self.prototypes[e.name] = {"element":e}
 
     def AddSamplerPlane(self, name, length = None, **kwargs):
+        """Add sampler plane configuration to the machine."""
         allowed_keys = _Element._outer_allowed_keys + \
                        _Element._sampler_plane_allowed_keys + \
                        _Element._tiltshift_allowed_keys
@@ -478,17 +503,21 @@ class Machine(_Coordinates) :
         self.samplernames_samplernumber[name] = len(self.samplernames_samplernumber)
 
     def AddScoringHistogram(self):
+        """Add scoring histogram configuration to the machine."""
         pass
 
     def AddScoringMesh(self):
+        """Add scoring mesh configuration to the machine."""
         pass
 
     def _CheckElementKwargs(self, kwargs, allowed_keys):
+        """Internal helper for check element kwargs."""
         for key in kwargs:
             if key not in allowed_keys:
                 raise TypeError(f"Unexpected keyword argument: {key}")
 
     def _SetDefaultElementKwargs(self, kwargs, allowed_keys):
+        """Internal helper for set default element kwargs."""
         for ak in allowed_keys :
             if ak not in kwargs :
                 if ak == "vacuumMaterial" :
@@ -569,55 +598,72 @@ class Machine(_Coordinates) :
                     pass
 
     def AddBeam(self, beam):
+        """Add beam configuration to the machine."""
         self.beam = beam
 
     def AddBeampos(self, beampos):
+        """Add beampos configuration to the machine."""
         self.beampos = beampos
 
     def AddBeamaxes(self, beamaxes):
+        """Add beamaxes configuration to the machine."""
         self.beamaxes = beamaxes
 
     def AddDefaults(self, defaults):
+        """Add defaults configuration to the machine."""
         self.defaults = defaults
 
     def AddElcfield(self, elcfield):
+        """Add elcfield configuration to the machine."""
         self.elcfield = elcfield
 
     def AddGlobal(self, fglobal):
+        """Add global configuration to the machine."""
         self.fglobal = fglobal
 
     def AddLattice(self, lattice):
+        """Add lattice configuration to the machine."""
         self.lattice.append(lattice)
 
     def AddMgnfield(self, mgnfield):
+        """Add mgnfield configuration to the machine."""
         self.mgnfield.append(mgnfield)
 
     def AddMgncreat(self, mgncreat):
+        """Add mgncreat configuration to the machine."""
         self.mgncreat.append(mgncreat)
 
     def AddMgndata(self, mgndata):
+        """Add mgndata configuration to the machine."""
         self.mgndata.append(mgndata)
 
     def AddStepsize(self, stepsize):
+        """Add stepsize configuration to the machine."""
         self.stepsize.append(stepsize)
 
     def AddRotprbin(self, rotprbin):
+        """Add rotprbin configuration to the machine."""
         self.rotprbin.append(rotprbin)
 
     def AddRandomiz(self, randomiz):
+        """Add randomiz configuration to the machine."""
         self.randomiz = randomiz
 
     def AddSource(self,source):
+        """Add source configuration to the machine."""
         self.source = source
 
     def AddStart(self, start):
+        """Add start configuration to the machine."""
         self.start = start
 
     def AddTitle(self, title):
+        """Add title configuration to the machine."""
         self.title = title
 
     def AddUsrbin(self, usrbin, rotmat = _np.array([[1,0,0],[0,1,0],[0,0,1]]), translation = _np.array([0,0,0])):
 
+        """Add usrbin configuration to the machine."""
         self.usrbin.append(usrbin)
 
         # Add bookkeeping information
@@ -629,6 +675,7 @@ class Machine(_Coordinates) :
     def AddUsrbinToElement(self, element, usrbin = None, scaleUsrbinToElement = False):
 
         # build coordinates
+        """Add usrbin to element configuration to the machine."""
         self.Build()
 
         # get element name
@@ -664,15 +711,19 @@ class Machine(_Coordinates) :
         self.AddUsrbin(usrbin, element_rotmat, element_translation)
 
     def AddUserdump(self, userdump):
+        """Add userdump configuration to the machine."""
         self.userdump.append(userdump)
 
     def AddUsricall(self, usricall):
+        """Add usricall configuration to the machine."""
         self.usricall = usricall
 
     def AddUsrocall(self, usrocall):
+        """Add usrocall configuration to the machine."""
         self.usrocall = usrocall
 
     def _MakeBookkeepingInfo(self):
+        """Internal helper for make bookkeeping info."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine._MakeBookkeepingInfo: Making bookkeeping information...")
 
@@ -698,6 +749,7 @@ class Machine(_Coordinates) :
 
     def _WriteBookkeepingInfo(self, fileName="output.json", pretty=False):
 
+        """Internal helper for write bookkeeping info."""
         if not self.finished :
             self._MakeBookkeepingInfo()
 
@@ -720,6 +772,7 @@ class Machine(_Coordinates) :
                 f.write(pretty_json_str)
 
     def Write(self, filename, prettyJSON = False):
+        """Handle write operations for the machine builder."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.Write: Writing model to file...")
 
@@ -788,6 +841,7 @@ class Machine(_Coordinates) :
         self._WriteBookkeepingInfo(bookkeepignFileName, pretty=prettyJSON)
 
     def __repr__(self):
+        """Return a readable summary of the machine configuration."""
         s = ''
         s += 'pyflubl.BuilderNew.Machine instance\n'
         s += str(len(self.sequence)) + ' items in sequence\n'
@@ -795,6 +849,7 @@ class Machine(_Coordinates) :
         return s
 
     def MakeFlukaModel(self):
+        """Build fluka model objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaModel:")
 
@@ -847,6 +902,7 @@ class Machine(_Coordinates) :
         return self.flukaregistry
 
     def MakeGeant4InitialGeometry(self, worldsize = [5000, 5000, 5000], worldMaterial = "G4_AIR"):
+        """Build geant4 initial geometry objects for geometry conversion and export."""
         worldSolid = _pyg4.geant4.solid.Box("world",worldsize[0], worldsize[1], worldsize[2], self._GetGeant4Registry(geant4RegistryAdd=True))
         self.worldLogical = _pyg4.geant4.LogicalVolume(worldSolid, worldMaterial, "worldLogical", self._GetGeant4Registry(geant4RegistryAdd=True))
         self._GetGeant4Registry(geant4RegistryAdd=True).setWorldVolume(self.worldLogical)
@@ -858,6 +914,7 @@ class Machine(_Coordinates) :
                                  world_pad = 200):
 
         # store world size
+        """Build fluka initial geometry objects for geometry conversion and export."""
         self.world_min = world_min
         self.world_max = world_max
         self.simulation_min = world_min
@@ -945,6 +1002,7 @@ class Machine(_Coordinates) :
                        g4add = True,
                        flukaConvert = True,
                        prototype = False):
+        """Handle element factory operations for the machine builder."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.ElementFactory: Making FLUKA geometry for ", element.name, element.category)
 
@@ -1170,6 +1228,7 @@ class Machine(_Coordinates) :
                        flukaConvert = True,
                        prototype = False):
 
+        """Build fluka drift objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaDrift: Making drfit element ", name)
 
@@ -1232,6 +1291,7 @@ class Machine(_Coordinates) :
                        flukaConvert = True,
                        prototype = False):
 
+        """Build fluka rbend objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaRBend: Making rbend element ", name)
 
@@ -1345,6 +1405,7 @@ class Machine(_Coordinates) :
                        flukaConvert = True,
                        prototype = False):
 
+        """Build fluka sbend objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaSBend: Making sbend element ", name)
 
@@ -1463,6 +1524,7 @@ class Machine(_Coordinates) :
                             flukaConvert=True,
                             prototype=False):
 
+        """Build fluka quadrupole objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaQuadrupole: Making quadrupole element ", name)
 
@@ -1576,6 +1638,7 @@ class Machine(_Coordinates) :
                            flukaConvert=True,
                            prototype=False):
 
+        """Build fluka sextupole objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaSextupole: Making sextupole element ", name)
 
@@ -1689,6 +1752,7 @@ class Machine(_Coordinates) :
                           flukaConvert=True,
                           prototype=False):
 
+        """Build fluka octupole objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaOctupole: Making octupole element ", name)
 
@@ -1802,6 +1866,7 @@ class Machine(_Coordinates) :
                           flukaConvert=True,
                           prototype=False):
 
+        """Build fluka decapole objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaDecapole: Making decapole element ", name)
 
@@ -1915,6 +1980,7 @@ class Machine(_Coordinates) :
                         flukaConvert=True,
                         prototype=False):
 
+        """Build fluka target objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaTarget: Making target element ", name)
 
@@ -1974,6 +2040,7 @@ class Machine(_Coordinates) :
                       flukaConvert=True,
                       prototype=False):
 
+        """Build fluka rcol objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaRCol: Making ecol element ", name)
 
@@ -2027,6 +2094,7 @@ class Machine(_Coordinates) :
                       flukaConvert=True,
                       prototype=False):
 
+        """Build fluka ecol objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaECol: Making target ecol ", name)
 
@@ -2082,6 +2150,7 @@ class Machine(_Coordinates) :
                       flukaConvert=True,
                       prototype=False):
 
+        """Build fluka jcol objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaJCol: Making target jcol ", name)
 
@@ -2148,6 +2217,7 @@ class Machine(_Coordinates) :
                         flukaConvert=True,
                         prototype=False):
 
+        """Build fluka shield objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaShield: Making target shield ", name)
 
@@ -2225,6 +2295,7 @@ class Machine(_Coordinates) :
                       flukaConvert=True,
                       prototype=False):
 
+        """Build fluka dump objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaDump: Making dump ", name)
 
@@ -2279,6 +2350,7 @@ class Machine(_Coordinates) :
                              flukaConvert=True,
                              prototype=False):
 
+        """Build fluka wire scanner objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaWireScanner: Making wirescanner ", name)
 
@@ -2359,6 +2431,7 @@ class Machine(_Coordinates) :
                      flukaConvert=True,
                      prototype=False):
 
+        """Build fluka gap objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaGap: Making target gap ", name)
 
@@ -2396,6 +2469,7 @@ class Machine(_Coordinates) :
                          geant4RegistryAdd = False,
                          flukaConvert = True,
                          material=None):
+        """Build fluka sampler objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaSampler: Making sampler element ", name)
 
@@ -2445,6 +2519,7 @@ class Machine(_Coordinates) :
                     ):
 
         # length
+        """Build fluka custom g4 objects for geometry conversion and export."""
         length = element.length * 1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
 
@@ -2497,6 +2572,7 @@ class Machine(_Coordinates) :
                              flukaConvert=True,
                              prototype=False):
 
+        """Build fluka custom fluka objects for geometry conversion and export."""
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
 
         regionNamesTransferred = []
@@ -2553,6 +2629,7 @@ class Machine(_Coordinates) :
                                  geant4RegistryAdd = False,
                                  flukaConvert = True,
                                  material=None):
+        """Build fluka lattice instance objects for geometry conversion and export."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine.MakeFlukaLatticeInstance: Making lattice instance element ", name)
 
@@ -2891,6 +2968,7 @@ class Machine(_Coordinates) :
 
 
     def _GetGeant4Registry(self,geant4RegistryAdd = False) :
+        """Internal helper for get geant4 registry."""
         if geant4RegistryAdd:
             if self.g4registry :
                 g4registry = self.g4registry
@@ -2903,6 +2981,7 @@ class Machine(_Coordinates) :
         return g4registry
 
     def _GetFlukaRegistry(self, flukaRegistryAdd = False) :
+        """Internal helper for get fluka registry."""
         if flukaRegistryAdd :
             if self.flukaregistry :
                 flukaregistry = self.flukaregistry
@@ -2915,11 +2994,13 @@ class Machine(_Coordinates) :
         return flukaregistry
 
     def _ResetRegistries(self):
+        """Internal helper for reset registries."""
         print("Resetting Fluka and Geant4 registries")
         self.flukaregistry = None
         self.g4registry = None
 
     def _MakeOffsetAndTiltTransforms(self, element, rotation, translation):
+        """Internal helper for make offset and tilt transforms."""
         offsetX = element["offsetX"]
         offsetY = element["offsetY"]
         tilt    = element["tilt"]
@@ -2930,12 +3011,15 @@ class Machine(_Coordinates) :
         return rotation, translation
 
     def _CalculateDipoleFieldStrength(self, momentum, rho):
+        """Internal helper for calculate dipole field strength."""
         return 3.3356409519815204 * momentum / (rho / 1000.)
 
     def _CalculateQuadrupoleFieldStrength(self, momentum, k1):
+        """Internal helper for calculate quadrupole field strength."""
         return 0
 
     def _AddBookkeepingTransformation(self, name, rotation, translation, geomtranslation = _np.array([0,0,0]), angle=0.0, k1=0.0):
+        """Internal helper for add bookkeeping transformation."""
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
         self.elementBookkeeping[name]['geomtranslation'] = geomtranslation.tolist()
@@ -2943,6 +3027,7 @@ class Machine(_Coordinates) :
         self.elementBookkeeping[name]['k1'] = k1
 
     def _AddBookkeepingUsrbin(self, usrbinnumber, usrbinname, rotation = None, translation = None):
+        """Internal helper for add bookkeeping usrbin."""
         self.usrbinnumber_usrbininfo[usrbinnumber] = {"name":usrbinname, "rotation":rotation.tolist(), "translation":translation.tolist()}
 
     def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert,
@@ -2950,6 +3035,7 @@ class Machine(_Coordinates) :
                                     convertMaterials = False,
                                     prototype = False):
         # convert materials
+        """Internal helper for make fluka component common g4."""
         if convertMaterials:
             print("_MakeFlukaComponentCommon> convertMaterials")
             materialNameSet = containerLV.makeMaterialNameSet()
@@ -3001,6 +3087,7 @@ class Machine(_Coordinates) :
     def _MakeFlukaComponentCommonFluka(self, name, regionNames, category) :
 
         # make bookkeeping information
+        """Internal helper for make fluka component common fluka."""
         if name not in self.elementBookkeeping :
             self.elementBookkeeping[name] = {}
 
@@ -3012,6 +3099,7 @@ class Machine(_Coordinates) :
                                e1=0, e2=0,
                                g4registry = None):
 
+        """Internal helper for make geant4 generic trap."""
         if not g4registry :
             g4registry = self.g4registry
 
@@ -3047,6 +3135,7 @@ class Machine(_Coordinates) :
 
     def _MakePlacedMesh(self, physVol, rotation, translation):
 
+        """Internal helper for make placed mesh."""
         mesh = physVol.logicalVolume.solid.mesh()
 
         aa = _tbxyz2axisangle(_matrix2tbxyz(rotation))
@@ -3056,6 +3145,7 @@ class Machine(_Coordinates) :
         return mesh
 
     def _MakeFlukaMaterials(self, materials = []):
+        """Internal helper for make fluka materials."""
         for g4material in materials :
             if g4material not in self.flukaregistry.materialShortName :
                 if type(g4material) is str :
