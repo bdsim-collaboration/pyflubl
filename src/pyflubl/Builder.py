@@ -2594,7 +2594,7 @@ def _make_sphinx_doc(summary, params, returns=None, rtype=None, allowed_keys=Non
         )
         lines.append(":type kwargs: dict")
     if returns is not None:
-        lines.append(f":returns: {returns}")
+        lines.append(f":return: {returns}")
     return "\n".join(lines)
 
 
