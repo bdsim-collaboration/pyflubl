@@ -35,7 +35,20 @@ from .Fluka import Stepsize as _Stepsize
 from .Fluka import Rotprbin as _Rotprbin
 
 class Machine(_Coordinates) :
+    """Build and store a beamline model for Geant4 and FLUKA export."""
+
     def __init__(self, bakeTransforms = True, verbose = False) :
+        """Initialise a new BuilderNew machine container.
+
+        Parameters
+        ----------
+        bakeTransforms : bool, optional
+            If True, bake transforms into geometry bodies instead of using
+            ROT-DEFI cards when exporting FLUKA geometry.
+        verbose : bool, optional
+            If True, print debug information while constructing and exporting
+            the model.
+        """
         super().__init__()
 
         # store if transforms are baked into bodies or rotdefis used
