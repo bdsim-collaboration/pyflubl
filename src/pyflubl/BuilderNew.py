@@ -464,7 +464,6 @@ class Machine(_Coordinates) :
                                    **kwargs)
 
     def AddLatticeInstance(self, name, prototypeName, **kwargs):
-
         """Add lattice instance configuration to the machine."""
         allowed_keys = _Element._tiltshift_allowed_keys
         self._CheckElementKwargs(kwargs,allowed_keys)
@@ -479,9 +478,9 @@ class Machine(_Coordinates) :
         return e
 
     def AddLatticePrototype(self, e, **kwargs):
+        """Add lattice prototype configuration to the machine."""
         # save in prototype dict
         # transformation information to be populated when built
-        """Add lattice prototype configuration to the machine."""
         self.prototypes[e.name] = {"element":e}
 
     def AddSamplerPlane(self, name, length = None, **kwargs):
@@ -662,7 +661,6 @@ class Machine(_Coordinates) :
         self.title = title
 
     def AddUsrbin(self, usrbin, rotmat = _np.array([[1,0,0],[0,1,0],[0,0,1]]), translation = _np.array([0,0,0])):
-
         """Add usrbin configuration to the machine."""
         self.usrbin.append(usrbin)
 
@@ -673,9 +671,8 @@ class Machine(_Coordinates) :
         self.flukabincount += 1
 
     def AddUsrbinToElement(self, element, usrbin = None, scaleUsrbinToElement = False):
-
-        # build coordinates
         """Add usrbin to element configuration to the machine."""
+        # build coordinates
         self.Build()
 
         # get element name
@@ -748,7 +745,6 @@ class Machine(_Coordinates) :
                     self.regionnumber_element[i+1] = element_name
 
     def _WriteBookkeepingInfo(self, fileName="output.json", pretty=False):
-
         """Internal helper for write bookkeeping info."""
         if not self.finished :
             self._MakeBookkeepingInfo()
@@ -912,9 +908,8 @@ class Machine(_Coordinates) :
                                  world_max = [ 250,  250,  250],
                                  worldmaterial = "AIR",
                                  world_pad = 200):
-
-        # store world size
         """Build fluka initial geometry objects for geometry conversion and export."""
+        # store world size
         self.world_min = world_min
         self.world_max = world_max
         self.simulation_min = world_min
@@ -2517,9 +2512,8 @@ class Machine(_Coordinates) :
                           material=None,
                           prototype=False
                     ):
-
-        # length
         """Build fluka custom g4 objects for geometry conversion and export."""
+        # length
         length = element.length * 1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
 
@@ -3085,9 +3079,8 @@ class Machine(_Coordinates) :
         return {"placedmesh": outerMesh}
 
     def _MakeFlukaComponentCommonFluka(self, name, regionNames, category) :
-
-        # make bookkeeping information
         """Internal helper for make fluka component common fluka."""
+        # make bookkeeping information
         if name not in self.elementBookkeeping :
             self.elementBookkeeping[name] = {}
 
