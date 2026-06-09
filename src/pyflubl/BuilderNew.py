@@ -3154,7 +3154,7 @@ def _format_allowed_kwargs(allowed_keys):
     return ", ".join(f"``{key}``" for key in allowed_keys)
 
 
-def _make_sphinx_doc(summary, params, returns=None, rtype=None, allowed_keys=None):
+def _make_sphinx_doc(summary, params, returns=None, allowed_keys=None):
     lines = [summary, ""]
     for name, type_name, description in params:
         lines.append(f":param {type_name} {name}: {description}")
@@ -3177,7 +3177,6 @@ Machine.AddDrift.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created drift element.",
-    rtype="``Element``",
     allowed_keys=_Element._beampipe_allowed_keys + _Element._outer_allowed_keys,
 )
 Machine.AddRBend.__doc__ = _make_sphinx_doc(
@@ -3188,7 +3187,6 @@ Machine.AddRBend.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created rbend element.",
-    rtype="``Element``",
     allowed_keys=_Element._beampipe_allowed_keys
     + _Element._outer_allowed_keys
     + _Element._rbend_allowed_keys
@@ -3202,7 +3200,6 @@ Machine.AddSBend.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created sbend element.",
-    rtype="``Element``",
     allowed_keys=_Element._beampipe_allowed_keys
     + _Element._outer_allowed_keys
     + _Element._sbend_allowed_keys
@@ -3217,7 +3214,6 @@ Machine.AddSBendSplit.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append each generated element to the machine."),
     ],
     returns="The list of created sbend elements.",
-    rtype="``list``",
     allowed_keys=_Element._beampipe_allowed_keys
     + _Element._outer_allowed_keys
     + _Element._sbend_allowed_keys
@@ -3231,7 +3227,6 @@ Machine.AddQuadrupole.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created quadrupole element.",
-    rtype="``Element``",
     allowed_keys=_Element._beampipe_allowed_keys
     + _Element._outer_allowed_keys
     + _Element._quadrupole_allowed_keys
@@ -3245,7 +3240,6 @@ Machine.AddSextupole.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created sextupole element.",
-    rtype="``Element``",
     allowed_keys=_Element._beampipe_allowed_keys
     + _Element._outer_allowed_keys
     + _Element._sextupole_allowed_keys
@@ -3259,7 +3253,6 @@ Machine.AddOctupole.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created octupole element.",
-    rtype="``Element``",
     allowed_keys=_Element._beampipe_allowed_keys
     + _Element._outer_allowed_keys
     + _Element._octupole_allowed_keys
@@ -3273,7 +3266,6 @@ Machine.AddDecapole.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created decapole element.",
-    rtype="``Element``",
     allowed_keys=_Element._beampipe_allowed_keys
     + _Element._outer_allowed_keys
     + _Element._decapole_allowed_keys
@@ -3287,7 +3279,6 @@ Machine.AddTarget.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created target element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._tiltshift_allowed_keys
     + _Element._target_allowed_keys,
@@ -3300,7 +3291,6 @@ Machine.AddRCol.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created rcol element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._tiltshift_allowed_keys
     + _Element._rcol_allowed_keys,
@@ -3313,7 +3303,6 @@ Machine.AddECol.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created ecol element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._tiltshift_allowed_keys
     + _Element._ecol_allowed_keys,
@@ -3326,7 +3315,6 @@ Machine.AddJCol.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created jcol element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._tiltshift_allowed_keys
     + _Element._jcol_allowed_keys,
@@ -3339,7 +3327,6 @@ Machine.AddShield.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created shield element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._tiltshift_allowed_keys
     + _Element._beampipe_allowed_keys
@@ -3353,7 +3340,6 @@ Machine.AddDump.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created dump element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._tiltshift_allowed_keys
     + _Element._dump_allowed_keys,
@@ -3366,7 +3352,6 @@ Machine.AddWireScanner.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created wire scanner element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._tiltshift_allowed_keys
     + _Element._beampipe_allowed_keys
@@ -3380,7 +3365,6 @@ Machine.AddGap.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created gap element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys + _Element._tiltshift_allowed_keys,
 )
 Machine.AddCustomG4.__doc__ = _make_sphinx_doc(
@@ -3392,7 +3376,6 @@ Machine.AddCustomG4.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created custom Geant4 element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._customg4_allowed_keys
     + _Element._customg4file_allowed_keys
@@ -3406,7 +3389,6 @@ Machine.AddCustomG4File.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created custom Geant4 element loaded from the geometry file.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._customg4file_allowed_keys
     + _Element._tiltshift_allowed_keys,
@@ -3419,7 +3401,6 @@ Machine.AddCustomFluka.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created custom FLUKA element.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._customfluka_allowed_keys
     + _Element._customflukafile_allowed_keys
@@ -3433,7 +3414,6 @@ Machine.AddCustomFlukaFile.__doc__ = _make_sphinx_doc(
         ("add", "bool", "When ``True``, append the created element to the machine."),
     ],
     returns="The created custom FLUKA element loaded from the geometry file.",
-    rtype="``Element``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._customflukafile_allowed_keys
     + _Element._tiltshift_allowed_keys,
@@ -3445,14 +3425,12 @@ Machine.AddLatticeInstance.__doc__ = _make_sphinx_doc(
         ("prototypeName", "str", "Name of the stored lattice prototype to instantiate."),
     ],
     returns="The created lattice instance element.",
-    rtype="``Element``",
     allowed_keys=_Element._tiltshift_allowed_keys,
 )
 Machine.AddLatticePrototype.__doc__ = _make_sphinx_doc(
     "Add lattice prototype configuration to the machine.",
     [("e", "``Element``", "Element definition to store as a reusable prototype.")],
     returns="``None``. The prototype definition is stored on the machine.",
-    rtype="``None``",
 )
 Machine.AddSamplerPlane.__doc__ = _make_sphinx_doc(
     "Add sampler plane configuration to the machine.",
@@ -3461,7 +3439,6 @@ Machine.AddSamplerPlane.__doc__ = _make_sphinx_doc(
         ("length", "float", "Optional sampler length. Uses the machine default when omitted."),
     ],
     returns="``None``. The created sampler plane is appended to the machine.",
-    rtype="``None``",
     allowed_keys=_Element._outer_allowed_keys
     + _Element._sampler_plane_allowed_keys
     + _Element._tiltshift_allowed_keys,
