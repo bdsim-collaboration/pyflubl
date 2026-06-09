@@ -510,13 +510,13 @@ class Machine(_Coordinates) :
         pass
 
     def _CheckElementKwargs(self, kwargs, allowed_keys):
-        """Internal helper for check element kwargs."""
+        """Internal helper to check element kwargs."""
         for key in kwargs:
             if key not in allowed_keys:
                 raise TypeError(f"Unexpected keyword argument: {key}")
 
     def _SetDefaultElementKwargs(self, kwargs, allowed_keys):
-        """Internal helper for set default element kwargs."""
+        """Internal helper to set default element kwargs."""
         for ak in allowed_keys :
             if ak not in kwargs :
                 if ak == "vacuumMaterial" :
@@ -720,7 +720,7 @@ class Machine(_Coordinates) :
         self.usrocall = usrocall
 
     def _MakeBookkeepingInfo(self):
-        """Internal helper for make bookkeeping info."""
+        """Internal helper to make bookkeeping info."""
         if self.verbose :
             print("pyflubl.BuilderNew.Machine._MakeBookkeepingInfo: Making bookkeeping information...")
 
@@ -745,7 +745,7 @@ class Machine(_Coordinates) :
                     self.regionnumber_element[i+1] = element_name
 
     def _WriteBookkeepingInfo(self, fileName="output.json", pretty=False):
-        """Internal helper for write bookkeeping info."""
+        """Internal helper to write bookkeeping info."""
         if not self.finished :
             self._MakeBookkeepingInfo()
 
@@ -2962,7 +2962,7 @@ class Machine(_Coordinates) :
 
 
     def _GetGeant4Registry(self,geant4RegistryAdd = False) :
-        """Internal helper for get geant4 registry."""
+        """Internal helper to get geant4 registry."""
         if geant4RegistryAdd:
             if self.g4registry :
                 g4registry = self.g4registry
@@ -2975,7 +2975,7 @@ class Machine(_Coordinates) :
         return g4registry
 
     def _GetFlukaRegistry(self, flukaRegistryAdd = False) :
-        """Internal helper for get fluka registry."""
+        """Internal helper to get fluka registry."""
         if flukaRegistryAdd :
             if self.flukaregistry :
                 flukaregistry = self.flukaregistry
@@ -2988,13 +2988,13 @@ class Machine(_Coordinates) :
         return flukaregistry
 
     def _ResetRegistries(self):
-        """Internal helper for reset registries."""
+        """Internal helper to reset registries."""
         print("Resetting Fluka and Geant4 registries")
         self.flukaregistry = None
         self.g4registry = None
 
     def _MakeOffsetAndTiltTransforms(self, element, rotation, translation):
-        """Internal helper for make offset and tilt transforms."""
+        """Internal helper to make offset and tilt transforms."""
         offsetX = element["offsetX"]
         offsetY = element["offsetY"]
         tilt    = element["tilt"]
@@ -3005,15 +3005,15 @@ class Machine(_Coordinates) :
         return rotation, translation
 
     def _CalculateDipoleFieldStrength(self, momentum, rho):
-        """Internal helper for calculate dipole field strength."""
+        """Internal helper to calculate dipole field strength."""
         return 3.3356409519815204 * momentum / (rho / 1000.)
 
     def _CalculateQuadrupoleFieldStrength(self, momentum, k1):
-        """Internal helper for calculate quadrupole field strength."""
+        """Internal helper to calculate quadrupole field strength."""
         return 0
 
     def _AddBookkeepingTransformation(self, name, rotation, translation, geomtranslation = _np.array([0,0,0]), angle=0.0, k1=0.0):
-        """Internal helper for add bookkeeping transformation."""
+        """Internal helper to add bookkeeping transformation."""
         self.elementBookkeeping[name]['rotation'] = rotation.tolist()
         self.elementBookkeeping[name]['translation'] = translation.tolist()
         self.elementBookkeeping[name]['geomtranslation'] = geomtranslation.tolist()
@@ -3021,7 +3021,7 @@ class Machine(_Coordinates) :
         self.elementBookkeeping[name]['k1'] = k1
 
     def _AddBookkeepingUsrbin(self, usrbinnumber, usrbinname, rotation = None, translation = None):
-        """Internal helper for add bookkeeping usrbin."""
+        """Internal helper to add bookkeeping usrbin."""
         self.usrbinnumber_usrbininfo[usrbinnumber] = {"name":usrbinname, "rotation":rotation.tolist(), "translation":translation.tolist()}
 
     def _MakeFlukaComponentCommonG4(self, name, containerLV, containerPV, flukaConvert,
@@ -3029,7 +3029,7 @@ class Machine(_Coordinates) :
                                     convertMaterials = False,
                                     prototype = False):
         # convert materials
-        """Internal helper for make fluka component common g4."""
+        """Internal helper to make fluka component common g4."""
         if convertMaterials:
             print("_MakeFlukaComponentCommon> convertMaterials")
             materialNameSet = containerLV.makeMaterialNameSet()
@@ -3079,7 +3079,7 @@ class Machine(_Coordinates) :
         return {"placedmesh": outerMesh}
 
     def _MakeFlukaComponentCommonFluka(self, name, regionNames, category) :
-        """Internal helper for make fluka component common fluka."""
+        """Internal helper to make fluka component common fluka."""
         # make bookkeeping information
         if name not in self.elementBookkeeping :
             self.elementBookkeeping[name] = {}
@@ -3092,7 +3092,7 @@ class Machine(_Coordinates) :
                                e1=0, e2=0,
                                g4registry = None):
 
-        """Internal helper for make geant4 generic trap."""
+        """Internal helper to make geant4 generic trap."""
         if not g4registry :
             g4registry = self.g4registry
 
@@ -3128,7 +3128,7 @@ class Machine(_Coordinates) :
 
     def _MakePlacedMesh(self, physVol, rotation, translation):
 
-        """Internal helper for make placed mesh."""
+        """Internal helper to make placed mesh."""
         mesh = physVol.logicalVolume.solid.mesh()
 
         aa = _tbxyz2axisangle(_matrix2tbxyz(rotation))
@@ -3138,7 +3138,7 @@ class Machine(_Coordinates) :
         return mesh
 
     def _MakeFlukaMaterials(self, materials = []):
-        """Internal helper for make fluka materials."""
+        """Internal helper to make fluka materials."""
         for g4material in materials :
             if g4material not in self.flukaregistry.materialShortName :
                 if type(g4material) is str :
