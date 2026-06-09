@@ -16,9 +16,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath("../../src"))
 
 
 # -- General configuration ------------------------------------------------
@@ -35,6 +36,20 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.inheritance_diagram',
               'sphinx.ext.mathjax',
               'sphinx.ext.todo']
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': False,
+    'show-inheritance': True,
+}
+autodoc_mock_imports = [
+    "pyg4ometry",
+    "pybdsim",
+    "pandas",
+    "xarray",
+    "awkward",
+    "uproot",
+    "matplotlib",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -173,6 +188,4 @@ texinfo_documents = [
      author, 'pyflubl', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
 

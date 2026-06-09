@@ -9,6 +9,7 @@ pyflupb is a set of classes and functions to prepare FLUKA simulation input prog
    licence
    authorship
    installation
+   api
    
 Indices and tables
 ==================
