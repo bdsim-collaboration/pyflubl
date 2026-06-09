@@ -3150,81 +3150,319 @@ class Machine(_Coordinates) :
                     self.flukaregistry.iMaterials += 1
 
 # dynamic doc strings
-Machine.AddDrift.__doc__ = """allowed kwargs: """ + \
-                           " ".join(_Element._beampipe_allowed_keys) + \
-                           " " + " ".join(_Element._outer_allowed_keys)
-Machine.AddRBend.__doc__ = """allowed kwargs: """ + \
-                           " ".join(_Element._beampipe_allowed_keys) + \
-                           " " + " ".join(_Element._outer_allowed_keys) + \
-                           " " + " ".join(_Element._rbend_allowed_keys) + \
-                           " " + " ".join(_Element._tiltshift_allowed_keys)
-Machine.AddSBend.__doc__ = """allowed kwargs: """ + \
-                           " ".join(_Element._beampipe_allowed_keys) + \
-                           " " + " ".join(_Element._outer_allowed_keys) + \
-                           " " + " ".join(_Element._sbend_allowed_keys) + \
-                           " " + " ".join(_Element._tiltshift_allowed_keys)
-Machine.AddQuadrupole.__doc__ = """allowed kwargs """ + \
-                                " ".join(_Element._beampipe_allowed_keys) + \
-                                " " + " ".join(_Element._outer_allowed_keys) + \
-                                " " + " ".join(_Element._quadrupole_allowed_keys) + \
-                                " " + " ".join(_Element._tiltshift_allowed_keys)
-Machine.AddSextupole.__doc__ = """allowed kwargs """ + \
-                               " ".join(_Element._beampipe_allowed_keys) + \
-                               " " + " ".join(_Element._outer_allowed_keys) + \
-                               " " + " ".join(_Element._sextupole_allowed_keys) + \
-                               " " + " ".join(_Element._tiltshift_allowed_keys)
-Machine.AddOctupole.__doc__ = """allowed kwargs """ + \
-                               " ".join(_Element._beampipe_allowed_keys) + \
-                               " " + " ".join(_Element._outer_allowed_keys) + \
-                               " " + " ".join(_Element._octupole_allowed_keys) + \
-                               " " + " ".join(_Element._tiltshift_allowed_keys)
-Machine.AddDecapole.__doc__ = """allowed kwargs """ + \
-                               " ".join(_Element._beampipe_allowed_keys) + \
-                               " " + " ".join(_Element._outer_allowed_keys) + \
-                               " " + " ".join(_Element._decapole_allowed_keys) + \
-                               " " + " ".join(_Element._tiltshift_allowed_keys)
+def _format_allowed_kwargs(allowed_keys):
+    return ", ".join(f"``{key}``" for key in allowed_keys)
 
-Machine.AddTarget.__doc__ = """allowed kwargs""" \
-                            " " + " ".join(_Element._outer_allowed_keys) + \
-                            " " + " ".join(_Element._tiltshift_allowed_keys) + \
-                            " " + " ".join(_Element._target_allowed_keys)
-Machine.AddRCol.__doc__ = """allowed kwargs """ + \
-                          " " + " ".join(_Element._outer_allowed_keys) + \
-                          " " + " ".join(_Element._tiltshift_allowed_keys) + \
-                          " " + " ".join(_Element._rcol_allowed_keys)
-Machine.AddECol.__doc__ = """allowed kwargs """ + \
-                          " " + " ".join(_Element._outer_allowed_keys) + \
-                          " " + " ".join(_Element._tiltshift_allowed_keys) + \
-                          " " + " ".join(_Element._ecol_allowed_keys)
-Machine.AddJCol.__doc__ = """allowed kwargs """ + \
-                          " " + " ".join(_Element._outer_allowed_keys) + \
-                          " " + " ".join(_Element._tiltshift_allowed_keys) + \
-                          " " + " ".join(_Element._jcol_allowed_keys)
-Machine.AddShield.__doc__ = """allowed kwargs """ + \
-                            " " + " ".join(_Element._outer_allowed_keys) + \
-                            " " + " ".join(_Element._tiltshift_allowed_keys) + \
-                            " " + " ".join(_Element._beampipe_allowed_keys) + \
-                            " " + " ".join(_Element._shield_allowed_keys)
-Machine.AddDump.__doc__ = """allowed kwargs """ + \
-                          " " + " ".join(_Element._outer_allowed_keys) + \
-                          " " + " ".join(_Element._tiltshift_allowed_keys) + \
-                          " " + " ".join(_Element._dump_allowed_keys)
-Machine.AddWireScanner.__doc__ = """allowed kwargs """ + \
-                                 " " + " ".join(_Element._outer_allowed_keys) + \
-                                 " " + " ".join(_Element._tiltshift_allowed_keys) + \
-                                 " " + " ".join(_Element._beampipe_allowed_keys) + \
-                                 " " + " ".join(_Element._wirescanner_allowed_keys)
-Machine.AddGap.__doc__ = """allowed kwargs """ + \
-                         " " + " ".join(_Element._outer_allowed_keys) + \
-                         " " + " ".join(_Element._tiltshift_allowed_keys)
 
-Machine.AddCustomG4.__doc__ = """allowed kwargs """ + \
-                              " " + " ".join(_Element._customg4_allowed_keys)
-Machine.AddCustomG4File.__doc__ = """allowed kwargs """ + \
-                                  " " + " ".join(_Element._customg4file_allowed_keys)
-Machine.AddSamplerPlane.__doc__ = """allowed kwargs: """ + \
-                                  " ".join(_Element._sampler_plane_allowed_keys)
-Machine.AddCustomFluka.__doc__ = """allowed kwargs: """ + \
-                                 " ".join(_Element._customfluka_allowed_keys)
-Machine.AddCustomFlukaFile.__doc__ = """allowed kwargs: """ + \
-                                     " ".join(_Element._customflukafile_allowed_keys)
+def _make_sphinx_doc(summary, params, returns=None, rtype=None, allowed_keys=None):
+    lines = [summary, ""]
+    for name, type_name, description in params:
+        lines.append(f":param {type_name} {name}: {description}")
+    if allowed_keys is not None:
+        lines.append(
+            ":param kwargs: Optional element keyword arguments. "
+            f"Allowed keys: {_format_allowed_kwargs(allowed_keys)}."
+        )
+        lines.append(":type kwargs: dict")
+    if returns is not None:
+        lines.append(f":returns: {returns}")
+    return "\n".join(lines)
+
+
+Machine.AddDrift.__doc__ = _make_sphinx_doc(
+    "Add drift configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created drift element.",
+    rtype="``Element``",
+    allowed_keys=_Element._beampipe_allowed_keys + _Element._outer_allowed_keys,
+)
+Machine.AddRBend.__doc__ = _make_sphinx_doc(
+    "Add rbend configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created rbend element.",
+    rtype="``Element``",
+    allowed_keys=_Element._beampipe_allowed_keys
+    + _Element._outer_allowed_keys
+    + _Element._rbend_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddSBend.__doc__ = _make_sphinx_doc(
+    "Add sbend configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created sbend element.",
+    rtype="``Element``",
+    allowed_keys=_Element._beampipe_allowed_keys
+    + _Element._outer_allowed_keys
+    + _Element._sbend_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddSBendSplit.__doc__ = _make_sphinx_doc(
+    "Add a split sbend configuration to the machine.",
+    [
+        ("name", "str", "Base element name for the generated split sbends."),
+        ("length", "float", "Total element length before splitting."),
+        ("nsplit", "int", "Number of sbend segments to generate."),
+        ("add", "bool", "When ``True``, append each generated element to the machine."),
+    ],
+    returns="The list of created sbend elements.",
+    rtype="``list``",
+    allowed_keys=_Element._beampipe_allowed_keys
+    + _Element._outer_allowed_keys
+    + _Element._sbend_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddQuadrupole.__doc__ = _make_sphinx_doc(
+    "Add quadrupole configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created quadrupole element.",
+    rtype="``Element``",
+    allowed_keys=_Element._beampipe_allowed_keys
+    + _Element._outer_allowed_keys
+    + _Element._quadrupole_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddSextupole.__doc__ = _make_sphinx_doc(
+    "Add sextupole configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created sextupole element.",
+    rtype="``Element``",
+    allowed_keys=_Element._beampipe_allowed_keys
+    + _Element._outer_allowed_keys
+    + _Element._sextupole_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddOctupole.__doc__ = _make_sphinx_doc(
+    "Add octupole configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created octupole element.",
+    rtype="``Element``",
+    allowed_keys=_Element._beampipe_allowed_keys
+    + _Element._outer_allowed_keys
+    + _Element._octupole_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddDecapole.__doc__ = _make_sphinx_doc(
+    "Add decapole configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created decapole element.",
+    rtype="``Element``",
+    allowed_keys=_Element._beampipe_allowed_keys
+    + _Element._outer_allowed_keys
+    + _Element._decapole_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddTarget.__doc__ = _make_sphinx_doc(
+    "Add target configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created target element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._tiltshift_allowed_keys
+    + _Element._target_allowed_keys,
+)
+Machine.AddRCol.__doc__ = _make_sphinx_doc(
+    "Add rcol configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created rcol element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._tiltshift_allowed_keys
+    + _Element._rcol_allowed_keys,
+)
+Machine.AddECol.__doc__ = _make_sphinx_doc(
+    "Add ecol configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created ecol element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._tiltshift_allowed_keys
+    + _Element._ecol_allowed_keys,
+)
+Machine.AddJCol.__doc__ = _make_sphinx_doc(
+    "Add jcol configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created jcol element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._tiltshift_allowed_keys
+    + _Element._jcol_allowed_keys,
+)
+Machine.AddShield.__doc__ = _make_sphinx_doc(
+    "Add shield configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created shield element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._tiltshift_allowed_keys
+    + _Element._beampipe_allowed_keys
+    + _Element._shield_allowed_keys,
+)
+Machine.AddDump.__doc__ = _make_sphinx_doc(
+    "Add dump configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created dump element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._tiltshift_allowed_keys
+    + _Element._dump_allowed_keys,
+)
+Machine.AddWireScanner.__doc__ = _make_sphinx_doc(
+    "Add wire scanner configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created wire scanner element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._tiltshift_allowed_keys
+    + _Element._beampipe_allowed_keys
+    + _Element._wirescanner_allowed_keys,
+)
+Machine.AddGap.__doc__ = _make_sphinx_doc(
+    "Add gap configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created gap element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys + _Element._tiltshift_allowed_keys,
+)
+Machine.AddCustomG4.__doc__ = _make_sphinx_doc(
+    "Add custom Geant4 configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("containerLV", "object", "Logical volume to place inside the custom Geant4 element."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created custom Geant4 element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._customg4_allowed_keys
+    + _Element._customg4file_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddCustomG4File.__doc__ = _make_sphinx_doc(
+    "Add custom Geant4 file configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created custom Geant4 element loaded from the geometry file.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._customg4file_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddCustomFluka.__doc__ = _make_sphinx_doc(
+    "Add custom FLUKA configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created custom FLUKA element.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._customfluka_allowed_keys
+    + _Element._customflukafile_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddCustomFlukaFile.__doc__ = _make_sphinx_doc(
+    "Add custom FLUKA file configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Element length."),
+        ("add", "bool", "When ``True``, append the created element to the machine."),
+    ],
+    returns="The created custom FLUKA element loaded from the geometry file.",
+    rtype="``Element``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._customflukafile_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
+Machine.AddLatticeInstance.__doc__ = _make_sphinx_doc(
+    "Add lattice instance configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("prototypeName", "str", "Name of the stored lattice prototype to instantiate."),
+    ],
+    returns="The created lattice instance element.",
+    rtype="``Element``",
+    allowed_keys=_Element._tiltshift_allowed_keys,
+)
+Machine.AddLatticePrototype.__doc__ = _make_sphinx_doc(
+    "Add lattice prototype configuration to the machine.",
+    [("e", "``Element``", "Element definition to store as a reusable prototype.")],
+    returns="``None``. The prototype definition is stored on the machine.",
+    rtype="``None``",
+)
+Machine.AddSamplerPlane.__doc__ = _make_sphinx_doc(
+    "Add sampler plane configuration to the machine.",
+    [
+        ("name", "str", "Element name."),
+        ("length", "float", "Optional sampler length. Uses the machine default when omitted."),
+    ],
+    returns="``None``. The created sampler plane is appended to the machine.",
+    rtype="``None``",
+    allowed_keys=_Element._outer_allowed_keys
+    + _Element._sampler_plane_allowed_keys
+    + _Element._tiltshift_allowed_keys,
+)
