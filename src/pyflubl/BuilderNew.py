@@ -37,7 +37,7 @@ from .Fluka import Rotprbin as _Rotprbin
 class Machine(_Coordinates) :
     """Build and export beamline models to Geant4 and FLUKA representations."""
     def __init__(self, bakeTransforms = True, verbose = False) :
-        """Initialise a machine builder with geometry, bookkeeping, and control-card state."""
+        """Initialize a machine builder with geometry, bookkeeping, and control-card state."""
         super().__init__()
 
         # store if transforms are baked into bodies or rotdefis used
@@ -1225,7 +1225,7 @@ class Machine(_Coordinates) :
 
         """Build fluka drift objects for geometry conversion and export."""
         if self.verbose :
-            print("pyflubl.BuilderNew.Machine.MakeFlukaDrift: Making drfit element ", name)
+            print("pyflubl.BuilderNew.Machine.MakeFlukaDrift: Making drift element ", name)
 
         length = element.length*1000
         rotation, translation = self._MakeOffsetAndTiltTransforms(element, rotation, translation)
@@ -3028,8 +3028,8 @@ class Machine(_Coordinates) :
                                     rotation, translation, geomtranslation, category,
                                     convertMaterials = False,
                                     prototype = False):
-        # convert materials
         """Internal helper to make fluka component common g4."""
+        # convert materials
         if convertMaterials:
             print("_MakeFlukaComponentCommon> convertMaterials")
             materialNameSet = containerLV.makeMaterialNameSet()
