@@ -3429,7 +3429,7 @@ Machine.AddLatticeInstance.__doc__ = _make_sphinx_doc(
 )
 Machine.AddLatticePrototype.__doc__ = _make_sphinx_doc(
     "Add lattice prototype configuration to the machine.",
-    [("e", "``Element``", "Element definition to store as a reusable prototype.")],
+    [("e", "object", "Element definition to store as a reusable prototype.")],
     returns="``None``. The prototype definition is stored on the machine.",
 )
 Machine.AddSamplerPlane.__doc__ = _make_sphinx_doc(
